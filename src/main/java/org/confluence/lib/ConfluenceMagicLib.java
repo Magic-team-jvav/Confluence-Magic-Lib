@@ -45,6 +45,10 @@ public class ConfluenceMagicLib {
         TC_DATA_COMPONENT_TYPES.register(modEventBus);
     }
 
+    public static ResourceLocation lib(String path) {
+        return ResourceLocation.fromNamespaceAndPath(LIB_ID, path);
+    }
+
     public static ResourceLocation confluence(String path) {
         return ResourceLocation.fromNamespaceAndPath(CONFLUENCE_ID, path);
     }
