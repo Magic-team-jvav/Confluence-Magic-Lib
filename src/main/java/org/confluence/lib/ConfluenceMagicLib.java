@@ -42,6 +42,7 @@ public class ConfluenceMagicLib {
     public ConfluenceMagicLib(IEventBus modEventBus, ModContainer modContainer) {
         INGREDIENT_TYPES.register(modEventBus);
         PIECE_TYPES.register(modEventBus);
+        DATA_COMPONENT_TYPES.register(modEventBus);
     }
 
     public static ResourceLocation confluence(String path) {
