@@ -15,24 +15,26 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import javax.annotation.Nullable;
+
 @Mixin(GuiGraphics.class)
 public abstract class GuiGraphicsMixin {
     @Unique
     private static final ResourceLocation confluence$wip = ConfluenceMagicLib.lib("textures/gui/wip.png");
 
     @Shadow
-    public abstract void blit(ResourceLocation resourceLocation, int i, int j, float f, float g, int k, int l, int m, int n);
+    public abstract void blit(ResourceLocation atlasLocation, int x, int y, float uOffset, float vOffset, int width, int height, int textureWidth, int textureHeight);
 
     @Shadow
     @Final
     private PoseStack pose;
 
     @Inject(method = "renderItemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V"))
-    private void renderItemDecorations(Font font, ItemStack itemStack, int i, int j, String string, CallbackInfo ci) {
-        if (itemStack.is(LibTags.Items.WIP)) {
+    private void renderItemDecorations(Font font, ItemStack stack, int x, int y, @Nullable String text, CallbackInfo ci) {
+        if (stack.is(LibTags.Items.WIP)) {
             pose.pushPose();
             pose.translate(0.0F, 0.0F, 200.0F);
-            blit(confluence$wip, i, j, 0.0F, 0.0F, 16, 16, 16, 16);
+            blit(confluence$wip, x, y, 0.0F, 0.0F, 16, 16, 16, 16);
             pose.popPose();
         }
     }
