@@ -1,4 +1,4 @@
-package org.confluence.lib.recipe;
+package org.confluence.lib.common.recipe;
 
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;

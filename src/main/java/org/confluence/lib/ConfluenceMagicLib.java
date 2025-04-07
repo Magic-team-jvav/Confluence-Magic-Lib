@@ -6,7 +6,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.crafting.IngredientType;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
-import org.confluence.lib.recipe.AmountIngredient;
+import org.confluence.lib.common.recipe.AmountIngredient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
