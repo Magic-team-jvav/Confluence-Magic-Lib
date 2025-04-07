@@ -35,14 +35,14 @@ public class ConfluenceMagicLib {
     public static final Supplier<StructurePieceType.StructureTemplateType> SIMPLE_TEMPLATE_PIECE = PIECE_TYPES.register("simple_template_piece", () -> SimpleTemplatePiece::new);
     public static final Supplier<StructurePieceType.ContextlessType> GRID_PIECE = PIECE_TYPES.register("grid_piece", () -> GridPiece::new);
 
-    public static final DeferredRegister.DataComponents DATA_COMPONENT_TYPES = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, TERRA_CURIO_ID);
-    public static final Supplier<DataComponentType<ModRarity>> MOD_RARITY = DATA_COMPONENT_TYPES.registerComponentType("mod_rarity", builder -> builder.persistent(ModRarity.CODEC).networkSynchronized(ModRarity.STREAM_CODEC));
-    public static final Supplier<DataComponentType<NbtComponent>> NBT = DATA_COMPONENT_TYPES.registerComponentType("nbt", builder -> builder.persistent(NbtComponent.CODEC).networkSynchronized(NbtComponent.STREAM_CODEC));
+    public static final DeferredRegister.DataComponents TC_DATA_COMPONENT_TYPES = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, TERRA_CURIO_ID);
+    public static final Supplier<DataComponentType<ModRarity>> MOD_RARITY = TC_DATA_COMPONENT_TYPES.registerComponentType("mod_rarity", builder -> builder.persistent(ModRarity.CODEC).networkSynchronized(ModRarity.STREAM_CODEC));
+    public static final Supplier<DataComponentType<NbtComponent>> NBT = TC_DATA_COMPONENT_TYPES.registerComponentType("nbt", builder -> builder.persistent(NbtComponent.CODEC).networkSynchronized(NbtComponent.STREAM_CODEC));
 
     public ConfluenceMagicLib(IEventBus modEventBus, ModContainer modContainer) {
         INGREDIENT_TYPES.register(modEventBus);
         PIECE_TYPES.register(modEventBus);
-        DATA_COMPONENT_TYPES.register(modEventBus);
+        TC_DATA_COMPONENT_TYPES.register(modEventBus);
     }
 
     public static ResourceLocation confluence(String path) {
