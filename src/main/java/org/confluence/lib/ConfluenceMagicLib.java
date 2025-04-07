@@ -21,14 +21,14 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Supplier;
 
-@Mod(ConfluenceMagicLib.MODID)
+@Mod(ConfluenceMagicLib.LIB_ID)
 public class ConfluenceMagicLib {
-    public static final String MODID = "confluence_magic_lib";
+    public static final String LIB_ID = "confluence_magic_lib";
     public static final String CONFLUENCE_ID = "confluence";
     public static final String TERRA_CURIO_ID = "terra_curio";
     public static final Logger LOGGER = LoggerFactory.getLogger("Confluence Magic Lib");
 
-    public static final DeferredRegister<IngredientType<?>> INGREDIENT_TYPES = DeferredRegister.create(NeoForgeRegistries.Keys.INGREDIENT_TYPES, MODID);
+    public static final DeferredRegister<IngredientType<?>> INGREDIENT_TYPES = DeferredRegister.create(NeoForgeRegistries.Keys.INGREDIENT_TYPES, LIB_ID);
     public static final Supplier<IngredientType<AmountIngredient>> AMOUNT_INGREDIENT_TYPE = INGREDIENT_TYPES.register("amount_ingredient", () -> new IngredientType<>(AmountIngredient.CODEC, AmountIngredient.STREAM_CODEC));
 
     public static final DeferredRegister<StructurePieceType> PIECE_TYPES = DeferredRegister.create(BuiltInRegistries.STRUCTURE_PIECE, CONFLUENCE_ID);

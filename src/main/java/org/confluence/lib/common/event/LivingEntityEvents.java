@@ -6,7 +6,7 @@ import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.util.LibUtils;
 
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = ConfluenceMagicLib.MODID)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = ConfluenceMagicLib.LIB_ID)
 public final class LivingEntityEvents {
     @SubscribeEvent
     public static void livingDrops(LivingDropsEvent event) {
