@@ -55,6 +55,10 @@ public final class LibUtils {
         createItemEntity(item, count, pos.x, pos.y, pos.z, level, pickUpDelay);
     }
 
+    /**
+     * @param a 形参的方块实体类型
+     * @param b 注册的方块实体类型
+     */
     @SuppressWarnings("unchecked")
     public static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> getTicker(BlockEntityType<A> a, BlockEntityType<E> b, BlockEntityTicker<? super E> ticker) {
         return a == b ? (BlockEntityTicker<A>) ticker : null;
