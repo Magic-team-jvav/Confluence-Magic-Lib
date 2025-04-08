@@ -18,7 +18,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public class PlayerContainer<C extends BlockEntity & PlayerContainer.ValidEntity> extends SimpleContainer implements INBTSerializable<ListTag> {
     @Nullable
-    private C activeContainer;
+    protected C activeContainer;
 
     public PlayerContainer(int rows) {
         super(9 * rows);
