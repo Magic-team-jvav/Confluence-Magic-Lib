@@ -7,7 +7,9 @@
     "mixins": [
     ],
     "client": [
-        "client.GuiGraphicsMixin"
+        "client.BlockModelShaperMixin",
+        "client.GuiGraphicsMixin",
+        "client.MissingTextureAtlasSpriteMixin"
     ],
     "injectors": {
         "defaultRequire": 1

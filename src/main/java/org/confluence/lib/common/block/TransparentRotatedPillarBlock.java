@@ -1,4 +1,4 @@
-package org.confluence.lib.common.block.transparent;
+package org.confluence.lib.common.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;

@@ -1,4 +1,4 @@
-package org.confluence.lib.common.worldgen.structure;
+package org.confluence.lib.util;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.BlockPos;
@@ -10,7 +10,6 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.structure.Structure;
-import org.confluence.lib.util.VectorUtils;
 import org.joml.Vector3d;
 
 import java.util.LinkedList;

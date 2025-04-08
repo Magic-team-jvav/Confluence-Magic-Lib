@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -22,8 +23,12 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.loading.FMLEnvironment;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.confluence.lib.ConfluenceMagicLib;
+import org.confluence.lib.common.component.NbtComponent;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public final class LibUtils {
@@ -32,6 +37,14 @@ public final class LibUtils {
     public static final int MAX_STACK_SIZE = 9999;
     public static final Codec<BlockPos> BLOCK_POS_CODEC = Codec.STRING.xmap(str -> BlockPos.of(Long.parseLong(str)), pos -> Long.toString(pos.asLong()));
     public static final String NO_DROPS_TAG = "confluence:no_drops";
+
+    @ApiStatus.Internal
+    public static void forConfluence$Inject() {}
+
+    @ApiStatus.Internal
+    public static <T> T forConfluence$ModifyExpression(T value) {
+        return value;
+    }
 
     public static void createItemEntity(ItemStack itemStack, double x, double y, double z, Level level, int pickUpDelay) {
         if (itemStack.isEmpty()) return;
@@ -159,5 +172,27 @@ public final class LibUtils {
         }
         mob.setItemSlot(slot, itemStack);
         mob.setDropChance(slot, chance);
+    }
+
+    public static CompoundTag getItemStackNbt(ItemStack itemStack) {
+        NbtComponent nbtComponent = itemStack.get(ConfluenceMagicLib.NBT);
+        if (nbtComponent == null) {
+            CompoundTag nbt = new CompoundTag();
+            itemStack.set(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
+            return nbt;
+        }
+        return nbtComponent.nbt().copy();
+    }
+
+    public static void updateItemStackNbt(ItemStack itemStack, Consumer<CompoundTag> consumer) {
+        NbtComponent nbtComponent = itemStack.get(ConfluenceMagicLib.NBT);
+        CompoundTag nbt;
+        if (nbtComponent == null) {
+            nbt = new CompoundTag();
+        } else {
+            nbt = nbtComponent.nbt().copy();
+        }
+        consumer.accept(nbt);
+        itemStack.set(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
     }
 }
