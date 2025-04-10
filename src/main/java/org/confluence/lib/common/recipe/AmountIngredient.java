@@ -5,9 +5,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.common.crafting.ICustomIngredient;
 import net.neoforged.neoforge.common.crafting.IngredientType;
 import org.confluence.lib.ConfluenceMagicLib;
@@ -51,5 +54,21 @@ public record AmountIngredient(Ingredient ingredient, int amount) implements ICu
 
     public static int getAmount(Ingredient ingredient) {
         return ingredient.getCustomIngredient() instanceof AmountIngredient ai ? ai.amount : 1;
+    }
+
+    public static Ingredient of(int amount, Ingredient ingredient) {
+        return new Ingredient(new AmountIngredient(ingredient, amount));
+    }
+
+    public static Ingredient of(int amount, ItemLike... items) {
+        return new Ingredient(new AmountIngredient(Ingredient.of(items), amount));
+    }
+
+    public static Ingredient of(int amount, ItemStack... stacks) {
+        return new Ingredient(new AmountIngredient(Ingredient.of(stacks), amount));
+    }
+
+    public static Ingredient of(int amount, TagKey<Item> tag) {
+        return new Ingredient(new AmountIngredient(Ingredient.of(tag), amount));
     }
 }
