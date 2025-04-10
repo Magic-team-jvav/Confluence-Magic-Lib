@@ -14,19 +14,20 @@ import org.jetbrains.annotations.ApiStatus;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public abstract class AbstractRecipeProvider extends RecipeProvider {
-    protected PackOutput output;
     private final List<Appender<?>> appenders = new LinkedList<>();
 
     public AbstractRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup) {
         super(output, lookup);
-        this.output = output;
     }
 
     @Override
@@ -55,9 +56,7 @@ public abstract class AbstractRecipeProvider extends RecipeProvider {
     }
 
     protected <T> Appender<T> recipe(Codec<T> codec, Path path) {
-        Appender<T> appender = new Appender<>(codec, (t, pathProvider) -> path);
-        appenders.add(appender);
-        return appender;
+        return recipe(codec, (t, pathProvider) -> path);
     }
 
     public static class Appender<T> {
@@ -70,8 +69,8 @@ public abstract class AbstractRecipeProvider extends RecipeProvider {
             this.pathGetter = pathGetter;
         }
 
-        public Appender<T> addRecipe(T... recipe) {
-            recipes.addAll(Arrays.asList(recipe));
+        public Appender<T> addRecipe(T recipe) {
+            recipes.add(recipe);
             return this;
         }
 
