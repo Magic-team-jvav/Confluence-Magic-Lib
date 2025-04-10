@@ -17,13 +17,13 @@ public final class ComputerUtils {
 
 
     /**
-     * BFS包含方块检测
+     * DFS包含方块检测
      * @param center 中心方块坐标
      * @param radius 半径
      * @param contains 包含方块的判定条件
      * @return 如果空间是封闭的，则返回封闭空间；否则返回空列表
      */
-    public static List<BlockPos> zoomDetection(Level world, BlockPos center, int radius, Predicate<BlockState> contains){
+    public static List<BlockPos> zoomDetection(Level world, BlockPos center, int radius, Predicate<BlockState> contains) {
         // 定义完整的边界范围
         int minX = center.getX() - radius;
         int maxX = center.getX() + radius;
@@ -40,15 +40,14 @@ public final class ComputerUtils {
         Set<BlockPos> visited = new HashSet<>();
         // 记录封闭空间
         List<BlockPos> closedSpace = new ArrayList<>();
-        boolean isClosed = true;
 
-        // BFS
-        Queue<BlockPos> queue = new LinkedList<>();
-        queue.add(center);
+        // DFS
+        Stack<BlockPos> stack = new Stack<>();
+        stack.push(center);
         visited.add(center);
 
-        while (!queue.isEmpty()) {
-            BlockPos currentPos = queue.poll();
+        while (!stack.isEmpty()) {
+            BlockPos currentPos = stack.pop();
             closedSpace.add(currentPos);
 
             // 检查邻居方块
@@ -61,19 +60,20 @@ public final class ComputerUtils {
                                 neighborPos.getY() >= minY && neighborPos.getY() <= maxY &&
                                 neighborPos.getZ() >= minZ && neighborPos.getZ() <= maxZ)
                 {
-                    // 如果邻居方块是空气且未被访问，加入队列
+                    // 如果邻居方块是空气且未被访问，加入栈
                     if (contains.test(world.getBlockState(neighborPos)) && !visited.contains(neighborPos)) {
-                        queue.add(neighborPos);
+                        stack.push(neighborPos);
                         visited.add(neighborPos);
                     }
                 } else {
                     // 如果邻居方块在边界外，则当前空间不封闭
-                    isClosed = false;
+                    return Collections.emptyList();
                 }
             }
         }
 
-        return isClosed ? closedSpace : Collections.emptyList();
+        return closedSpace;
     }
+
 
 }
