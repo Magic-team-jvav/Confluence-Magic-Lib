@@ -22,10 +22,10 @@ public class HotSwap {
     }
 
     public static int wrapI(int original) {
-        return original + 32;
+        return original - 8;
     }
 
-    public static double constant() {
-        return -0.1;
+    public static float constant() {
+        return 0;
     }
 }
