@@ -1,11 +1,12 @@
 package org.confluence.lib.common.menu;
 
 import net.minecraft.world.Container;
+import org.confluence.lib.common.recipe.MenuRecipeInput;
 
 public class ToggleAmountResultSlot extends AmountResultSlot implements IToggleSlot {
     public boolean isActive = true;
 
-    public ToggleAmountResultSlot(RecipeInputContainer input, Container result, int pSlot, int pX, int pY) {
+    public ToggleAmountResultSlot(MenuRecipeInput input, Container result, int pSlot, int pX, int pY) {
         super(input, result, pSlot, pX, pY);
     }
 

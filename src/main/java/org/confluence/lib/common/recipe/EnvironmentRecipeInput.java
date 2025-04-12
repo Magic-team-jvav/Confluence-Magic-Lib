@@ -2,9 +2,8 @@ package org.confluence.lib.common.recipe;
 
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.crafting.CraftingInput;
-import org.confluence.lib.common.menu.RecipeInputContainer;
 
-public class EnvironmentRecipeInput extends RecipeInputContainer {
+public class EnvironmentRecipeInput extends MenuRecipeInput {
     private final EnvironmentLevelAccess access;
     private CraftingInput craftingInput;
 

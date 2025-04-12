@@ -1,13 +1,13 @@
-package org.confluence.lib.common.menu;
+package org.confluence.lib.common.recipe;
 
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.crafting.RecipeInput;
 
-public class RecipeInputContainer extends SimpleContainer implements RecipeInput {
+public class MenuRecipeInput extends SimpleContainer implements RecipeInput {
     private final AbstractContainerMenu menu;
 
-    public RecipeInputContainer(AbstractContainerMenu menu, int size) {
+    public MenuRecipeInput(AbstractContainerMenu menu, int size) {
         super(size);
         this.menu = menu;
     }

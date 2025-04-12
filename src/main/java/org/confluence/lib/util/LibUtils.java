@@ -28,8 +28,10 @@ import org.confluence.lib.common.component.NbtComponent;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public final class LibUtils {
     public static final Direction[] HORIZONTAL = new Direction[]{Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.NORTH};
@@ -194,5 +196,11 @@ public final class LibUtils {
         }
         consumer.accept(nbt);
         itemStack.set(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
+    }
+
+    public static String toTitleCase(String raw) {
+        return Arrays.stream(raw.split("_"))
+                .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1).toLowerCase())
+                .collect(Collectors.joining(" "));
     }
 }

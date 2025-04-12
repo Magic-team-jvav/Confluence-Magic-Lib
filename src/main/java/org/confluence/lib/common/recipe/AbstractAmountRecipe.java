@@ -87,7 +87,7 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
     }
 
     @Override
-    public ItemStack assemble(T input, HolderLookup.Provider registries) {
+    public ItemStack assemble(T input, HolderLookup.@Nullable Provider registries) {
         return getResultItem(registries).copy();
     }
 
