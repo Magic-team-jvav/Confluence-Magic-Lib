@@ -1,0 +1,25 @@
+package org.confluence.lib.common.item;
+
+import net.minecraft.world.item.ItemStack;
+import org.confluence.lib.ConfluenceMagicLib;
+import org.confluence.lib.common.component.ModRarity;
+import org.confluence.lib.common.component.NbtComponent;
+import org.confluence.lib.util.LibUtils;
+
+public class ColoredItem extends CustomRarityItem {
+    public ColoredItem(ModRarity rarity) {
+        super(rarity);
+    }
+
+    public static void setColor(ItemStack itemStack, int rgb) {
+        LibUtils.updateItemStackNbt(itemStack, tag -> tag.putInt("color", rgb));
+    }
+
+    public static int getColor(ItemStack itemStack) {
+        NbtComponent nbtComponent = itemStack.get(ConfluenceMagicLib.NBT);
+        if (nbtComponent == null) {
+            return 0xFF66CCFF;
+        }
+        return nbtComponent.nbt().getInt("color");
+    }
+}
