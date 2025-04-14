@@ -1,17 +1,18 @@
 {
-    "required": true,
-    "minVersion": "0.8",
-    "package": "org.confluence.lib.mixin",
-    "compatibilityLevel": "JAVA_21",
-    "refmap": "confluence_magic_lib.refmap.json",
-    "mixins": [
-    ],
-    "client": [
-        "client.BlockModelShaperMixin",
-        "client.GuiGraphicsMixin",
-        "client.MissingTextureAtlasSpriteMixin"
-    ],
-    "injectors": {
-        "defaultRequire": 1
-    }
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.confluence.lib.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "confluence_magic_lib.refmap.json",
+  "mixins": [
+    "accessor.LanguageProviderAccessor"
+  ],
+  "client": [
+    "client.BlockModelShaperMixin",
+    "client.GuiGraphicsMixin",
+    "client.MissingTextureAtlasSpriteMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }
