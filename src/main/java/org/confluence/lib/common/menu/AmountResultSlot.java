@@ -8,28 +8,26 @@ import org.confluence.lib.common.recipe.AbstractAmountRecipe;
 import org.confluence.lib.common.recipe.MenuRecipeInput;
 import org.jetbrains.annotations.Nullable;
 
-@javax.annotation.ParametersAreNonnullByDefault
-@net.minecraft.MethodsReturnNonnullByDefault
-public class AmountResultSlot extends Slot {
+public class AmountResultSlot<R extends AbstractAmountRecipe<?>> extends Slot {
     protected final MenuRecipeInput input;
-    protected @Nullable AbstractAmountRecipe<?> recipe;
+    protected @Nullable R recipe;
 
     public AmountResultSlot(MenuRecipeInput input, Container result, int pSlot, int pX, int pY) {
         super(result, pSlot, pX, pY);
         this.input = input;
     }
 
-    public void setCurrentRecipe(@Nullable AbstractAmountRecipe<?> recipe) {
+    public void setCurrentRecipe(@Nullable R recipe) {
         this.recipe = recipe;
     }
 
     @Override
-    public boolean mayPlace(ItemStack pStack) {
+    public boolean mayPlace(ItemStack stack) {
         return false;
     }
 
     @Override
-    public void onTake(Player pPlayer, ItemStack pStack) {
+    public void onTake(Player player, ItemStack stack) {
         if (recipe != null) {
             AbstractAmountRecipe.consumeShapeless(input, recipe.getIngredients());
             input.setChanged();
