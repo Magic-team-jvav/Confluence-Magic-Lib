@@ -7,19 +7,21 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.PushReaction;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
 public abstract class HorizontalDirectionalWithHorizontalFourPartBlock extends HorizontalDirectionalBlock {
+    public static final EnumProperty<StateProperties.HorizontalFourPart> PART = StateProperties.HORIZONTAL_FOUR_PART;
+
     protected HorizontalDirectionalWithHorizontalFourPartBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(StateProperties.HORIZONTAL_FOUR_PART, StateProperties.HorizontalFourPart.BASE).setValue(FACING, Direction.NORTH));
+        registerDefaultState(stateDefinition.any().setValue(PART, StateProperties.HorizontalFourPart.BASE).setValue(FACING, Direction.NORTH));
     }
 
     @Override
@@ -55,9 +57,8 @@ public abstract class HorizontalDirectionalWithHorizontalFourPartBlock extends H
     @Override
     public void onRemove(BlockState pState, Level pLevel, BlockPos pPos, BlockState pNewState, boolean pMovedByPiston) {
         super.onRemove(pState, pLevel, pPos, pNewState, pMovedByPiston);
-        BlockState air = Blocks.AIR.defaultBlockState();
         for (BlockPos relative : StateProperties.HorizontalFourPart.getRelatives(pState.getValue(StateProperties.HORIZONTAL_FOUR_PART), pState.getValue(FACING), pPos).values()) {
-            pLevel.setBlockAndUpdate(relative, air);
+            pLevel.destroyBlock(relative, false);
         }
     }
 
