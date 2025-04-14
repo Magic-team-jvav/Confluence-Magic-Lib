@@ -1,19 +1,15 @@
 package org.confluence.lib.client.screen;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.menu.ShapedAmountContainerMenu4x;
-
-import java.util.function.BiConsumer;
 
 public class ShapedAmountContainerScreen4x<M extends ShapedAmountContainerMenu4x<?, ?, ?, ?>> extends AbstractContainerScreen<M> {
     public static final ResourceLocation BACKGROUND = ConfluenceMagicLib.lib("textures/gui/container/normal4x.png");
@@ -124,9 +120,5 @@ public class ShapedAmountContainerScreen4x<M extends ShapedAmountContainerMenu4x
 
     private static boolean isOverDownButton(int x, int y) {
         return x >= 135 && x <= 145 && y >= 60 && y <= 68;
-    }
-
-    public static <M extends ShapedAmountContainerMenu4x<?, ?, ?, ?>> void register(MenuType<? extends M> menuType, BiConsumer<MenuType<? extends M>, MenuScreens.ScreenConstructor<M, ShapedAmountContainerScreen4x<M>>> consumer) {
-        consumer.accept(menuType, ShapedAmountContainerScreen4x::new);
     }
 }
