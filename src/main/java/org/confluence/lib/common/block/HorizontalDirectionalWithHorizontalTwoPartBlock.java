@@ -20,8 +20,8 @@ public abstract class HorizontalDirectionalWithHorizontalTwoPartBlock extends Ho
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> pBuilder) {
-        pBuilder.add(StateProperties.HORIZONTAL_TWO_PART, FACING);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(StateProperties.HORIZONTAL_TWO_PART, FACING);
     }
 
     @Override
@@ -41,9 +41,9 @@ public abstract class HorizontalDirectionalWithHorizontalTwoPartBlock extends Ho
     }
 
     @Override
-    public void onRemove(BlockState pState, Level pLevel, BlockPos pPos, BlockState pNewState, boolean pMovedByPiston) {
-        super.onRemove(pState, pLevel, pPos, pNewState, pMovedByPiston);
-        pLevel.destroyBlock(pPos.relative(StateProperties.HorizontalTwoPart.getConnectedDirection(pState)), false);
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moveByPiston) {
+        super.onRemove(state, level, pos, newState, moveByPiston);
+        level.destroyBlock(pos.relative(StateProperties.HorizontalTwoPart.getConnectedDirection(state)), false);
     }
 
     @Override
