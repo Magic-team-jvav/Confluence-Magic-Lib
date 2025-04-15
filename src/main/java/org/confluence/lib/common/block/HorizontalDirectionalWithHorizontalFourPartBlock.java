@@ -39,7 +39,7 @@ public abstract class HorizontalDirectionalWithHorizontalFourPartBlock extends H
     }
 
     @Override
-    public BlockState getStateForPlacement(BlockPlaceContext pContext) {
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext pContext) {
         Level level = pContext.getLevel();
         Direction direction = pContext.getHorizontalDirection();
         Direction facing = direction.getOpposite();

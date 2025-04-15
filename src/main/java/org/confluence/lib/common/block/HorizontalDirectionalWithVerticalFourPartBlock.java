@@ -35,7 +35,7 @@ public abstract class HorizontalDirectionalWithVerticalFourPartBlock extends Hor
     }
 
     @Override
-    public BlockState getStateForPlacement(BlockPlaceContext pContext) {
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext pContext) {
         Level level = pContext.getLevel();
         BlockState blockState = defaultBlockState().setValue(FACING, pContext.getHorizontalDirection().getOpposite());
         BlockPos clickedPos = pContext.getClickedPos();
