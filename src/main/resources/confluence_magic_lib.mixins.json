@@ -5,6 +5,7 @@
     "compatibilityLevel": "JAVA_21",
     "refmap": "confluence_magic_lib.refmap.json",
     "mixins": [
+        "LivingEntityMixin",
         "ShapedRecipePatternMixin",
         "accessor.LanguageProviderAccessor"
     ],

@@ -1,14 +1,14 @@
 package org.confluence.lib.mixin;
 
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
-import org.confluence.lib.mixed.IShapedRecipePattern;
+import org.confluence.lib.mixed.LibShapedRecipePattern;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(value = ShapedRecipePattern.class, priority = 0)
-public abstract class ShapedRecipePatternMixin implements IShapedRecipePattern {
+public abstract class ShapedRecipePatternMixin implements LibShapedRecipePattern {
     @Unique
     private boolean confluence$nonSymmetricalMatching = false;
 

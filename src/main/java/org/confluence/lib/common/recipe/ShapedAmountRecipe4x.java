@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.Level;
-import org.confluence.lib.mixed.IShapedRecipePattern;
+import org.confluence.lib.mixed.LibShapedRecipePattern;
 
 import java.util.function.BiFunction;
 
@@ -20,7 +20,7 @@ public abstract class ShapedAmountRecipe4x<T extends MenuRecipeInput> extends Ab
     public ShapedAmountRecipe4x(ItemStack result, ShapedRecipePattern pattern) {
         super(result, pattern.ingredients());
         this.pattern = pattern;
-        IShapedRecipePattern.setNonSymmetricalMatching(pattern);
+        LibShapedRecipePattern.setNonSymmetricalMatching(pattern);
     }
 
     @Override
