@@ -10,14 +10,14 @@ import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
-import org.confluence.lib.common.recipe.AbstractAmountRecipe;
 import org.confluence.lib.common.recipe.MenuRecipeInput;
+import org.confluence.lib.common.recipe.ShapedAmountRecipe4x;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 
-public abstract class ShapedAmountContainerMenu4x<I extends MenuRecipeInput, R extends AbstractAmountRecipe<I>, S extends ToggleAmountResultSlot<R>, A extends ContainerLevelAccess> extends AbstractContainerMenu {
+public abstract class ShapedAmountContainerMenu4x<I extends MenuRecipeInput, R extends ShapedAmountRecipe4x<I>, S extends ToggleAmountResultSlot<R>, A extends ContainerLevelAccess> extends AbstractContainerMenu {
     public static final int INPUT_START = 1;
     public static final int INPUT_END = 17;
     public static final int INV_SLOT_START = 17;
