@@ -28,10 +28,10 @@ public abstract class HorizontalDirectionalWithForwardTwoPartBlock extends Horiz
     }
 
     @Override
-    public void setPlacedBy(Level pLevel, BlockPos pPos, BlockState pState, @Nullable LivingEntity pPlacer, ItemStack pStack) {
-        if (!pLevel.isClientSide) {
-            BlockPos relativePos = pPos.relative(StateProperties.ForwardTwoPart.getConnectedDirection(pState));
-            pLevel.setBlockAndUpdate(relativePos, pState.setValue(StateProperties.FORWARD_TWO_PART, StateProperties.ForwardTwoPart.FORWARD));
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        if (!level.isClientSide) {
+            BlockPos relativePos = pos.relative(state.getValue(FACING).getOpposite());
+            level.setBlockAndUpdate(relativePos, state.setValue(StateProperties.FORWARD_TWO_PART, StateProperties.ForwardTwoPart.FORWARD));
         }
     }
 

@@ -42,7 +42,7 @@ public class StateProperties {
          * @return 相对方向
          */
         public static Direction getConnectedDirection(BlockState blockState) {
-            Direction facing = blockState.hasProperty(BlockStateProperties.FACING) ? blockState.getValue(BlockStateProperties.FACING) : Direction.NORTH;
+            Direction facing = blockState.hasProperty(BlockStateProperties.HORIZONTAL_FACING) ? blockState.getValue(BlockStateProperties.HORIZONTAL_FACING) : Direction.NORTH;
             return switch (blockState.getValue(HORIZONTAL_TWO_PART)) {
                 case BASE -> facing.getCounterClockWise(); // 获取其相对右边
                 case RIGHT -> facing.getClockWise(); // 获取其相对左边
@@ -134,8 +134,9 @@ public class StateProperties {
          * @return 相对方向
          */
         public static Direction getConnectedDirection(BlockState blockState) {
-            if (blockState.hasProperty(BlockStateProperties.FACING)) {
-                return blockState.getValue(BlockStateProperties.FACING);
+            if (blockState.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                Direction facing = blockState.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                return blockState.getValue(FORWARD_TWO_PART).isBase() ? facing.getOpposite() : facing;
             }
             return Direction.NORTH;
         }
@@ -182,7 +183,7 @@ public class StateProperties {
          * @return 相对方向
          */
         public static Direction getConnectedDirection(BlockState blockState) {
-            Direction facing = blockState.hasProperty(BlockStateProperties.FACING) ? blockState.getValue(BlockStateProperties.FACING) : Direction.NORTH;
+            Direction facing = blockState.hasProperty(BlockStateProperties.HORIZONTAL_FACING) ? blockState.getValue(BlockStateProperties.HORIZONTAL_FACING) : Direction.NORTH;
             return switch (blockState.getValue(HORIZONTAL_FOUR_PART)) {
                 case BASE, FRONT -> facing.getCounterClockWise(); // 获取其相对右边
                 case RIGHT, CORNER -> facing.getClockWise(); // 获取其相对左边
@@ -257,7 +258,7 @@ public class StateProperties {
          * @return 相对方向
          */
         public static Direction getConnectedDirection(BlockState blockState) {
-            Direction facing = blockState.hasProperty(BlockStateProperties.FACING) ? blockState.getValue(BlockStateProperties.FACING) : Direction.NORTH;
+            Direction facing = blockState.hasProperty(BlockStateProperties.HORIZONTAL_FACING) ? blockState.getValue(BlockStateProperties.HORIZONTAL_FACING) : Direction.NORTH;
             return switch (blockState.getValue(VERTICAL_FOUR_PART)) {
                 case BASE, UP -> facing.getCounterClockWise(); // 获取其相对右边
                 case RIGHT, RIGHT_UP -> facing.getClockWise(); // 获取其相对左边
