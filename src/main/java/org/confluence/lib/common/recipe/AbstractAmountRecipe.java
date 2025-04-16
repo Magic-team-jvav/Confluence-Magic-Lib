@@ -2,6 +2,7 @@ package org.confluence.lib.common.recipe;
 
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -10,6 +11,8 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectFunction;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -23,6 +26,7 @@ import org.joml.Vector2i;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.function.BiFunction;
 
 public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Recipe<T> {
     public static final MapCodec<NonNullList<Ingredient>> INGREDIENTS_CODEC = Ingredient.CODEC_NONEMPTY.listOf().fieldOf("ingredients").flatXmap(list -> {
@@ -212,5 +216,34 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
             }
         }
         return new Vector2i(x, y);
+    }
+
+    public static <R extends AbstractAmountRecipe<?>> MapCodec<R> shapelessSerializerMapCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
+        return RecordCodecBuilder.mapCodec(instance -> instance.group(
+                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
+                INGREDIENTS_CODEC.forGetter(recipe -> recipe.ingredients)
+        ).apply(instance, factory));
+    }
+
+    public static <R extends AbstractAmountRecipe<?>> StreamCodec<RegistryFriendlyByteBuf, R> shapelessSerializerSteamCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
+        return new StreamCodec<>() {
+            @Override
+            public R decode(RegistryFriendlyByteBuf buffer) {
+                ItemStack itemstack = ItemStack.STREAM_CODEC.decode(buffer);
+                int size = buffer.readVarInt();
+                NonNullList<Ingredient> nonnulllist = NonNullList.withSize(size, AmountIngredient.EMPTY);
+                nonnulllist.replaceAll(ignore -> Ingredient.CONTENTS_STREAM_CODEC.decode(buffer));
+                return factory.apply(itemstack, nonnulllist);
+            }
+
+            @Override
+            public void encode(RegistryFriendlyByteBuf buffer, R recipe) {
+                ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
+                buffer.writeVarInt(recipe.ingredients.size());
+                for (Ingredient ingredient : recipe.ingredients) {
+                    Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, ingredient);
+                }
+            }
+        };
     }
 }

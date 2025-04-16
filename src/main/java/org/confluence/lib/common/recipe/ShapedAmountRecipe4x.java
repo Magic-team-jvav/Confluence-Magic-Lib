@@ -50,14 +50,14 @@ public abstract class ShapedAmountRecipe4x<T extends MenuRecipeInput> extends Ab
         return 16;
     }
 
-    public static <R extends ShapedAmountRecipe4x<?>> MapCodec<R> serializerMapCodec(BiFunction<ItemStack, ShapedRecipePattern, R> factory) {
+    public static <R extends ShapedAmountRecipe4x<?>> MapCodec<R> shapedSerializerMapCodec(BiFunction<ItemStack, ShapedRecipePattern, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
                 ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
                 ShapedRecipePattern.MAP_CODEC.forGetter(recipe -> recipe.pattern)
         ).apply(instance, factory));
     }
 
-    public static <R extends ShapedAmountRecipe4x<?>> StreamCodec<RegistryFriendlyByteBuf, R> serializerSteamCodec(BiFunction<ItemStack, ShapedRecipePattern, R> factory) {
+    public static <R extends ShapedAmountRecipe4x<?>> StreamCodec<RegistryFriendlyByteBuf, R> shapedSerializerSteamCodec(BiFunction<ItemStack, ShapedRecipePattern, R> factory) {
         return new StreamCodec<>() {
             @Override
             public R decode(RegistryFriendlyByteBuf buffer) {
