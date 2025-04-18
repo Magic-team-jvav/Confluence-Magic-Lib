@@ -21,6 +21,7 @@ import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.crafting.ICustomIngredient;
+import org.confluence.lib.network.ExtraByteBufCodecs;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
 
@@ -229,20 +230,13 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
         return new StreamCodec<>() {
             @Override
             public R decode(RegistryFriendlyByteBuf buffer) {
-                ItemStack itemstack = ItemStack.STREAM_CODEC.decode(buffer);
-                int size = buffer.readVarInt();
-                NonNullList<Ingredient> nonnulllist = NonNullList.withSize(size, AmountIngredient.EMPTY);
-                nonnulllist.replaceAll(ignore -> Ingredient.CONTENTS_STREAM_CODEC.decode(buffer));
-                return factory.apply(itemstack, nonnulllist);
+                return factory.apply(ItemStack.STREAM_CODEC.decode(buffer), ExtraByteBufCodecs.INGREDIENTS.decode(buffer));
             }
 
             @Override
             public void encode(RegistryFriendlyByteBuf buffer, R recipe) {
                 ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
-                buffer.writeVarInt(recipe.ingredients.size());
-                for (Ingredient ingredient : recipe.ingredients) {
-                    Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, ingredient);
-                }
+                ExtraByteBufCodecs.INGREDIENTS.encode(buffer, recipe.ingredients);
             }
         };
     }

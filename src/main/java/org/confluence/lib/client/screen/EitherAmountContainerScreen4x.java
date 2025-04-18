@@ -9,9 +9,9 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import org.confluence.lib.ConfluenceMagicLib;
-import org.confluence.lib.common.menu.ShapedAmountContainerMenu4x;
+import org.confluence.lib.common.menu.EitherAmountContainerMenu4x;
 
-public class ShapedAmountContainerScreen4x<M extends ShapedAmountContainerMenu4x<?, ?, ?, ?>> extends AbstractContainerScreen<M> {
+public class EitherAmountContainerScreen4x<M extends EitherAmountContainerMenu4x<?, ?, ?, ?>> extends AbstractContainerScreen<M> {
     public static final ResourceLocation BACKGROUND = ConfluenceMagicLib.lib("textures/gui/container/normal4x.png");
     private boolean upButtonClicked = false;
     private ItemStack upItem = null;
@@ -19,7 +19,7 @@ public class ShapedAmountContainerScreen4x<M extends ShapedAmountContainerMenu4x
     private ItemStack downItem = null;
     private ResourceLocation background;
 
-    public ShapedAmountContainerScreen4x(M menu, Inventory playerInventory, Component title) {
+    public EitherAmountContainerScreen4x(M menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
     }
 

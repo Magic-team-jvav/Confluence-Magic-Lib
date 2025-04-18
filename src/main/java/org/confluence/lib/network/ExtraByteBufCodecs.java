@@ -3,12 +3,16 @@ package org.confluence.lib.network;
 import com.mojang.datafixers.util.Pair;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.item.crafting.Ingredient;
+import org.confluence.lib.common.recipe.AmountIngredient;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
@@ -24,6 +28,22 @@ public interface ExtraByteBufCodecs {
 
         public void encode(ByteBuf buffer, Long value) {
             buffer.writeLong(value);
+        }
+    };
+    StreamCodec<RegistryFriendlyByteBuf, NonNullList<Ingredient>> INGREDIENTS = new StreamCodec<>() {
+        @Override
+        public NonNullList<Ingredient> decode(RegistryFriendlyByteBuf buffer) {
+            NonNullList<Ingredient> nonnulllist = NonNullList.withSize(buffer.readVarInt(), AmountIngredient.EMPTY);
+            nonnulllist.replaceAll(ignore -> Ingredient.CONTENTS_STREAM_CODEC.decode(buffer));
+            return nonnulllist;
+        }
+
+        @Override
+        public void encode(RegistryFriendlyByteBuf buffer, NonNullList<Ingredient> value) {
+            buffer.writeVarInt(value.size());
+            for (Ingredient ingredient : value) {
+                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, ingredient);
+            }
         }
     };
 
