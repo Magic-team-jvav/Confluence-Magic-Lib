@@ -12,6 +12,7 @@
     "client": [
         "client.BlockModelShaperMixin",
         "client.GuiGraphicsMixin",
+        "client.LocalPlayerMixin",
         "client.MissingTextureAtlasSpriteMixin"
     ],
     "injectors": {
