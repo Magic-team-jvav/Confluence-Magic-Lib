@@ -1,6 +1,7 @@
 package org.confluence.lib.common.recipe;
 
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
@@ -35,9 +36,9 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
         if (ingredients.length == 0) {
             return DataResult.error(() -> "No ingredients for recipe");
         } else {
-            return DataResult.success(NonNullList.of(AmountIngredient.EMPTY, ingredients));
+            return DataResult.success(NonNullList.of(AmountIngredient.EMPTY, ingredients), Lifecycle.stable());
         }
-    }, DataResult::success);
+    }, ingredients -> DataResult.success(ingredients, Lifecycle.stable()));
     private static final Object2ObjectFunction<Ingredient, Tuple<Integer, IntArraySet>> FUNCTION = I -> new Tuple<>(((Ingredient) I).getCustomIngredient() instanceof AmountIngredient ai ? ai.amount() : 1, new IntArraySet());
     public final ItemStack result;
     public final NonNullList<Ingredient> ingredients;
