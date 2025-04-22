@@ -291,8 +291,8 @@ public final class VectorUtils {
         int xOffset;
         int zOffset;
         int cannelFacing;
-        int layer2 = layer * 2;
-        int layer4 = layer * 4;
+        int layer3 = layer * 3;
+        int layer8 = layer * 8;
         Vector3i key;
         Vector3i thanKey;
         List<Boolean> value = new ArrayList<>();
@@ -302,11 +302,11 @@ public final class VectorUtils {
             setList.add(false);
         }
         thanMap.put(new Vector3i(0, 0, 0), new ArrayList<>(List.copyOf(setList)));
-        int maxCount = (layer2 + 1) * (layer2 + 1);
-        for (int j = 0; (j < layer4) && (setMap.size() < maxCount); j++) {
+        int maxCount = (layer3 + 1) * (layer3 + 1);
+        for (int j = 0; (j < layer8) && (setMap.size() < maxCount); j++) {
             nowMap.clear();
             nowMap.putAll(thanMap);
-            if (j > layer2) {
+            if (j > layer3) {
                 nowMap.putAll(setMap);
             }
             thanMap.clear();
@@ -356,7 +356,7 @@ public final class VectorUtils {
         return outMap;
     }
 
-    private static Integer listRandom(List<Boolean> list, WorldgenRandom random) {
+    public static Integer listRandom(List<Boolean> list, WorldgenRandom random) {
         boolean aBoolean = true;
         int listW = 0;
         for (int i = 0; (i < 100) && aBoolean; i++) {
