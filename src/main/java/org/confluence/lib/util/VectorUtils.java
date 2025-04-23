@@ -13,7 +13,10 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.function.ToDoubleFunction;
 
 public final class VectorUtils {
@@ -77,7 +80,7 @@ public final class VectorUtils {
      *
      * @param currDir            当前弹幕的方向向量
      * @param targetDir          方向向量，记录了追踪的最终方向与长度（想要达到的速度）
-     * @param angleInterpolator      提供角度插值；输入为当前方向和追踪方向的角度差，输出为追踪所变换的角度
+     * @param angleInterpolator  提供角度插值；输入为当前方向和追踪方向的角度差，输出为追踪所变换的角度
      * @param lengthInterpolator 提供向量长度（即速度）插值；输入为当前方向和追踪方向的长度差，输出为追踪所变换的向量长度
      * @return 变换完毕的向量
      */
@@ -279,11 +282,11 @@ public final class VectorUtils {
         } while (refined);
     }
 
-    public static Map<Vector3d, List<Boolean>> mazePos(Vector3d centerPos, double distance, int layer, WorldgenRandom random, float difficulty) {
-        Map<Vector3i, List<Boolean>> nowMap = new HashMap<>();
-        Map<Vector3i, List<Boolean>> thanMap = new HashMap<>();
-        Map<Vector3i, List<Boolean>> setMap = new HashMap<>();
-        Map<Vector3d, List<Boolean>> outMap = new HashMap<>();
+    public static Map<Vector3d, BooleanStorage4> mazePos(Vector3d centerPos, double distance, int layer, WorldgenRandom random, float difficulty) {
+        Map<Vector3i, BooleanStorage4> nowMap = new HashMap<>();
+        Map<Vector3i, BooleanStorage4> thanMap = new HashMap<>();
+        Map<Vector3i, BooleanStorage4> setMap = new HashMap<>();
+        Map<Vector3d, BooleanStorage4> outMap = new HashMap<>();
         int x;
         int z;
         double dX;
@@ -295,13 +298,7 @@ public final class VectorUtils {
         int layer8 = layer * 8;
         Vector3i key;
         Vector3i thanKey;
-        List<Boolean> value = new ArrayList<>();
-        List<Boolean> setList = new ArrayList<>();
-        List<Boolean> thanList = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            setList.add(false);
-        }
-        thanMap.put(new Vector3i(0, 0, 0), new ArrayList<>(List.copyOf(setList)));
+        thanMap.put(new Vector3i(), new BooleanStorage4());
         int maxCount = (layer3 + 1) * (layer3 + 1);
         for (int j = 0; (j < layer8) && (setMap.size() < maxCount); j++) {
             nowMap.clear();
@@ -310,53 +307,43 @@ public final class VectorUtils {
                 nowMap.putAll(setMap);
             }
             thanMap.clear();
-            for (Map.Entry<Vector3i, List<Boolean>> entry : nowMap.entrySet()) {
+            for (Map.Entry<Vector3i, BooleanStorage4> entry : nowMap.entrySet()) {
                 key = entry.getKey();
                 x = key.x;
                 z = key.z;
-                List<Boolean> a = new ArrayList<>(entry.getValue());
-                List<Boolean> b = new ArrayList<>(a);
+                BooleanStorage4 a = entry.getValue().copy();
+                BooleanStorage4 b = a.copy();
                 for (int i = 0; i < 4; i++) {
                     cannelFacing = listRandom(b, random);
-                    xOffset = (int) Mth.cos(cannelFacing * Mth.PI / 2) + x;
-                    zOffset = (int) Mth.sin(cannelFacing * Mth.PI / 2) + z;
+                    xOffset = (int) Mth.cos(cannelFacing * Mth.HALF_PI) + x;
+                    zOffset = (int) Mth.sin(cannelFacing * Mth.HALF_PI) + z;
                     thanKey = new Vector3i(xOffset, 0, zOffset);
                     b.set(cannelFacing, true);
                     if (xOffset <= layer && xOffset >= -layer && zOffset <= layer && zOffset >= -layer && !setMap.containsKey(thanKey) && !nowMap.containsKey(thanKey) && !thanMap.containsKey(thanKey)) {
                         a.set(cannelFacing, true);
-                        thanList.clear();
-                        for (int k = 0; k < 4; k++) {
-                            thanList.add(false);
-                        }
-                        thanList.set((cannelFacing + 2) % 4, true);
-                        thanMap.put(thanKey, new ArrayList<>(List.copyOf(thanList)));
+                        BooleanStorage4 thenList = new BooleanStorage4();
+                        thenList.set((cannelFacing + 2) % 4, true);
+                        thanMap.put(thanKey, thenList);
                         if ((1.0F - 0.5F * difficulty) > random.nextFloat()) break;
                     }
-                    boolean bk = true;
-                    for (Boolean aBoolean : b) {
-                        if (!aBoolean) {
-                            bk = false;
-                            break;
-                        }
-                    }
-                    if (bk) break;
+                    if (b.matches((byte) 0b1111)) break;
                 }
-                setMap.put(key, new ArrayList<>(List.copyOf(a)));
+                setMap.put(key, a);
             }
         }
-        for (Map.Entry<Vector3i, List<Boolean>> entry : setMap.entrySet()) {
+        for (Map.Entry<Vector3i, BooleanStorage4> entry : setMap.entrySet()) {
             key = entry.getKey();
             x = key.x;
             z = key.z;
             dX = x * distance + centerPos.x;
             dZ = z * distance + centerPos.z;
-            List<Boolean> outList = new ArrayList<>(entry.getValue());
+            BooleanStorage4 outList = entry.getValue().copy();
             outMap.put(new Vector3d(dX, centerPos.y, dZ), outList);
         }
         return outMap;
     }
 
-    public static Integer listRandom(List<Boolean> list, WorldgenRandom random) {
+    public static Integer listRandom(BooleanStorage4 list, WorldgenRandom random) {
         boolean aBoolean = true;
         int listW = 0;
         for (int i = 0; (i < 100) && aBoolean; i++) {
