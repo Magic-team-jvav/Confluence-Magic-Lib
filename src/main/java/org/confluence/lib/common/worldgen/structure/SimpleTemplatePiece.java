@@ -30,7 +30,7 @@ public class SimpleTemplatePiece extends TemplateStructurePiece {
 
     private static StructurePlaceSettings makeSettings(boolean overwrite, boolean ignoreEntities, Rotation rotation) {
         BlockIgnoreProcessor blockignoreprocessor = overwrite ? BlockIgnoreProcessor.STRUCTURE_BLOCK : BlockIgnoreProcessor.STRUCTURE_AND_AIR;
-        return new StructurePlaceSettings().setIgnoreEntities(true).addProcessor(blockignoreprocessor).setRotation(rotation);
+        return new StructurePlaceSettings().setIgnoreEntities(ignoreEntities).addProcessor(blockignoreprocessor).setRotation(rotation);
     }
 
     @Override
