@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.common.EffectCure;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.component.NbtComponent;
@@ -39,6 +40,7 @@ public final class LibUtils {
     public static final int MAX_STACK_SIZE = 9999;
     public static final Codec<BlockPos> BLOCK_POS_CODEC = Codec.STRING.xmap(str -> BlockPos.of(Long.parseLong(str)), pos -> Long.toString(pos.asLong()));
     public static final String NO_DROPS_TAG = "confluence:no_drops";
+    public static final EffectCure DENY_HEAL = EffectCure.get("confluence:deny_heal");
 
     @ApiStatus.Internal
     public static void forConfluence$Inject() {}
