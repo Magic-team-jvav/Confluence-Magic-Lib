@@ -6,6 +6,7 @@
     "refmap": "confluence_magic_lib.refmap.json",
     "mixins": [
         "LivingEntityMixin",
+        "PlayerMixin",
         "PrimaryLevelDataMixin",
         "ShapedRecipePatternMixin",
         "accessor.LanguageProviderAccessor"
