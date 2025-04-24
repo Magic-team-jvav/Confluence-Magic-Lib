@@ -3,6 +3,8 @@ package org.confluence.lib.color;
 import net.minecraft.util.Mth;
 import org.joml.Vector3f;
 
+import java.util.Objects;
+
 public record FloatRGB(float red, float green, float blue) {
     public static final FloatRGB ZERO = new FloatRGB(0.0F, 0.0F, 0.0F);
     public static final FloatRGB DEMON_A = new FloatRGB(0.5F, 0.3F, 1.0F);
@@ -33,5 +35,16 @@ public record FloatRGB(float red, float green, float blue) {
 
     public float[] toArray() {
         return new float[]{red, green, blue};
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        return o instanceof FloatRGB(float red1, float green1, float blue1) && red == red1 && blue == blue1 && green == green1;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(red, green, blue);
     }
 }
