@@ -8,19 +8,19 @@ import org.confluence.lib.network.SetEntityDataPacketS2C;
  * @see SetEntityDataPacketS2C
  */
 public interface IExtraSyncedData<T extends Entity> extends SelfGetter<T> {
-    default void confluence$setData(int dataId, Object o) {
+    default void confluence$setData(byte dataId, Object o) {
         T self = confluence$self();
         if (!self.level().isClientSide) {
             PacketDistributor.sendToPlayersTrackingEntity(self, new SetEntityDataPacketS2C(self.getId(), new SetEntityDataPacketS2C.Entry(dataId, o)));
         }
     }
 
-    Object confluence$getData(int dataId);
+    Object confluence$getData(byte dataId);
 
-    int[] confluence$getAllDataId();
+    byte[] confluence$getAllDataId();
 
     default SetEntityDataPacketS2C.Entry[] confluence$getAllEntries() {
-        int[] dataIds = confluence$getAllDataId();
+        byte[] dataIds = confluence$getAllDataId();
         SetEntityDataPacketS2C.Entry[] entries = new SetEntityDataPacketS2C.Entry[dataIds.length];
         for (int i = 0; i < dataIds.length; i++) {
             entries[i] = new SetEntityDataPacketS2C.Entry(dataIds[i], confluence$getData(dataIds[i]));

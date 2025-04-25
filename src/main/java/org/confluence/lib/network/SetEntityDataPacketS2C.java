@@ -13,7 +13,7 @@ import org.confluence.lib.mixed.IExtraSyncedData;
  * @see IExtraSyncedData
  */
 public record SetEntityDataPacketS2C(int entityId, Entry... entries) implements CustomPacketPayload {
-    public static final int DATA_BOOLEAN = 0;
+    public static final byte DATA_BOOLEAN = 0;
     public static final Type<SetEntityDataPacketS2C> TYPE = new Type<>(ConfluenceMagicLib.lib("set_entity_data"));
     public static final StreamCodec<RegistryFriendlyByteBuf, SetEntityDataPacketS2C> STREAM_CODEC = new StreamCodec<>() {
         @Override
@@ -22,7 +22,7 @@ public record SetEntityDataPacketS2C(int entityId, Entry... entries) implements 
             int size = buffer.readVarInt();
             Entry[] entries = new Entry[size];
             for (int i = 0; i < size; i++) {
-                int dataId = buffer.readVarInt();
+                byte dataId = buffer.readByte();
                 entries[i] = new Entry(dataId, SetEntityDataPacketS2C.decode(buffer, dataId));
             }
             return new SetEntityDataPacketS2C(entityId, entries);
@@ -33,7 +33,7 @@ public record SetEntityDataPacketS2C(int entityId, Entry... entries) implements 
             buffer.writeVarInt(value.entityId);
             buffer.writeVarInt(value.entries.length);
             for (Entry entry : value.entries) {
-                buffer.writeVarInt(entry.dataId);
+                buffer.writeByte(entry.dataId);
                 SetEntityDataPacketS2C.encode(buffer, entry.dataId, entry.data);
             }
         }
@@ -60,14 +60,14 @@ public record SetEntityDataPacketS2C(int entityId, Entry... entries) implements 
         });
     }
 
-    private static Object decode(RegistryFriendlyByteBuf buffer, int dataId) {
+    private static Object decode(RegistryFriendlyByteBuf buffer, byte dataId) {
         if (dataId == DATA_BOOLEAN) {
             return buffer.readBoolean();
         }
         throw new IllegalArgumentException("Unregistered data serializer id " + dataId + "!");
     }
 
-    private static void encode(RegistryFriendlyByteBuf buffer, int dataId, Object o) {
+    private static void encode(RegistryFriendlyByteBuf buffer, byte dataId, Object o) {
         if (dataId == DATA_BOOLEAN) {
             buffer.writeBoolean((boolean) o);
         } else {
@@ -75,5 +75,9 @@ public record SetEntityDataPacketS2C(int entityId, Entry... entries) implements 
         }
     }
 
-    public record Entry(int dataId, Object data) {}
+    public record Entry(byte dataId, Object data) {}
+
+    public static Entry ofBoolean(boolean data) {
+        return new Entry(DATA_BOOLEAN, data);
+    }
 }
