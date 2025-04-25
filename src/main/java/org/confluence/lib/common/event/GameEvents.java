@@ -7,8 +7,10 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.confluence.lib.ConfluenceMagicLib;
+import org.confluence.lib.common.data.saved.IGlobalData;
 import org.confluence.lib.mixed.IExtraSyncedData;
 import org.confluence.lib.network.SetEntityDataPacketS2C;
 import org.confluence.lib.util.LibUtils;
@@ -37,6 +39,13 @@ public final class GameEvents {
                     extraSyncedData.confluence$self().getId(),
                     extraSyncedData.confluence$getAllEntries()
             ));
+        }
+    }
+
+    @SubscribeEvent
+    public static void serverStop(ServerStoppedEvent event) {
+        for (IGlobalData data : IGlobalData.DAT) {
+            data.clear();
         }
     }
 }

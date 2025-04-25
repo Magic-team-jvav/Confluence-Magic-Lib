@@ -17,6 +17,11 @@ public interface IGlobalData {
 
     String serializeKey();
 
+    /**
+     * 退出存档时自动清空缓存
+     */
+    default void clear() {}
+
     List<IGlobalData> DAT = new CopyOnWriteArrayList<>();
 
     // 必须调用这个，不然无法调用序列化
