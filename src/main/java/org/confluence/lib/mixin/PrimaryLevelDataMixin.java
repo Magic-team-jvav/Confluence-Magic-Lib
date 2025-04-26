@@ -19,14 +19,16 @@ public abstract class PrimaryLevelDataMixin {
     @Inject(method = "parse", at = @At("TAIL"))
     private static <T> void decode(Dynamic<T> tag, LevelSettings levelSettings, PrimaryLevelData.SpecialWorldProperty specialWorldProperty, WorldOptions worldOptions, Lifecycle worldGenSettingsLifecycle, CallbackInfoReturnable<PrimaryLevelData> cir) {
         for (IGlobalData data : IGlobalData.DAT) {
-            data.decode(tag);
+            data.decode(tag.get(data.serializeKey()).orElseEmptyMap());
         }
     }
 
     @Inject(method = "setTagData", at = @At("TAIL"))
     private void encode(RegistryAccess registry, CompoundTag nbt, CompoundTag playerNBT, CallbackInfo ci) {
         for (IGlobalData data : IGlobalData.DAT) {
-            data.encode(nbt);
+            CompoundTag tag = new CompoundTag();
+            data.encode(tag);
+            nbt.put(data.serializeKey(), tag);
         }
     }
 }

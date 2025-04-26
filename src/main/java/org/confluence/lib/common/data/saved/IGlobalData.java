@@ -13,7 +13,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public interface IGlobalData {
     <T> void decode(Dynamic<T> tag);
 
-    void encode(CompoundTag nbt);
+    void encode(CompoundTag tag);
 
     String serializeKey();
 
