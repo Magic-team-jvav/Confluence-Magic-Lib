@@ -16,6 +16,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -38,7 +39,6 @@ public final class LibUtils {
     public static final Direction[] HORIZONTAL = new Direction[]{Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.NORTH};
     public static final Direction[] DIRECTIONS = Direction.values();
     public static final int MAX_STACK_SIZE = 9999;
-    public static final Codec<BlockPos> BLOCK_POS_CODEC = Codec.STRING.xmap(str -> BlockPos.of(Long.parseLong(str)), pos -> Long.toString(pos.asLong()));
     public static final String NO_DROPS_TAG = "confluence:no_drops";
     public static final EffectCure DENY_HEAL = EffectCure.get("confluence:deny_heal");
 
@@ -204,5 +204,16 @@ public final class LibUtils {
         return Arrays.stream(raw.split("_"))
                 .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1).toLowerCase())
                 .collect(Collectors.joining(" "));
+    }
+
+    public static int compressRelativePos(BlockPos pos) {
+        return ((pos.getX() & 0xF) << 16) | ((pos.getY() + 2048) << 4) | (pos.getZ() & 0xF);
+    }
+
+    public static BlockPos decompressRelativePos(ChunkPos chunkPos, int compressed) {
+        int x = (compressed >>> 16) & 0xF;
+        int y = ((compressed >>> 4) & 0xFFF) - 2048;
+        int z = compressed & 0xF;
+        return chunkPos.getBlockAt(x, y, z);
     }
 }
