@@ -23,7 +23,7 @@ public class TooltipItem extends CustomRarityItem {
     }
 
     public TooltipItem(Properties properties, ModRarity rarity, String tooltip) {
-        this(properties, rarity, Collections.singletonList(Component.translatable(tooltip)));
+        this(properties, rarity, Collections.singletonList(Component.translatable(tooltip).withStyle(ChatFormatting.GRAY)));
     }
 
     @Override
