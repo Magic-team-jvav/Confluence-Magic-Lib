@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+// todo long改成相对坐标int
 public class GridPiece extends StructurePiece {
     public static final Codec<List<Tuple<Integer, LongArrayList>>> BLOCK_MAP_CODEC = LibUtils.tupleCodec(Codec.INT, Codec.LONG.listOf().xmap(LongArrayList::new, Function.identity())).listOf();
     public static final Codec<List<Tuple<BlockPos, ResourceLocation>>> FEATURES_CODEC = LibUtils.tupleCodec(BlockPos.CODEC, ResourceLocation.CODEC).listOf();
