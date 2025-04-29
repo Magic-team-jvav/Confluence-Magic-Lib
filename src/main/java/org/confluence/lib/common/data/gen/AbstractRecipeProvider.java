@@ -10,6 +10,7 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeProvider;
+import net.minecraft.resources.RegistryOps;
 import org.jetbrains.annotations.ApiStatus;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -77,8 +78,9 @@ public abstract class AbstractRecipeProvider extends RecipeProvider {
         @ApiStatus.Internal
         public Map<Path, JsonElement> generate(PackOutput.PathProvider pathProvider, HolderLookup.Provider registries) {
             Map<Path, JsonElement> map = new HashMap<>();
+            RegistryOps<JsonElement> registryOps = registries.createSerializationContext(JsonOps.INSTANCE);
             for (T recipe : recipes) {
-                map.put(pathGetter.apply(recipe, pathProvider), codec.encodeStart(registries.createSerializationContext(JsonOps.INSTANCE), recipe).getOrThrow());
+                map.put(pathGetter.apply(recipe, pathProvider), codec.encodeStart(registryOps, recipe).getOrThrow());
             }
             return map;
         }
