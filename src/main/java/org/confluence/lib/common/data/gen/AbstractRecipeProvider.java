@@ -37,7 +37,7 @@ public abstract class AbstractRecipeProvider extends RecipeProvider {
             List<CompletableFuture<?>> futures = new LinkedList<>();
             futures.add(future);
             for (Appender<?> appender : appenders) {
-                for (Map.Entry<Path, JsonElement> entry : appender.generate(pathProvider()).entrySet()) {
+                for (Map.Entry<Path, JsonElement> entry : appender.generate(pathProvider(), registries).entrySet()) {
                     futures.add(DataProvider.saveStable(output, entry.getValue(), entry.getKey()));
                 }
             }
@@ -75,10 +75,10 @@ public abstract class AbstractRecipeProvider extends RecipeProvider {
         }
 
         @ApiStatus.Internal
-        public Map<Path, JsonElement> generate(PackOutput.PathProvider pathProvider) {
+        public Map<Path, JsonElement> generate(PackOutput.PathProvider pathProvider, HolderLookup.Provider registries) {
             Map<Path, JsonElement> map = new HashMap<>();
             for (T recipe : recipes) {
-                map.put(pathGetter.apply(recipe, pathProvider), codec.encodeStart(JsonOps.INSTANCE, recipe).getOrThrow());
+                map.put(pathGetter.apply(recipe, pathProvider), codec.encodeStart(registries.createSerializationContext(JsonOps.INSTANCE), recipe).getOrThrow());
             }
             return map;
         }
