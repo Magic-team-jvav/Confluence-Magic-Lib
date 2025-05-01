@@ -1,5 +1,6 @@
 package org.confluence.lib.common.item;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -24,7 +25,7 @@ public class TooltipBlockItem extends BlockItem {
     }
 
     public TooltipBlockItem(Block block, Properties properties, ModRarity rarity, String tooltip) {
-        this(block, properties, rarity, Collections.singletonList(Component.translatable(tooltip)));
+        this(block, properties, rarity, Collections.singletonList(Component.translatable(tooltip).withStyle(ChatFormatting.GRAY)));
     }
 
     @Override
