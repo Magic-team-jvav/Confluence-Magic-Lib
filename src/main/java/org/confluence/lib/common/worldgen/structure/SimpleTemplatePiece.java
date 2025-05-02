@@ -59,4 +59,8 @@ public class SimpleTemplatePiece extends TemplateStructurePiece {
 
     @Override
     protected void handleDataMarker(String name, BlockPos pos, ServerLevelAccessor level, RandomSource random, BoundingBox box) {}
+
+    public String getTemplateName() {
+        return templateName;
+    }
 }
