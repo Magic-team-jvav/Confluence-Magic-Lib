@@ -166,6 +166,8 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
                 result.setItem(0, itemStack);
                 setRemoteSlot(0, itemStack);
                 serverPlayer.connection.send(new ClientboundContainerSetSlotPacket(containerId, incrementStateId(), 0, itemStack));
+            } else if (!recipes.isEmpty()) {
+                if (selectedRecipeIndex.get() == -1) selectedRecipeIndex.set(0);
             }
         });
     }
