@@ -1,19 +1,8 @@
 package org.confluence.lib.client.animate;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Mth;
 
 public class ColorAnimation {
-    public static final Codec<ColorAnimation> CODEC = Codec.STRING.dispatch("type", ColorAnimation::getType, type -> switch (type) {
-        case "master" -> MapCodec.unit(MasterColorAnimation.INSTANCE);
-        case "expert" -> MapCodec.unit(ExpertColorAnimation.INSTANCE);
-        default -> RecordCodecBuilder.mapCodec(instance -> instance.group(
-                ColorState.CODEC.fieldOf("color").forGetter(ColorAnimation::getColorState)
-        ).apply(instance, ColorAnimation::new));
-    });
-
     protected final ColorState color;
 
     public ColorAnimation(int red, int green, int blue) {
@@ -55,8 +44,6 @@ public class ColorAnimation {
     }
 
     public static class ColorState {
-        public static final Codec<ColorState> CODEC = Codec.INT.xmap(ColorState::new, color -> (color.red << 16) + (color.green << 8) + color.blue);
-
         // 颜色的最大值
         private static final int MAX_COLOR_VALUE = 255;
         private static final int MIN_COLOR_VALUE = 0;
