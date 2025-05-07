@@ -14,6 +14,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.confluence.lib.common.component.ModRarity;
 import org.confluence.lib.common.component.NbtComponent;
+import org.confluence.lib.common.component.ToolMode;
 import org.confluence.lib.common.recipe.AmountIngredient;
 import org.confluence.lib.common.worldgen.structure.GridPiece;
 import org.confluence.lib.common.worldgen.structure.SimpleTemplatePiece;
@@ -38,6 +39,7 @@ public class ConfluenceMagicLib {
 
     public static final DeferredRegister.DataComponents TC_DATA_COMPONENT_TYPES = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, "terra_curio");
     public static final Supplier<DataComponentType<ModRarity>> MOD_RARITY = TC_DATA_COMPONENT_TYPES.registerComponentType("mod_rarity", builder -> builder.persistent(ModRarity.CODEC).networkSynchronized(ModRarity.STREAM_CODEC));
+    public static final Supplier<DataComponentType<ToolMode>> TOOL_MODE = TC_DATA_COMPONENT_TYPES.registerComponentType("tool_mode", builder -> builder.persistent(ToolMode.CODEC).networkSynchronized(ToolMode.STREAM_CODEC));
     public static final Supplier<DataComponentType<NbtComponent>> NBT = TC_DATA_COMPONENT_TYPES.registerComponentType("nbt", builder -> builder.persistent(NbtComponent.CODEC).networkSynchronized(NbtComponent.STREAM_CODEC));
 
     public ConfluenceMagicLib(IEventBus modEventBus, ModContainer modContainer) {
