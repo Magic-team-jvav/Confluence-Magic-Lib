@@ -8,7 +8,6 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 public record ToolMode(int mode) implements DataComponentType<ToolMode> {
-
     public static final Codec<ToolMode> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.INT.fieldOf("mode").forGetter(ToolMode::mode)
     ).apply(instance, ToolMode::new));
@@ -16,12 +15,14 @@ public record ToolMode(int mode) implements DataComponentType<ToolMode> {
             ByteBufCodecs.INT, ToolMode::mode,
             ToolMode::new
     );
+
     @Override
     public Codec<ToolMode> codec() {
-        return null;
+        return CODEC;
     }
+
     @Override
     public StreamCodec<? super RegistryFriendlyByteBuf, ToolMode> streamCodec() {
-        return null;
+        return STREAM_CODEC;
     }
 }
