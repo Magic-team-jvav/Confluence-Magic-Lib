@@ -261,6 +261,32 @@ public final class StructureUtils {
         }
     }
 
+    //金字塔填充
+    public static void pyramidSet(BlockPos centerPos, int blockstate, int layerCount, Object2IntMap<BlockPos> blockMap) {
+        for (int i = 0; i < layerCount; i++) {
+            rectangular(centerPos.offset(layerCount - i, i, layerCount - i), centerPos.offset(i - layerCount, i, i - layerCount), blockstate, blockMap, 0);
+        }
+    }
+
+    //迷宫填充
+    public static void mazeSet(BlockPos centerPos, double distance, int layer, int blockstate, int width, int height, WorldgenRandom random, float difficulty, Object2IntMap<BlockPos> blockMap) {
+        Map<Vector3d, BooleanStorage4> mazePos = mazePos(new Vector3d(centerPos.getX(), centerPos.getY(), centerPos.getZ()), distance, layer, random, difficulty);
+        Vector3d key;
+        BlockPos keySet;
+        BooleanStorage4 value;
+        int length = (int) (distance / 2) + 1;
+
+        for (Map.Entry<Vector3d, BooleanStorage4> entry : mazePos.entrySet()) {
+            key = entry.getKey();
+            keySet = new BlockPos((int) key.x, (int) key.y, (int) key.z);
+            value = entry.getValue().copy();
+            if (value.get(0)) rectangular(keySet.offset(-width, 0, -width), keySet.offset(length, height, width), blockstate, blockMap, 0);
+            if (value.get(1)) rectangular(keySet.offset(-width, 0, -width), keySet.offset(width, height, length), blockstate, blockMap, 0);
+            if (value.get(2)) rectangular(keySet.offset(width, 0, width), keySet.offset(-length, height, -width), blockstate, blockMap, 0);
+            if (value.get(3)) rectangular(keySet.offset(width, 0, width), keySet.offset(-width, height, -length), blockstate, blockMap, 0);
+        }
+    }
+
     //列表快捷填充
     //在整个坐标列表上填充球体，带有半径渐变
     public static void lineSet(List<Vector3d> VctList, double rStart, double rEnd, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap) {
