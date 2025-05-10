@@ -188,6 +188,12 @@ public final class LibUtils {
         return nbtComponent.nbt().copy();
     }
 
+    public static @Nullable CompoundTag getItemStackNbtIfPresent(ItemStack itemStack) {
+        NbtComponent component = itemStack.get(ConfluenceMagicLib.NBT);
+        if (component == null) return null;
+        return component.nbt();
+    }
+
     public static void updateItemStackNbt(ItemStack itemStack, Consumer<CompoundTag> consumer) {
         NbtComponent nbtComponent = itemStack.get(ConfluenceMagicLib.NBT);
         CompoundTag nbt;
