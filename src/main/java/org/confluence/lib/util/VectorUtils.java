@@ -293,19 +293,15 @@ public final class VectorUtils {
         double dZ;
         int xOffset;
         int zOffset;
-        int cannelFacing;
-        int layer3 = layer * 3;
-        int layer8 = layer * 8;
+        int layer2 = layer * 2;
         Vector3i key;
         Vector3i thanKey;
         thanMap.put(new Vector3i(), new BooleanStorage4());
-        int maxCount = (layer3 + 1) * (layer3 + 1);
-        for (int j = 0; (j < layer8) && (setMap.size() < maxCount); j++) {
+        int maxCount = (layer2 + 1) * (layer2 + 1);
+        while (setMap.size() < maxCount) {
             nowMap.clear();
             nowMap.putAll(thanMap);
-            if (j > layer3) {
-                nowMap.putAll(setMap);
-            }
+            nowMap.putAll(setMap);
             thanMap.clear();
             for (Map.Entry<Vector3i, BooleanStorage4> entry : nowMap.entrySet()) {
                 key = entry.getKey();
@@ -314,19 +310,16 @@ public final class VectorUtils {
                 BooleanStorage4 a = entry.getValue().copy();
                 BooleanStorage4 b = a.copy();
                 for (int i = 0; i < 4; i++) {
-                    cannelFacing = listRandom(b, random);
-                    xOffset = (int) Mth.cos(cannelFacing * Mth.HALF_PI) + x;
-                    zOffset = (int) Mth.sin(cannelFacing * Mth.HALF_PI) + z;
+                    xOffset = (int) Mth.cos(i * Mth.HALF_PI) + x;
+                    zOffset = (int) Mth.sin(i * Mth.HALF_PI) + z;
                     thanKey = new Vector3i(xOffset, 0, zOffset);
-                    b.set(cannelFacing, true);
-                    if (xOffset <= layer && xOffset >= -layer && zOffset <= layer && zOffset >= -layer && !setMap.containsKey(thanKey) && !nowMap.containsKey(thanKey) && !thanMap.containsKey(thanKey)) {
-                        a.set(cannelFacing, true);
+                    b.set(i, true);
+                    if (((1.0F - 0.5F * difficulty) > random.nextFloat()) && (xOffset <= layer) && (xOffset >= -layer) && (zOffset <= layer) && (zOffset >= -layer) && !setMap.containsKey(thanKey) && !nowMap.containsKey(thanKey) && !thanMap.containsKey(thanKey)) {
+                        a.set(i, true);
                         BooleanStorage4 thenList = new BooleanStorage4();
-                        thenList.set((cannelFacing + 2) % 4, true);
+                        thenList.set((i + 2) % 4, true);
                         thanMap.put(thanKey, thenList);
-                        if ((1.0F - 0.5F * difficulty) > random.nextFloat()) break;
                     }
-                    if (b.matches((byte) 0b1111)) break;
                 }
                 setMap.put(key, a);
             }
