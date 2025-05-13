@@ -20,6 +20,10 @@ public class BooleanStorage4 {
         else value &= (byte) ~(1 << index);
     }
 
+    public void set(byte value) {
+        this.value = value;
+    }
+
     public boolean get(int index) {
         if (index < 0 || index > 3) throw new IndexOutOfBoundsException("Index must be between 0 and 3");
 
