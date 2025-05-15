@@ -43,10 +43,10 @@ public final class LibUtils {
     public static final EffectCure DENY_HEAL = EffectCure.get("confluence:deny_heal");
 
     @ApiStatus.Internal
-    public static void forConfluence$Inject() {}
+    public static void forMixin$Inject() {}
 
     @ApiStatus.Internal
-    public static <T> T forConfluence$ModifyExpression(T value) {
+    public static <T> T forMixin$ModifyExpression(T value) {
         return value;
     }
 
