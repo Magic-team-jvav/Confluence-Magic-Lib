@@ -1,5 +1,6 @@
 package org.confluence.lib.client.screen;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -13,6 +14,7 @@ import org.confluence.lib.common.menu.EitherAmountContainerMenu4x;
 
 public class EitherAmountContainerScreen4x<M extends EitherAmountContainerMenu4x<?, ?, ?, ?>> extends AbstractContainerScreen<M> {
     public static final ResourceLocation BACKGROUND = ConfluenceMagicLib.lib("textures/gui/container/normal4x.png");
+    private float titleScale = 1;
     private boolean upButtonClicked = false;
     private ItemStack upItem = null;
     private boolean downButtonClicked = false;
@@ -26,13 +28,30 @@ public class EitherAmountContainerScreen4x<M extends EitherAmountContainerMenu4x
     @Override
     protected void init() {
         super.init();
-        this.titleLabelX = imageWidth - font.width(title) - 8;
+        int titleWidth = font.width(title);
+        if (titleWidth > 68) {
+            this.titleScale = 68.0F / titleWidth;
+            this.titleLabelX = imageWidth - 76;
+        } else {
+            this.titleLabelX = imageWidth - titleWidth - 8;
+        }
         this.inventoryLabelX = imageWidth - font.width(playerInventoryTitle) - 8;
         this.background = background();
     }
 
     protected ResourceLocation background() {
         return BACKGROUND;
+    }
+
+    @Override
+    protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        PoseStack pose = guiGraphics.pose();
+        pose.pushPose();
+        pose.translate(titleLabelX, titleLabelY, 0);
+        pose.scale(titleScale, titleScale, titleScale);
+        guiGraphics.drawString(font, title, 0, 0, 4210752, false);
+        pose.popPose();
+        guiGraphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 4210752, false);
     }
 
     @Override
