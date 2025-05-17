@@ -212,10 +212,16 @@ public final class LibUtils {
                 .collect(Collectors.joining(" "));
     }
 
+    /**
+     * 将绝对坐标压缩为相对坐标
+     */
     public static int compressRelativePos(BlockPos pos) {
         return ((pos.getX() & 0xF) << 16) | ((pos.getY() + 2048) << 4) | (pos.getZ() & 0xF);
     }
 
+    /**
+     * 将相对坐标解压为绝对坐标
+     */
     public static BlockPos decompressRelativePos(ChunkPos chunkPos, int compressed) {
         int x = (compressed >>> 16) & 0xF;
         int y = ((compressed >>> 4) & 0xFFF) - 2048;
