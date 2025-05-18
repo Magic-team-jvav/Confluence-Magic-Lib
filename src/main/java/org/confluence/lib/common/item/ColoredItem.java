@@ -11,6 +11,10 @@ public class ColoredItem extends CustomRarityItem {
         super(rarity);
     }
 
+    public ColoredItem(Properties properties, ModRarity rarity) {
+        super(properties, rarity);
+    }
+
     public static void setColor(ItemStack itemStack, int rgb) {
         LibUtils.updateItemStackNbt(itemStack, tag -> tag.putInt("color", rgb));
     }
