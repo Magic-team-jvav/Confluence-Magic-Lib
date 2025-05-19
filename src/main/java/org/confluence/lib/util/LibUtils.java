@@ -5,12 +5,14 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -227,5 +229,13 @@ public final class LibUtils {
         int y = ((compressed >>> 4) & 0xFFF) - 2048;
         int z = compressed & 0xF;
         return chunkPos.getBlockAt(x, y, z);
+    }
+
+    public static CompoundTag getOrCreatePersistedData(Player player) {
+        CompoundTag data = player.getPersistentData();
+        if (data.contains(Player.PERSISTED_NBT_TAG, Tag.TAG_COMPOUND)) {
+            return data.getCompound(Player.PERSISTED_NBT_TAG);
+        }
+        return (CompoundTag) data.put(Player.PERSISTED_NBT_TAG, new CompoundTag());
     }
 }
