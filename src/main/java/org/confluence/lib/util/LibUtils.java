@@ -236,6 +236,8 @@ public final class LibUtils {
         if (data.contains(Player.PERSISTED_NBT_TAG, Tag.TAG_COMPOUND)) {
             return data.getCompound(Player.PERSISTED_NBT_TAG);
         }
-        return (CompoundTag) data.put(Player.PERSISTED_NBT_TAG, new CompoundTag());
+        CompoundTag tag = new CompoundTag();
+        data.put(Player.PERSISTED_NBT_TAG, tag);
+        return tag;
     }
 }
