@@ -13,7 +13,7 @@ import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.menu.EitherAmountContainerMenu4x;
 
 public class EitherAmountContainerScreen4x<M extends EitherAmountContainerMenu4x<?, ?, ?, ?>> extends AbstractContainerScreen<M> {
-    public static final ResourceLocation BACKGROUND = ConfluenceMagicLib.lib("textures/gui/container/normal4x.png");
+    public static final ResourceLocation BACKGROUND = ConfluenceMagicLib.asResource("textures/gui/container/normal4x.png");
     private float titleScale = 1;
     private boolean upButtonClicked = false;
     private ItemStack upItem = null;

@@ -21,7 +21,7 @@ public class SimpleTemplatePiece extends TemplateStructurePiece {
     }
 
     public SimpleTemplatePiece(StructureTemplateManager structureTemplateManager, String name, BlockPos startPos, boolean overwrite, boolean ignoreEntities, boolean appleWaterlogging, Rotation rotation) {
-        super(ConfluenceMagicLib.SIMPLE_TEMPLATE_PIECE.get(), 0, structureTemplateManager, ConfluenceMagicLib.confluence("simple_template/" + name), name, makeSettings(overwrite, ignoreEntities, appleWaterlogging, rotation), startPos);
+        super(ConfluenceMagicLib.SIMPLE_TEMPLATE_PIECE.get(), 0, structureTemplateManager, ConfluenceMagicLib.asResource("simple_template/" + name), name, makeSettings(overwrite, ignoreEntities, appleWaterlogging, rotation), startPos);
     }
 
     public SimpleTemplatePiece(StructureTemplateManager structureTemplateManager, CompoundTag tag) {
@@ -35,7 +35,7 @@ public class SimpleTemplatePiece extends TemplateStructurePiece {
 
     @Override
     protected ResourceLocation makeTemplateLocation() {
-        return ConfluenceMagicLib.confluence("simple_template/" + templateName);
+        return ConfluenceMagicLib.asResource("simple_template/" + templateName);
     }
 
     private static StructurePlaceSettings makeSettings(boolean overwrite, boolean ignoreEntities, boolean appleWaterlogging, Rotation rotation) {

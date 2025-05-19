@@ -12,7 +12,7 @@ public final class LibTags {
         public static final TagKey<Item> SKIP_RESET_STRENGTH = register("skip_reset_strength"); // 使用时不重置玩家攻击冷却
 
         private static TagKey<Item> register(String id) {
-            return ItemTags.create(ConfluenceMagicLib.lib(id));
+            return ItemTags.create(ConfluenceMagicLib.asResource(id));
         }
     }
 }

@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
 @Mixin(GuiGraphics.class)
 public abstract class GuiGraphicsMixin {
     @Unique
-    private static final ResourceLocation confluence$wip = ConfluenceMagicLib.lib("textures/gui/wip.png");
+    private static final ResourceLocation confluence$wip = ConfluenceMagicLib.asResource("textures/gui/wip.png");
 
     @Shadow
     public abstract void blit(ResourceLocation atlasLocation, int x, int y, float uOffset, float vOffset, int width, int height, int textureWidth, int textureHeight);

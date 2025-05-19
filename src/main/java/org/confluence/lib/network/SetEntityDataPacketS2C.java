@@ -14,7 +14,7 @@ import org.confluence.lib.mixed.IExtraSyncedData;
  */
 public record SetEntityDataPacketS2C(int entityId, Entry... entries) implements CustomPacketPayload {
     public static final byte DATA_BOOLEAN = 0;
-    public static final Type<SetEntityDataPacketS2C> TYPE = new Type<>(ConfluenceMagicLib.lib("set_entity_data"));
+    public static final Type<SetEntityDataPacketS2C> TYPE = new Type<>(ConfluenceMagicLib.asResource("set_entity_data"));
     public static final StreamCodec<RegistryFriendlyByteBuf, SetEntityDataPacketS2C> STREAM_CODEC = new StreamCodec<>() {
         @Override
         public SetEntityDataPacketS2C decode(RegistryFriendlyByteBuf buffer) {
