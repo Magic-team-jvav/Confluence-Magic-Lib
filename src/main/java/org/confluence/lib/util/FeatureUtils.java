@@ -1,5 +1,6 @@
 package org.confluence.lib.util;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -168,6 +169,28 @@ public final class FeatureUtils {
         }
     }
 
+    //立方体填充
+    public static void rectangular(BlockPos startPos, BlockPos endPos, BlockState blockstate, WorldGenLevel level, boolean replace) {
+        int startX = Math.min(endPos.getX(), startPos.getX());
+        int startY = Math.min(endPos.getY(), startPos.getY());
+        int startZ = Math.min(endPos.getZ(), startPos.getZ());
+        int endX = Math.max(endPos.getX(), startPos.getX());
+        int endY = Math.max(endPos.getY(), startPos.getY());
+        int endZ = Math.max(endPos.getZ(), startPos.getZ());
+        int xLength = endX - startX;
+        int yLength = endY - startY;
+        int zLength = endZ - startZ;
+        BlockPos.MutableBlockPos posCheck = startPos.mutable();
+        for (int x = 0; x <= xLength; x++) {
+            for (int y = 0; y <= yLength; y++) {
+                for (int z = 0; z <= zLength; z++) {
+                    posCheck.set(startX + x, startY + y, startZ + z);
+                    if (replace || level.getBlockState(posCheck.immutable()).canBeReplaced()) level.setBlock(posCheck.immutable(), blockstate, 3);
+                }
+            }
+        }
+    }
+
     //椭球体填充
     public static void ellipsoid(double radiusDX, double radiusDY, double radiusDZ, BlockPos centerPos, BlockState blockState, boolean replace, WorldGenLevel level) {
         int radiusX = (int) radiusDX + 1;
@@ -190,5 +213,29 @@ public final class FeatureUtils {
                 }
             }
         }
+    }
+
+    //立方体检查
+    public static boolean rectangularCheck(BlockPos startPos, BlockPos endPos, WorldGenLevel level) {
+        int startX = Math.min(endPos.getX(), startPos.getX());
+        int startY = Math.min(endPos.getY(), startPos.getY());
+        int startZ = Math.min(endPos.getZ(), startPos.getZ());
+        int endX = Math.max(endPos.getX(), startPos.getX());
+        int endY = Math.max(endPos.getY(), startPos.getY());
+        int endZ = Math.max(endPos.getZ(), startPos.getZ());
+        int xLength = endX - startX;
+        int yLength = endY - startY;
+        int zLength = endZ - startZ;
+        boolean bl = true;
+        BlockPos.MutableBlockPos posCheck = startPos.mutable();
+        for (int x = 0; (x <= xLength) && bl; x++) {
+            for (int y = 0; (y <= yLength) && bl; y++) {
+                for (int z = 0; (z <= zLength) && bl; z++) {
+                    posCheck.set(startX + x, startY + y, startZ + z);
+                    if (!level.getBlockState(posCheck.immutable()).canBeReplaced()) bl = false;
+                }
+            }
+        }
+        return bl;
     }
 }
