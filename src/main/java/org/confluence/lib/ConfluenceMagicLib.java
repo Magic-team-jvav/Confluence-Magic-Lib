@@ -28,7 +28,7 @@ public class ConfluenceMagicLib {
     public static final String LIB_ID = "confluence_magic_lib";
     public static final String CONFLUENCE_ID = "confluence";
     public static final Logger LOGGER = LoggerFactory.getLogger("Confluence Magic Lib");
-    public static final boolean IS_CONFLUENCE_LOADED = ModList.get().isLoaded(CONFLUENCE_ID);
+    public static Boolean IS_CONFLUENCE_LOADED;
 
     public static final DeferredRegister<IngredientType<?>> INGREDIENT_TYPES = DeferredRegister.create(NeoForgeRegistries.Keys.INGREDIENT_TYPES, LIB_ID);
     public static final Supplier<IngredientType<AmountIngredient>> AMOUNT_INGREDIENT_TYPE = INGREDIENT_TYPES.register("amount_ingredient", () -> new IngredientType<>(AmountIngredient.CODEC, AmountIngredient.STREAM_CODEC));
@@ -50,5 +50,12 @@ public class ConfluenceMagicLib {
 
     public static ResourceLocation asResource(String path) {
         return ResourceLocation.fromNamespaceAndPath(LIB_ID, path);
+    }
+
+    public static boolean isConfluenceLoaded() {
+        if (IS_CONFLUENCE_LOADED == null) {
+            IS_CONFLUENCE_LOADED = ModList.get().isLoaded(CONFLUENCE_ID);
+        }
+        return IS_CONFLUENCE_LOADED;
     }
 }

@@ -23,7 +23,9 @@ import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 import org.confluence.lib.ConfluenceMagicLib;
+import org.confluence.lib.common.data.IdFixer;
 import org.confluence.lib.util.LibUtils;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,13 +69,27 @@ public class GridPiece extends StructurePiece {
         super(ConfluenceMagicLib.GRID_PIECE.get(), tag);
         this.startPos = new ChunkPos(tag.getLong("StartPos"));
         if (tag.contains("BlockMap")) {
-            this.blockMap = BLOCK_MAP_CODEC.parse(NbtOps.INSTANCE, tag.get("BlockMap")).getOrThrow();
-            this.blockList = BlockState.CODEC.listOf().parse(NbtOps.INSTANCE, tag.get("BlockList")).getOrThrow();
+            this.blockMap = decodeBlockMap(tag);
             this.features = FEATURES_CODEC.parse(NbtOps.INSTANCE, tag.get("Features")).getOrThrow();
         } else {
             this.blockMap = List.of();
             this.features = List.of();
         }
+    }
+
+    @Deprecated(since = "1.1.3")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
+    private List<Tuple<Integer, IntArrayList>> decodeBlockMap(CompoundTag tag) {
+        final List<Tuple<Integer, IntArrayList>> blockMap;
+        if (tag.getBoolean("confluence:fixed_relative_pos")) {
+            blockMap = BLOCK_MAP_CODEC.parse(NbtOps.INSTANCE, tag.get("BlockMap")).getOrThrow();
+            this.blockList = BlockState.CODEC.listOf().parse(NbtOps.INSTANCE, tag.get("BlockList")).getOrThrow();
+        } else {
+            blockMap = IdFixer.FIXED_BLOCK_MAP_CODEC.parse(NbtOps.INSTANCE, tag.get("BlockMap")).getOrThrow();
+            this.blockList = BlockState.CODEC.mapResult(IdFixer.fixBlockStateName(BlockState.CODEC)).listOf().parse(NbtOps.INSTANCE, tag.get("BlockList")).getOrThrow();
+            tag.putBoolean("confluence:fixed_relative_pos", true);
+        }
+        return blockMap;
     }
 
     @Override

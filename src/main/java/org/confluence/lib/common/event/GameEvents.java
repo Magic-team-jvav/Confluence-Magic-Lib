@@ -10,6 +10,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.confluence.lib.ConfluenceMagicLib;
+import org.confluence.lib.common.data.IdFixer;
 import org.confluence.lib.common.data.saved.IGlobalData;
 import org.confluence.lib.mixed.IExtraSyncedData;
 import org.confluence.lib.network.SetEntityDataPacketS2C;
@@ -47,5 +48,10 @@ public final class GameEvents {
         for (IGlobalData data : IGlobalData.DAT) {
             data.clear();
         }
+    }
+
+    @SubscribeEvent
+    public static void playerLogged(PlayerEvent.PlayerLoggedInEvent event) {
+        IdFixer.fixPersistentData(event.getEntity());
     }
 }
