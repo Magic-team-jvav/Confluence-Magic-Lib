@@ -13,10 +13,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.ToDoubleFunction;
 
 public final class VectorUtils {
@@ -396,11 +393,14 @@ public final class VectorUtils {
 
     // 判断垂足是否在线段上
     public static boolean isProjectionBetweenPoints(Vector3d pointA, Vector3d pointB, Vector3d projection) {
-        Vector3d vectorAtoProjection = new Vector3d(projection);
-        vectorAtoProjection.sub(pointA);
-        Vector3d vectorAtoB = new Vector3d(pointB);
-        vectorAtoB.sub(pointA);
-        return vectorAtoProjection.dot(vectorAtoB) >= 0 && vectorAtoProjection.dot(vectorAtoProjection) <= vectorAtoB.dot(vectorAtoB);
+        Vector3d point2 = getProjectionOnLineSegment(pointA, pointB, projection);
+        double xMax = Math.max(pointA.x, pointB.x) + 0.5;
+        double xMin = Math.min(pointA.x, pointB.x) - 0.5;
+        double yMax = Math.max(pointA.y, pointB.y) + 0.5;
+        double yMin = Math.min(pointA.y, pointB.y) - 0.5;
+        double zMax = Math.max(pointA.z, pointB.z) + 0.5;
+        double zMin = Math.min(pointA.z, pointB.z) - 0.5;
+        return ((point2.x < xMax) && (point2.x > xMin) && (point2.y < yMax) && (point2.y > yMin) && (point2.z < zMax) && (point2.z > zMin));
     }
 
     //生成坐标列表
@@ -524,29 +524,25 @@ public final class VectorUtils {
         int setStartZ = Math.min(zStart1, zEnd1);
         int setEndZ = Math.max(zStart0, zEnd0);
 
-        Vector3d pointP = new Vector3d();
-        double length = Math.sqrt(Mth.square(endPos.x - startPos.x) + Mth.square(endPos.y - startPos.y) + Mth.square(endPos.z - startPos.z));
+        Vector3d pointP;
+        Vector3d pointP2;
+        double length = startPos.distance(endPos);
         double lengthGet;
         double lengthP;
-        double x2;
-        double y2;
 
-        List<Vector3d> list = new LinkedList<>();
+        List<Vector3d> list = new ArrayList<>();
 
         for (int x = setStartX; x <= setEndX; x++) {
-            x2 = Mth.square(endPos.x - x);
-            pointP.x = x;
             for (int y = setStartY; y <= setEndY; y++) {
-                y2 = Mth.square(endPos.y - y) + x2;
-                pointP.y = y;
                 for (int z = setStartZ; z <= setEndZ; z++) {
-                    if (chance >= 1 || chance >= random.nextFloat()) {
-                        pointP.z = z;
+                    if (chance > random.nextFloat()) {
+                        pointP = new Vector3d(x, y, z);
                         if (!isProjectionBetweenPoints(startPos, endPos, pointP)) continue;
-                        lengthGet = Math.sqrt(y2 + Mth.square(endPos.z - z));
+                        pointP2 = getProjectionOnLineSegment(startPos, endPos, pointP);
+                        lengthGet = pointP2.distance(endPos);//0;//Math.sqrt(y2 + Mth.square(endPos.z - z) - getDistanceToLineSegment(startPos, endPos, pointP));
                         lengthP = lengthGet / length;
-                        if (getDistanceToLineSegment(startPos, endPos, pointP) <= (startRadius * lengthP + endRadius * (1.0D - lengthP))) {
-                            list.add(new Vector3d(pointP));
+                        if (pointP.distance(pointP2) <= (startRadius * lengthP + endRadius * (1.0D - lengthP))) {
+                            list.add(pointP);
                         }
                     }
                 }

@@ -235,25 +235,21 @@ public final class StructureUtils {
         int setStartZ = Math.min(zStart1, zEnd1);
         int setEndZ = Math.max(zStart0, zEnd0);
 
-        Vector3d pointP = new Vector3d();
-        double length = Math.sqrt(Mth.square(endPos.x - startPos.x) + Mth.square(endPos.y - startPos.y) + Mth.square(endPos.z - startPos.z));
+        Vector3d pointP;
+        Vector3d pointP2;
+        double length = startPos.distance(endPos);
         double lengthGet;
         double lengthP;
-        double x2;
-        double y2;
 
         for (int x = setStartX; x <= setEndX; x++) {
-            x2 = Mth.square(endPos.x - x);
-            pointP.x = x;
             for (int y = setStartY; y <= setEndY; y++) {
-                y2 = Mth.square(endPos.y - y) + x2;
-                pointP.y = y;
                 for (int z = setStartZ; z <= setEndZ; z++) {
-                    pointP.z = z;
+                    pointP = new Vector3d(x, y, z);
                     if (!isProjectionBetweenPoints(startPos, endPos, pointP)) continue;
-                    lengthGet = Math.sqrt(y2 + Mth.square(endPos.z - z));
+                    pointP2 = getProjectionOnLineSegment(startPos, endPos, pointP);
+                    lengthGet = pointP2.distance(endPos);//0;//Math.sqrt(y2 + Mth.square(endPos.z - z) - getDistanceToLineSegment(startPos, endPos, pointP));
                     lengthP = lengthGet / length;
-                    if (getDistanceToLineSegment(startPos, endPos, pointP) <= (startRadius * lengthP + endRadius * (1.0D - lengthP))) {
+                    if (pointP.distance(pointP2) <= (startRadius * lengthP + endRadius * (1.0D - lengthP))) {
                         blockMap.put(new BlockPos(x, y, z), blockstate);
                     }
                 }
