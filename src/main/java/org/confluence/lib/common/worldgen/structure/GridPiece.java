@@ -100,6 +100,7 @@ public class GridPiece extends StructurePiece {
             tag.put("BlockList", BlockState.CODEC.listOf().encodeStart(NbtOps.INSTANCE, blockList).getOrThrow());
             tag.put("Features", FEATURES_CODEC.encodeStart(NbtOps.INSTANCE, features).getOrThrow());
         }
+        tag.putBoolean("confluence:fixed_relative_pos", true);
     }
 
     @Override
