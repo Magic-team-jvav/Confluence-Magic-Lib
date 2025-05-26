@@ -16,6 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.biome.Biome;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.util.LibUtils;
@@ -36,23 +37,18 @@ public class IdFixer {
             @Override
             public <T> DataResult<Pair<List<Tuple<Integer, IntArrayList>>, T>> decode(DynamicOps<T> ops, T input) {
                 Optional<List<Tuple<Integer, LongArrayList>>> result = codec.parse(ops, input).result();
-                if (result.isPresent()) {
-                    List<Tuple<Integer, LongArrayList>> list = result.get();
-                    List<Tuple<Integer, IntArrayList>> ret = new ArrayList<>(5 + list.size() + (list.size() / 10));
-                    for (Tuple<Integer, LongArrayList> tuple : list) {
-                        LongArrayList longs = tuple.getB();
-                        IntArrayList integers = new IntArrayList(5 + longs.size() + (longs.size() / 10));
-                        for (Long l : longs) {
-                            int x = BlockPos.getX(l);
-                            int y = BlockPos.getY(l);
-                            int z = BlockPos.getZ(l);
-                            integers.add(((x & 0xF) << 16) | ((y + 2048) << 4) | (z & 0xF));
-                        }
-                        ret.add(new Tuple<>(tuple.getA(), integers));
+                if (result.isEmpty()) return DataResult.error(() -> "Error decoding!");
+                List<Tuple<Integer, LongArrayList>> list = result.get();
+                List<Tuple<Integer, IntArrayList>> ret = new ArrayList<>(5 + list.size() + (list.size() / 10));
+                for (Tuple<Integer, LongArrayList> tuple : list) {
+                    LongArrayList longs = tuple.getB();
+                    IntArrayList integers = new IntArrayList(5 + longs.size() + (longs.size() / 10));
+                    for (Long l : longs) {
+                        integers.add(((BlockPos.getX(l) & 0xF) << 16) | ((BlockPos.getY(l) + 2048) << 4) | (BlockPos.getZ(l) & 0xF));
                     }
-                    return DataResult.success(new Pair<>(ret, input), Lifecycle.stable());
+                    ret.add(new Tuple<>(tuple.getA(), integers));
                 }
-                return DataResult.error(() -> "Error decoding!");
+                return DataResult.success(new Pair<>(ret, input), Lifecycle.stable());
             }
 
             @Override
@@ -61,11 +57,11 @@ public class IdFixer {
             }
         };
     });
-    public static final ResourceLocation STP = ResourceLocation.fromNamespaceAndPath("confluence", "simple_template_piece");
+    public static final ResourceLocation STP = ResourceLocation.fromNamespaceAndPath(ConfluenceMagicLib.CONFLUENCE_ID, "simple_template_piece");
     public static final ResourceLocation FIXED_STP = ConfluenceMagicLib.asResource("simple_template_piece");
-    public static final ResourceLocation GP = ResourceLocation.fromNamespaceAndPath("confluence", "grid_piece");
+    public static final ResourceLocation GP = ResourceLocation.fromNamespaceAndPath(ConfluenceMagicLib.CONFLUENCE_ID, "grid_piece");
     public static final ResourceLocation FIXED_GP = ConfluenceMagicLib.asResource("grid_piece");
-    private static final Map<String, String> BLOCK_STATE_NAME_FIX_MAP = ImmutableMap.<String, String>builder()
+    private static final Map<String, String> BLOCK_NAME_FIX_MAP = ImmutableMap.<String, String>builder()
             .put("confluence:copper_coin_pile", "confluence:copper_coin")
             .put("confluence:silver_coin_pile", "confluence:silver_coin")
             .put("confluence:golden_coin_pile", "confluence:golden_coin")
@@ -74,6 +70,8 @@ public class IdFixer {
             .build();
     private static final Map<String, String> ITEM_NAME_FIX_MAP = ImmutableMap.<String, String>builder()
             .put("confluence:demon_ocnch", "confluence:demon_conch")
+            .build();
+    private static final Map<String, String> BIOME_NAME_FIX_MAP = ImmutableMap.<String, String>builder()
             .build();
 
     public static ResourceLocation fixPieceNamespace(ResourceLocation original) {
@@ -86,19 +84,17 @@ public class IdFixer {
         return new Codec.ResultFunction<>() {
             @Override
             public <T> DataResult<Pair<A, T>> apply(DynamicOps<T> ops, T input, DataResult<Pair<A, T>> a) {
-                if (a.isError()) {
-                    MutableObject<DataResult<Pair<A, T>>> mutableObject = new MutableObject<>(a);
-                    ops.getMap(input).ifSuccess(map -> {
-                        T t = map.get("Name");
-                        if (t != null) ops.getStringValue(t).ifSuccess(s -> {
-                            String s1 = BLOCK_STATE_NAME_FIX_MAP.get(s);
-                            if (s1 != null) ops.mergeToMap(input, ops.createString("Name"), ops.createString(s1))
-                                    .ifSuccess(t1 -> mutableObject.setValue(codec.decode(ops, t1)));
-                        });
+                if (a.isSuccess()) return a;
+                MutableObject<DataResult<Pair<A, T>>> mutableObject = new MutableObject<>(a);
+                ops.getMap(input).ifSuccess(map -> {
+                    T t = map.get("Name");
+                    if (t != null) ops.getStringValue(t).ifSuccess(s -> {
+                        String s1 = BLOCK_NAME_FIX_MAP.get(s);
+                        if (s1 != null) ops.mergeToMap(input, ops.createString("Name"), ops.createString(s1))
+                                .ifSuccess(t1 -> mutableObject.setValue(codec.decode(ops, t1)));
                     });
-                    return mutableObject.getValue();
-                }
-                return a;
+                });
+                return mutableObject.getValue();
             }
 
             @Override
@@ -137,13 +133,11 @@ public class IdFixer {
         return codec.mapResult(new Codec.ResultFunction<>() {
             @Override
             public <T> DataResult<Pair<Holder<Item>, T>> apply(DynamicOps<T> ops, T input, DataResult<Pair<Holder<Item>, T>> a) {
-                if (a.isError()) {
-                    return ops.getStringValue(input).result().map(s -> {
-                        String s1 = ITEM_NAME_FIX_MAP.get(s);
-                        return s1 == null ? a : codec.decode(ops, ops.createString(s1));
-                    }).orElse(a);
-                }
-                return a;
+                if (a.isSuccess()) return a;
+                return ops.getStringValue(input).result().map(s -> {
+                    String s1 = ITEM_NAME_FIX_MAP.get(s);
+                    return s1 == null ? a : codec.decode(ops, ops.createString(s1));
+                }).orElse(a);
             }
 
             @Override
@@ -151,5 +145,23 @@ public class IdFixer {
                 return t;
             }
         });
+    }
+
+    public static Codec.ResultFunction<Holder<Biome>> fixBiomeName(Codec<Holder<Biome>> codec) {
+        return new Codec.ResultFunction<>() {
+            @Override
+            public <T> DataResult<Pair<Holder<Biome>, T>> apply(DynamicOps<T> ops, T input, DataResult<Pair<Holder<Biome>, T>> a) {
+                if (a.isSuccess()) return a;
+                return ops.getStringValue(input).result().map(s -> {
+                    String s1 = BIOME_NAME_FIX_MAP.get(s);
+                    return s1 == null ? a : codec.decode(ops, ops.createString(s1));
+                }).orElse(a);
+            }
+
+            @Override
+            public <T> DataResult<T> coApply(DynamicOps<T> ops, Holder<Biome> input, DataResult<T> t) {
+                return t;
+            }
+        };
     }
 }
