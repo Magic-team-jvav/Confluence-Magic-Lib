@@ -43,7 +43,7 @@ public class IdFixer {
                 for (Tuple<Integer, LongArrayList> tuple : list) {
                     LongArrayList longs = tuple.getB();
                     IntArrayList integers = new IntArrayList(5 + longs.size() + (longs.size() / 10));
-                    for (Long l : longs) {
+                    for (long l : longs) {
                         integers.add(((BlockPos.getX(l) & 0xF) << 16) | ((BlockPos.getY(l) + 2048) << 4) | (BlockPos.getZ(l) & 0xF));
                     }
                     ret.add(new Tuple<>(tuple.getA(), integers));
@@ -80,7 +80,7 @@ public class IdFixer {
         return original;
     }
 
-    public static <A> Codec.ResultFunction<A> fixBlockStateName(Codec<A> codec) {
+    public static <A> Codec.ResultFunction<A> fixBlockName(Codec<A> codec) {
         return new Codec.ResultFunction<>() {
             @Override
             public <T> DataResult<Pair<A, T>> apply(DynamicOps<T> ops, T input, DataResult<Pair<A, T>> a) {

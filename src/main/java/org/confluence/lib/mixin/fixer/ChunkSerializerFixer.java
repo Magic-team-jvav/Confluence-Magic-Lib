@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 public abstract class ChunkSerializerFixer {
     @ModifyArg(method = "<clinit>", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/PalettedContainer;codecRW(Lnet/minecraft/core/IdMap;Lcom/mojang/serialization/Codec;Lnet/minecraft/world/level/chunk/PalettedContainer$Strategy;Ljava/lang/Object;)Lcom/mojang/serialization/Codec;"), index = 1)
     private static <T> Codec<T> fixBlockStateName(Codec<T> codec) {
-        return codec.mapResult(IdFixer.fixBlockStateName(codec));
+        return codec.mapResult(IdFixer.fixBlockName(codec));
     }
 
     @ModifyExpressionValue(method = "makeBiomeCodec",at= @At(value = "INVOKE", target = "Lnet/minecraft/core/Registry;holderByNameCodec()Lcom/mojang/serialization/Codec;"))
