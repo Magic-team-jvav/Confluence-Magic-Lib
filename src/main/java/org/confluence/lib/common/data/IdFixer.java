@@ -10,8 +10,10 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.player.Player;
@@ -170,5 +172,27 @@ public class IdFixer {
                 return t;
             }
         };
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Codec<ResourceKey<Biome>> fixBiomeKey(Codec<ResourceKey<Biome>> codec) {
+        return codec.mapResult(new Codec.ResultFunction<>() {
+            @Override
+            public <T> DataResult<Pair<ResourceKey<Biome>, T>> apply(DynamicOps<T> ops, T input, DataResult<Pair<ResourceKey<Biome>, T>> a) {
+                return ops.getStringValue(input).result().map(s -> {
+                    String s1 = BIOME_NAME_FIX_MAP.get(s);
+                    try {
+                        return s1 == null ? a : DataResult.<Pair<ResourceKey<Biome>, T>>success(new Pair(ResourceKey.create(Registries.BIOME, ResourceLocation.parse(s1)), input), Lifecycle.stable());
+                    } catch (Exception e) {
+                        return a;
+                    }
+                }).orElse(a);
+            }
+
+            @Override
+            public <T> DataResult<T> coApply(DynamicOps<T> ops, ResourceKey<Biome> input, DataResult<T> t) {
+                return t;
+            }
+        });
     }
 }
