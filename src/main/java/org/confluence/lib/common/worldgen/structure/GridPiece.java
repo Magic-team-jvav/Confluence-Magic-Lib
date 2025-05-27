@@ -87,7 +87,6 @@ public class GridPiece extends StructurePiece {
         } else {
             blockMap = IdFixer.FIXED_BLOCK_MAP_CODEC.parse(NbtOps.INSTANCE, tag.get("BlockMap")).getOrThrow();
             this.blockList = BlockState.CODEC.mapResult(IdFixer.fixBlockName(BlockState.CODEC)).listOf().parse(NbtOps.INSTANCE, tag.get("BlockList")).getOrThrow();
-            tag.putBoolean("confluence:fixed_relative_pos", true);
         }
         return blockMap;
     }
