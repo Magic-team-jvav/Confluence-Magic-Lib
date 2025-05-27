@@ -61,17 +61,24 @@ public class IdFixer {
     public static final ResourceLocation FIXED_STP = ConfluenceMagicLib.asResource("simple_template_piece");
     public static final ResourceLocation GP = ResourceLocation.fromNamespaceAndPath(ConfluenceMagicLib.CONFLUENCE_ID, "grid_piece");
     public static final ResourceLocation FIXED_GP = ConfluenceMagicLib.asResource("grid_piece");
+    private static final Map<String, String> BLOCK_WITH_ITEM_NAME_FIX_MAP = ImmutableMap.<String, String>builder()
+            .build();
     private static final Map<String, String> BLOCK_NAME_FIX_MAP = ImmutableMap.<String, String>builder()
             .put("confluence:copper_coin_pile", "confluence:copper_coin")
             .put("confluence:silver_coin_pile", "confluence:silver_coin")
             .put("confluence:golden_coin_pile", "confluence:golden_coin")
             .put("confluence:platinum_coin_pile", "confluence:platinum_coin")
             .put("confluence:emerald_coin_pile", "confluence:emerald_coin")
+            .putAll(BLOCK_WITH_ITEM_NAME_FIX_MAP)
             .build();
     private static final Map<String, String> ITEM_NAME_FIX_MAP = ImmutableMap.<String, String>builder()
             .put("confluence:demon_ocnch", "confluence:demon_conch")
+            .putAll(BLOCK_WITH_ITEM_NAME_FIX_MAP)
             .build();
     private static final Map<String, String> BIOME_NAME_FIX_MAP = ImmutableMap.<String, String>builder()
+            .put("confluence:tr_crimson", "confluence:the_crimson")
+            .put("confluence:tr_crimson_desert", "confluence:the_crimson_desert")
+            .put("confluence:tr_crimson_tundra", "confluence:the_crimson_tundra")
             .build();
 
     public static ResourceLocation fixPieceNamespace(ResourceLocation original) {
