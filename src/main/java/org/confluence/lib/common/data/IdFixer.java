@@ -82,6 +82,24 @@ public class IdFixer {
             .put("confluence:tr_crimson_desert", "confluence:the_crimson_desert")
             .put("confluence:tr_crimson_tundra", "confluence:the_crimson_tundra")
             .build();
+    public static final Codec.ResultFunction<ResourceKey<Biome>> FIX_BIOME_KEY_FUNC = new Codec.ResultFunction<>() {
+        @Override
+        public <T> DataResult<Pair<ResourceKey<Biome>, T>> apply(DynamicOps<T> ops, T input, DataResult<Pair<ResourceKey<Biome>, T>> a) {
+            return ops.getStringValue(input).result().map(s -> {
+                String s1 = BIOME_NAME_FIX_MAP.get(s);
+                try {
+                    return s1 == null ? a : DataResult.success(new Pair<>(ResourceKey.create(Registries.BIOME, ResourceLocation.parse(s1)), input), Lifecycle.stable());
+                } catch (Exception e) {
+                    return a;
+                }
+            }).orElse(a);
+        }
+
+        @Override
+        public <T> DataResult<T> coApply(DynamicOps<T> ops, ResourceKey<Biome> input, DataResult<T> t) {
+            return t;
+        }
+    };
 
     public static ResourceLocation fixPieceNamespace(ResourceLocation original) {
         if (original.equals(STP)) return FIXED_STP;
@@ -172,27 +190,5 @@ public class IdFixer {
                 return t;
             }
         };
-    }
-
-    @SuppressWarnings("unchecked")
-    public static Codec<ResourceKey<Biome>> fixBiomeKey(Codec<ResourceKey<Biome>> codec) {
-        return codec.mapResult(new Codec.ResultFunction<>() {
-            @Override
-            public <T> DataResult<Pair<ResourceKey<Biome>, T>> apply(DynamicOps<T> ops, T input, DataResult<Pair<ResourceKey<Biome>, T>> a) {
-                return ops.getStringValue(input).result().map(s -> {
-                    String s1 = BIOME_NAME_FIX_MAP.get(s);
-                    try {
-                        return s1 == null ? a : DataResult.<Pair<ResourceKey<Biome>, T>>success(new Pair(ResourceKey.create(Registries.BIOME, ResourceLocation.parse(s1)), input), Lifecycle.stable());
-                    } catch (Exception e) {
-                        return a;
-                    }
-                }).orElse(a);
-            }
-
-            @Override
-            public <T> DataResult<T> coApply(DynamicOps<T> ops, ResourceKey<Biome> input, DataResult<T> t) {
-                return t;
-            }
-        });
     }
 }
