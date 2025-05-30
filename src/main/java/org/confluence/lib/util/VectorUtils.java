@@ -8,12 +8,14 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.function.ToDoubleFunction;
 
 public final class VectorUtils {
@@ -247,8 +249,7 @@ public final class VectorUtils {
     }
 
     public static Vector3d toVector3d(BlockPos blockPos) {
-        Vec3 center = blockPos.getCenter();
-        return new Vector3d(center.x, center.y, center.z);
+        return new Vector3d(blockPos.getX() + 0.5, blockPos.getY() + 0.5, blockPos.getZ() + 0.5);
     }
 
     public static BlockPos fromVector3d(Vector3d vector3d) {
@@ -279,7 +280,7 @@ public final class VectorUtils {
         } while (refined);
     }
 
-    public static Map<Vector3d, BooleanStorage4> mazePos(Vector3d centerPos, double distance, int layer, WorldgenRandom random, float difficulty) {
+    public static Map<Vector3d, BooleanStorage4> mazePos(Vector3d centerPos, double distance, int layer, RandomSource random, float difficulty) {
         Map<Vector3i, BooleanStorage4> nowMap = new HashMap<>();
         Map<Vector3i, BooleanStorage4> thanMap = new HashMap<>();
         Map<Vector3i, BooleanStorage4> setMap = new HashMap<>();
@@ -307,11 +308,11 @@ public final class VectorUtils {
                 BooleanStorage4 a = entry.getValue().copy();
                 BooleanStorage4 b = a.copy();
                 for (int i = 0; i < 4; i++) {
-                    xOffset = (int) Mth.cos(i * Mth.HALF_PI) + x;
-                    zOffset = (int) Mth.sin(i * Mth.HALF_PI) + z;
+                    xOffset = Mth.floor(Mth.cos(i * Mth.HALF_PI) + x);
+                    zOffset = Mth.floor(Mth.sin(i * Mth.HALF_PI) + z);
                     thanKey = new Vector3i(xOffset, 0, zOffset);
                     b.set(i, true);
-                    if (((1.0F - 0.5F * difficulty) > random.nextFloat()) && (xOffset <= layer) && (xOffset >= -layer) && (zOffset <= layer) && (zOffset >= -layer) && !setMap.containsKey(thanKey) && !nowMap.containsKey(thanKey) && !thanMap.containsKey(thanKey)) {
+                    if ((1.0F - 0.5F * difficulty > random.nextFloat()) && xOffset <= layer && xOffset >= -layer && zOffset <= layer && zOffset >= -layer && !setMap.containsKey(thanKey) && !nowMap.containsKey(thanKey) && !thanMap.containsKey(thanKey)) {
                         a.set(i, true);
                         BooleanStorage4 thenList = new BooleanStorage4();
                         thenList.set((i + 2) % 4, true);
@@ -327,37 +328,35 @@ public final class VectorUtils {
             z = key.z;
             dX = x * distance + centerPos.x;
             dZ = z * distance + centerPos.z;
-            BooleanStorage4 outList = entry.getValue().copy();
-            outMap.put(new Vector3d(dX, centerPos.y, dZ), outList);
+            outMap.put(new Vector3d(dX, centerPos.y, dZ), entry.getValue());
         }
         return outMap;
     }
 
-    public static Integer listRandom(BooleanStorage4 list, WorldgenRandom random) {
+    public static int listRandom(BooleanStorage4 list, RandomSource random) {
         boolean aBoolean = true;
         int listW = 0;
-        for (int i = 0; (i < 100) && aBoolean; i++) {
+        for (int i = 0; aBoolean && i < 100; i++) {
             listW = random.nextInt(list.size());
             aBoolean = list.get(listW);
         }
         return listW;
     }
 
-    public static void list8(List<Vector3d> list, BlockPos centerPos, int x, int y, int z, WorldgenRandom random) {
+    public static void list8(List<Vector3d> list, BlockPos centerPos, int x, int y, int z, RandomSource random) {
         for (int i = 0; i < 8; i++) {
             if (0.125F >= random.nextFloat()) {
-                list.add(new Vector3d(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1))));
+                list.add(new Vector3d(centerPos.getX() + x * (i < 4 ? 1 : -1), centerPos.getY() + y * (i % 4 < 2 ? 1 : -1), centerPos.getZ() + z * (i % 2 < 1 ? 1 : -1)));
             }
         }
     }
 
-    public static void list8(List<Vector3d> list, BlockPos centerPos, int x, int y, int z, WorldgenRandom random, int checkY) {
-        Vector3d pos;
+    public static void list8(List<Vector3d> list, BlockPos centerPos, int x, int y, int z, RandomSource random, int checkY) {
         for (int i = 0; i < 8; i++) {
             if (0.125F >= random.nextFloat()) {
-                pos = new Vector3d(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1)));
-                if (pos.y < checkY) {
-                    list.add(pos);
+                int y1 = centerPos.getY() + y * (i % 4 < 2 ? 1 : -1);
+                if (y1 < checkY) {
+                    list.add(new Vector3d(centerPos.getX() + x * (i < 4 ? 1 : -1), y1, centerPos.getZ() + z * (i % 2 < 1 ? 1 : -1)));
                 }
             }
         }
@@ -365,30 +364,15 @@ public final class VectorUtils {
 
     // 计算点到线段的投影位置
     public static Vector3d getProjectionOnLineSegment(Vector3d pointA, Vector3d pointB, Vector3d pointP) {
-        Vector3d direction = new Vector3d(pointB);
-        direction.sub(pointA);
-
-        Vector3d pointToP = new Vector3d(pointP);
-        pointToP.sub(pointA);
-
-        double dotProduct = pointToP.dot(direction);
-        double directionLengthSquared = direction.dot(direction);
-
-        double t = dotProduct / directionLengthSquared;
-
-        Vector3d projection = new Vector3d(direction);
-        projection = new Vector3d(projection.x * t, projection.y * t, projection.z * t);
-        projection.add(pointA);
-
-        return projection;
+        Vector3d direction = new Vector3d(pointB).sub(pointA);
+        Vector3d pointToP = new Vector3d(pointP).sub(pointA);
+        return direction.mul(pointToP.dot(direction) / direction.dot(direction)).add(pointA);
     }
 
     // 计算点到线段的距离
     public static double getDistanceToLineSegment(Vector3d pointA, Vector3d pointB, Vector3d pointP) {
         Vector3d projection = getProjectionOnLineSegment(pointA, pointB, pointP);
-        Vector3d distanceVector = new Vector3d(pointP);
-        distanceVector.sub(projection);
-        return distanceVector.length();
+        return new Vector3d(pointP).sub(projection).length();
     }
 
     // 判断垂足是否在线段上
@@ -400,22 +384,20 @@ public final class VectorUtils {
         double yMin = Math.min(pointA.y, pointB.y) - 0.5;
         double zMax = Math.max(pointA.z, pointB.z) + 0.5;
         double zMin = Math.min(pointA.z, pointB.z) - 0.5;
-        return ((point2.x < xMax) && (point2.x > xMin) && (point2.y < yMax) && (point2.y > yMin) && (point2.z < zMax) && (point2.z > zMin));
+        return (point2.x < xMax && point2.x > xMin && point2.y < yMax && point2.y > yMin && point2.z < zMax && point2.z > zMin);
     }
 
     //生成坐标列表
     //生成球体坐标列表，带有随机比例
-    public static List<Vector3d> ballPos(double radiusD, BlockPos centerPos, float chance, WorldgenRandom random) {
+    public static List<Vector3d> ballPos(double radiusD, BlockPos centerPos, float chance, RandomSource random) {
         List<Vector3d> list = new LinkedList<>();
         int radius = (int) radiusD + 1;
         double radius2 = radiusD * radiusD;
-        int x2;
-        int y2;
         float chance8 = chance * 8;
         for (int x = 0; x < radius; x++) {
-            x2 = x * x;
+            int x2 = x * x;
             for (int y = 0; y < radius; y++) {
-                y2 = y * y;
+                int y2 = y * y;
                 for (int z = 0; z < radius; z++) {
                     if (chance8 >= random.nextFloat() && (x2 + y2 + z * z <= radius2)) {
                         list8(list, centerPos, x, y, z, random);
@@ -427,7 +409,7 @@ public final class VectorUtils {
     }
 
     //生成椭球体坐标列表，带有随机比例
-    public static List<Vector3d> ellipsoidPos(double radiusDX, double radiusDY, double radiusDZ, BlockPos centerPos, float chance, WorldgenRandom random) {
+    public static List<Vector3d> ellipsoidPos(double radiusDX, double radiusDY, double radiusDZ, BlockPos centerPos, float chance, RandomSource random) {
         List<Vector3d> list = new LinkedList<>();
         int radiusX = (int) radiusDX + 1;
         int radiusY = (int) radiusDY + 1;
@@ -435,13 +417,11 @@ public final class VectorUtils {
         double rX = radiusDX * radiusDX;
         double rY = radiusDY * radiusDY;
         double rZ = radiusDZ * radiusDZ;
-        int x2;
-        int y2;
         float chance8 = chance * 8;
         for (int x = 0; x < radiusX; x++) {
-            x2 = x * x;
+            int x2 = x * x;
             for (int y = 0; y < radiusY; y++) {
-                y2 = y * y;
+                int y2 = y * y;
                 for (int z = 0; z < radiusZ; z++) {
                     if (chance8 >= random.nextFloat() && (x2 / rX + y2 / rY + (z * z) / rZ) <= 1) {
                         list8(list, centerPos, x, y, z, random);
@@ -453,7 +433,7 @@ public final class VectorUtils {
     }
 
     //生成椭球体坐标列表，带有内径、随机比例、最大y坐标
-    public static List<Vector3d> ellipsoidPos(double radiusDXIn, double radiusDYIn, double radiusDZIn, double radiusDXOut, double radiusDYOut, double radiusDZOut, BlockPos centerPos, float chance, WorldgenRandom random, int checkY) {
+    public static List<Vector3d> ellipsoidPos(double radiusDXIn, double radiusDYIn, double radiusDZIn, double radiusDXOut, double radiusDYOut, double radiusDZOut, BlockPos centerPos, float chance, RandomSource random, int checkY) {
         List<Vector3d> list = new LinkedList<>();
         int radiusX = (int) radiusDXOut + 1;
         int radiusY = (int) radiusDYOut + 1;
@@ -464,15 +444,13 @@ public final class VectorUtils {
         double rXIn = radiusDXIn * radiusDXIn;
         double rYIn = radiusDYIn * radiusDYIn;
         double rZIn = radiusDZIn * radiusDZIn;
-        int x2;
-        int y2;
         float chance8 = chance * 8;
         for (int x = 0; x < radiusX; x++) {
-            x2 = x * x;
+            int x2 = x * x;
             for (int y = 0; y < radiusY; y++) {
-                y2 = y * y;
+                int y2 = y * y;
                 for (int z = 0; z < radiusZ; z++) {
-                    if (chance8 >= random.nextFloat() && (x2 / rXOut + y2 / rYOut + (z * z) / rZOut) <= 1 && (x2 / rXIn + y2 / rYIn + (z * z) / rZIn) >= 1) {
+                    if (chance8 >= random.nextFloat() && x2 / rXOut + y2 / rYOut + (z * z) / rZOut <= 1 && x2 / rXIn + y2 / rYIn + (z * z) / rZIn >= 1) {
                         list8(list, centerPos, x, y, z, random, checkY);
                     }
                 }
@@ -484,26 +462,22 @@ public final class VectorUtils {
     //生成螺旋形坐标列表
     public static List<Vector3d> rotateCloudPos(float rotate, float rotateStep, double length, double lengthStep, int count, BlockPos centerPos) {
         List<Vector3d> poses = new LinkedList<>();
-        Vector3d vctPos;
         for (int i = 0; i < count; i++) {
-            vctPos = new Vector3d(centerPos.getX() + (length + lengthStep * i) * Mth.cos(rotate + rotateStep * i), centerPos.getY(), centerPos.getZ() + (length + lengthStep * i) * Mth.sin(rotate + rotateStep * i));
-            poses.add(vctPos);
+            poses.add(new Vector3d(centerPos.getX() + (length + lengthStep * i) * Mth.cos(rotate + rotateStep * i), centerPos.getY(), centerPos.getZ() + (length + lengthStep * i) * Mth.sin(rotate + rotateStep * i)));
         }
         return poses;
     }
 
     //生成环形坐标列表
-    public static void roundPos(BlockPos centerPos, double radius, WorldgenRandom random, List<Vector3d> list, int offset, int rotate, float start) {
+    public static void roundPos(BlockPos centerPos, double radius, RandomSource random, List<Vector3d> list, int offset, int rotate, float start) {
         float rStep = Mth.TWO_PI / rotate;
-        BlockPos pos;
         for (int i = 0; i < rotate; i++) {
-            pos = centerPos.offset(((int) (Mth.cos(rStep * i + start) * radius) + random.nextInt(-offset, offset + 1)), 0, ((int) (Mth.sin(rStep * i + start) * radius) + random.nextInt(-offset, offset + 1)));
-            list.add(VectorUtils.toVector3d(pos));
+            list.add(VectorUtils.toVector3d(centerPos.offset(((int) (Mth.cos(rStep * i + start) * radius) + random.nextInt(-offset, offset + 1)), 0, ((int) (Mth.sin(rStep * i + start) * radius) + random.nextInt(-offset, offset + 1)))));
         }
     }
 
     //生成任意角度圆台坐标列表
-    public static List<Vector3d> frustumSetPos(Vector3d startPos, Vector3d endPos, double startRadius, double endRadius, float chance, WorldgenRandom random) {
+    public static List<Vector3d> frustumSetPos(Vector3d startPos, Vector3d endPos, double startRadius, double endRadius, float chance, RandomSource random) {
         int xStart0 = (int) (startPos.x + startRadius + 1);
         int xStart1 = (int) (startPos.x - startRadius - 1);
         int xEnd0 = (int) (endPos.x + endRadius + 1);
@@ -524,25 +498,22 @@ public final class VectorUtils {
         int setStartZ = Math.min(zStart1, zEnd1);
         int setEndZ = Math.max(zStart0, zEnd0);
 
-        Vector3d pointP;
-        Vector3d pointP2;
-        double length = startPos.distance(endPos);
-        double lengthGet;
-        double lengthP;
-
-        List<Vector3d> list = new ArrayList<>();
+        Vector3d pointP = new Vector3d();
+        Vector3d pointP2 = new Vector3d();
+        double invLength = 1 / startPos.distance(endPos);
+        List<Vector3d> list = new LinkedList<>();
 
         for (int x = setStartX; x <= setEndX; x++) {
             for (int y = setStartY; y <= setEndY; y++) {
                 for (int z = setStartZ; z <= setEndZ; z++) {
                     if (chance > random.nextFloat()) {
-                        pointP = new Vector3d(x, y, z);
+                        pointP.set(x, y, z);
                         if (!isProjectionBetweenPoints(startPos, endPos, pointP)) continue;
-                        pointP2 = getProjectionOnLineSegment(startPos, endPos, pointP);
-                        lengthGet = pointP2.distance(endPos);//0;//Math.sqrt(y2 + Mth.square(endPos.z - z) - getDistanceToLineSegment(startPos, endPos, pointP));
-                        lengthP = lengthGet / length;
+                        pointP2.set(getProjectionOnLineSegment(startPos, endPos, pointP));
+                        double lengthGet = pointP2.distance(endPos);//0;//Math.sqrt(y2 + Mth.square(endPos.z - z) - getDistanceToLineSegment(startPos, endPos, pointP));
+                        double lengthP = lengthGet * invLength;
                         if (pointP.distance(pointP2) <= (startRadius * lengthP + endRadius * (1.0D - lengthP))) {
-                            list.add(pointP);
+                            list.add(new Vector3d(pointP));
                         }
                     }
                 }
