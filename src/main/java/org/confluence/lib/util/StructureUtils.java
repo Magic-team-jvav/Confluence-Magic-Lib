@@ -3,7 +3,10 @@ package org.confluence.lib.util;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.LevelHeightAccessor;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import org.joml.Vector3d;
@@ -14,34 +17,34 @@ import java.util.Map;
 import static org.confluence.lib.util.VectorUtils.*;
 
 public final class StructureUtils {
-    public static void ball8(boolean replace, int x, int y, int z, int blockState, BlockPos centerPos, Object2IntMap<BlockPos> blockMap) {
+    public static void ball8(BlockPos.MutableBlockPos posCheck, boolean replace, int x, int y, int z, int blockState, BlockPos centerPos, Object2IntMap<BlockPos> blockMap) {
         for (int i = 0; i < 8; i++) {
-            BlockPos blockPos = new BlockPos(centerPos.getX() + x * (i < 4 ? 1 : -1), centerPos.getY() + y * (i % 4 < 2 ? 1 : -1), centerPos.getZ() + z * (i % 2 < 1 ? 1 : -1));
-            if (replace || !blockMap.containsKey(blockPos)) {
-                blockMap.put(blockPos, blockState);
+            posCheck.set(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1)));
+            if (replace || !blockMap.containsKey(posCheck)) {
+                blockMap.put(posCheck.immutable(), blockState);
             }
         }
     }
 
-    public static void ball8(boolean replace, int x, int y, int z, int blockState1, int blockState2, BlockPos centerPos, Object2IntMap<BlockPos> blockMap, int checkY) {
+    public static void ball8(BlockPos.MutableBlockPos posCheck, boolean replace, int x, int y, int z, int blockState1, int blockState2, BlockPos centerPos, Object2IntMap<BlockPos> blockMap, int checkY) {
         for (int i = 0; i < 8; i++) {
-            BlockPos blockPos = new BlockPos(centerPos.getX() + x * (i < 4 ? 1 : -1), centerPos.getY() + y * (i % 4 < 2 ? 1 : -1), centerPos.getZ() + z * (i % 2 < 1 ? 1 : -1));
-            if (replace || !blockMap.containsKey(blockPos)) {
-                if (blockPos.getY() > checkY) {
-                    blockMap.put(blockPos, blockState1);
+            posCheck.set(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1)));
+            if (replace || !blockMap.containsKey(posCheck)) {
+                if (posCheck.getY() > checkY) {
+                    blockMap.put(posCheck.immutable(), blockState1);
                 } else {
-                    blockMap.put(blockPos, blockState2);
+                    blockMap.put(posCheck.immutable(), blockState2);
                 }
             }
         }
     }
 
-    public static void ball8(boolean replace, int x, int y, int z, int blockState, BlockPos centerPos, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
+    public static void ball8(BlockPos.MutableBlockPos posCheck, boolean replace, int x, int y, int z, int blockState, BlockPos centerPos, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
         for (int i = 0; i < 8; i++) {
             if (placePer >= random.nextFloat()) {
-                BlockPos blockPos = new BlockPos(centerPos.getX() + x * (i < 4 ? 1 : -1), centerPos.getY() + y * (i % 4 < 2 ? 1 : -1), centerPos.getZ() + z * (i % 2 < 1 ? 1 : -1));
-                if (replace || !blockMap.containsKey(blockPos)) {
-                    blockMap.put(blockPos, blockState);
+                posCheck.set(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1)));
+                if (replace || !blockMap.containsKey(posCheck)) {
+                    blockMap.put(posCheck.immutable(), blockState);
                 }
             }
         }
@@ -52,13 +55,16 @@ public final class StructureUtils {
     public static void ball(double radiusD, BlockPos centerPos, int blockState, boolean replace, Object2IntMap<BlockPos> blockMap) {
         int radius = (int) radiusD + 1;
         double radius2 = radiusD * radiusD;
+        int x2;
+        int y2;
+        BlockPos.MutableBlockPos posCheck = centerPos.mutable();
         for (int x = 0; x < radius; x++) {
-            int x2 = x * x;
+            x2 = x * x;
             for (int y = 0; y < radius; y++) {
-                int y2 = y * y;
+                y2 = y * y;
                 for (int z = 0; z < radius; z++) {
                     if ((x2 + y2 + z * z <= radius2)) {
-                        ball8(replace, x, y, z, blockState, centerPos, blockMap);
+                        ball8(posCheck, replace, x, y, z, blockState, centerPos, blockMap);
                     }
                 }
             }
@@ -69,13 +75,16 @@ public final class StructureUtils {
     public static void ball(double radiusD, BlockPos centerPos, int blockState1, int blockState2, boolean replace, Object2IntMap<BlockPos> blockMap, int checkY) {
         int radius = (int) radiusD + 1;
         double radius2 = radiusD * radiusD;
+        int x2;
+        int y2;
+        BlockPos.MutableBlockPos posCheck = centerPos.mutable();
         for (int x = 0; x < radius; x++) {
-            int x2 = x * x;
+            x2 = x * x;
             for (int y = 0; y < radius; y++) {
-                int y2 = y * y;
+                y2 = y * y;
                 for (int z = 0; z < radius; z++) {
                     if ((x2 + y2 + z * z <= radius2)) {
-                        ball8(replace, x, y, z, blockState1, blockState2, centerPos, blockMap, checkY);
+                        ball8(posCheck, replace, x, y, z, blockState1, blockState2, centerPos, blockMap, checkY);
                     }
                 }
             }
@@ -86,13 +95,16 @@ public final class StructureUtils {
     public static void ball(double radiusD, BlockPos centerPos, int blockState, boolean replace, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
         int radius = (int) radiusD + 1;
         double radius2 = radiusD * radiusD;
+        int x2;
+        int y2;
+        BlockPos.MutableBlockPos posCheck = centerPos.mutable();
         for (int x = 0; x < radius; x++) {
-            int x2 = x * x;
+            x2 = x * x;
             for (int y = 0; y < radius; y++) {
-                int y2 = y * y;
+                y2 = y * y;
                 for (int z = 0; z < radius; z++) {
                     if ((x2 + y2 + z * z <= radius2)) {
-                        ball8(replace, x, y, z, blockState, centerPos, blockMap, placePer, random);
+                        ball8(posCheck, replace, x, y, z, blockState, centerPos, blockMap, placePer, random);
                     }
                 }
             }
@@ -107,13 +119,16 @@ public final class StructureUtils {
         double rX = radiusDX * radiusDX;
         double rY = radiusDY * radiusDY;
         double rZ = radiusDZ * radiusDZ;
+        int x2;
+        int y2;
+        BlockPos.MutableBlockPos posCheck = centerPos.mutable();
         for (int x = 0; x < radiusX; x++) {
-            int x2 = x * x;
+            x2 = x * x;
             for (int y = 0; y < radiusY; y++) {
-                int y2 = y * y;
+                y2 = y * y;
                 for (int z = 0; z < radiusZ; z++) {
                     if ((x2 / rX + y2 / rY + (z * z) / rZ) <= 1) {
-                        ball8(replace, x, y, z, blockState, centerPos, blockMap);
+                        ball8(posCheck, replace, x, y, z, blockState, centerPos, blockMap);
                     }
                 }
             }
@@ -128,13 +143,16 @@ public final class StructureUtils {
         double rX = radiusDX * radiusDX;
         double rY = radiusDY * radiusDY;
         double rZ = radiusDZ * radiusDZ;
+        int x2;
+        int y2;
+        BlockPos.MutableBlockPos posCheck = centerPos.mutable();
         for (int x = 0; x < radiusX; x++) {
-            int x2 = x * x;
+            x2 = x * x;
             for (int y = 0; y < radiusY; y++) {
-                int y2 = y * y;
+                y2 = y * y;
                 for (int z = 0; z < radiusZ; z++) {
                     if ((x2 / rX + y2 / rY + (z * z) / rZ) <= 1) {
-                        ball8(replace, x, y, z, blockState1, blockState2, centerPos, blockMap, checkY);
+                        ball8(posCheck, replace, x, y, z, blockState1, blockState2, centerPos, blockMap, checkY);
                     }
                 }
             }
@@ -149,13 +167,16 @@ public final class StructureUtils {
         double rX = radiusDX * radiusDX;
         double rY = radiusDY * radiusDY;
         double rZ = radiusDZ * radiusDZ;
+        int x2;
+        int y2;
+        BlockPos.MutableBlockPos posCheck = centerPos.mutable();
         for (int x = 0; x < radiusX; x++) {
-            int x2 = x * x;
+            x2 = x * x;
             for (int y = 0; y < radiusY; y++) {
-                int y2 = y * y;
+                y2 = y * y;
                 for (int z = 0; z < radiusZ; z++) {
                     if ((x2 / rX + y2 / rY + (z * z) / rZ) <= 1) {
-                        ball8(replace, x, y, z, blockState, centerPos, blockMap, placePer, random);
+                        ball8(posCheck, replace, x, y, z, blockState, centerPos, blockMap, placePer, random);
                     }
                 }
             }
@@ -173,16 +194,17 @@ public final class StructureUtils {
         int xLength = endX - startX;
         int yLength = endY - startY;
         int zLength = endZ - startZ;
+        BlockPos.MutableBlockPos posCheck = startPos.mutable();
         for (int x = 0; x <= xLength; x++) {
             for (int y = 0; y <= yLength; y++) {
                 for (int z = 0; z <= zLength; z++) {
-                    BlockPos blockPos = new BlockPos(startX + x, startY + y, startZ + z);
+                    posCheck.set(startX + x, startY + y, startZ + z);
                     if (replace == 0) {
-                        blockMap.put(blockPos, blockstate);
-                    } else if (replace == 1 && blockMap.containsKey(blockPos)) {
-                        blockMap.put(blockPos, blockstate);
-                    } else if (replace == 2 && !blockMap.containsKey(blockPos)) {
-                        blockMap.put(blockPos, blockstate);
+                        blockMap.put(posCheck.immutable(), blockstate);
+                    } else if (replace == 1 && blockMap.containsKey(posCheck.immutable())) {
+                        blockMap.put(posCheck.immutable(), blockstate);
+                    } else if (replace == 2 && !blockMap.containsKey(posCheck.immutable())) {
+                        blockMap.put(posCheck.immutable(), blockstate);
                     }
                 }
             }
@@ -211,18 +233,20 @@ public final class StructureUtils {
         int setStartZ = Math.min(zStart1, zEnd1);
         int setEndZ = Math.max(zStart0, zEnd0);
 
-        Vector3d pointP = new Vector3d();
-        Vector3d pointP2 = new Vector3d();
-        double invLength = 1 / startPos.distance(endPos);
+        Vector3d pointP;
+        Vector3d pointP2;
+        double length = startPos.distance(endPos);
+        double lengthGet;
+        double lengthP;
 
         for (int x = setStartX; x <= setEndX; x++) {
             for (int y = setStartY; y <= setEndY; y++) {
                 for (int z = setStartZ; z <= setEndZ; z++) {
-                    pointP.set(x, y, z);
+                    pointP = new Vector3d(x, y, z);
                     if (!isProjectionBetweenPoints(startPos, endPos, pointP)) continue;
-                    pointP2.set(getProjectionOnLineSegment(startPos, endPos, pointP));
-                    double lengthGet = pointP2.distance(endPos);//0;//Math.sqrt(y2 + Mth.square(endPos.z - z) - getDistanceToLineSegment(startPos, endPos, pointP));
-                    double lengthP = lengthGet * invLength;
+                    pointP2 = getProjectionOnLineSegment(startPos, endPos, pointP);
+                    lengthGet = pointP2.distance(endPos);//0;//Math.sqrt(y2 + Mth.square(endPos.z - z) - getDistanceToLineSegment(startPos, endPos, pointP));
+                    lengthP = lengthGet / length;
                     if (pointP.distance(pointP2) <= (startRadius * lengthP + endRadius * (1.0D - lengthP))) {
                         blockMap.put(new BlockPos(x, y, z), blockstate);
                     }
@@ -240,11 +264,16 @@ public final class StructureUtils {
 
     //迷宫填充
     public static void mazeSet(BlockPos centerPos, double distance, int layer, int blockstate, int width, int height, WorldgenRandom random, float difficulty, Object2IntMap<BlockPos> blockMap) {
-        Map<Vector3d, BooleanStorage4> mazePos = mazePos(VectorUtils.toVector3d(centerPos), distance, layer, random, difficulty);
+        Map<Vector3d, BooleanStorage4> mazePos = mazePos(new Vector3d(centerPos.getX(), centerPos.getY(), centerPos.getZ()), distance, layer, random, difficulty);
+        Vector3d key;
+        BlockPos keySet;
+        BooleanStorage4 value;
         int length = (int) (distance / 2) + 1;
+
         for (Map.Entry<Vector3d, BooleanStorage4> entry : mazePos.entrySet()) {
-            BlockPos keySet = VectorUtils.fromVector3d(entry.getKey());
-            BooleanStorage4 value = entry.getValue();
+            key = entry.getKey();
+            keySet = new BlockPos((int) key.x, (int) key.y, (int) key.z);
+            value = entry.getValue().copy();
             if (value.get(0)) rectangular(keySet.offset(-width, 0, -width), keySet.offset(length, height, width), blockstate, blockMap, 0);
             if (value.get(1)) rectangular(keySet.offset(-width, 0, -width), keySet.offset(width, height, length), blockstate, blockMap, 0);
             if (value.get(2)) rectangular(keySet.offset(width, 0, width), keySet.offset(-length, height, -width), blockstate, blockMap, 0);
@@ -296,9 +325,11 @@ public final class StructureUtils {
 
     //在整个坐标列表上放置地物
     public static void lineSetFeature(List<Vector3d> list, Map<BlockPos, ResourceLocation> featureMap, ResourceLocation[] feature, WorldgenRandom random) {
+        BlockPos pos;
         int length = feature.length;
         for (Vector3d vctPos : list) {
-            featureMap.put(VectorUtils.fromVector3d(vctPos), feature[random.nextInt(length)]);
+            pos = VectorUtils.fromVector3d(vctPos);
+            featureMap.put(pos, feature[random.nextInt(length)]);
         }
     }
 
@@ -319,6 +350,9 @@ public final class StructureUtils {
 
     //获取xz在高度图上的y坐标
     public static int getHeight(int x, int z, Structure.GenerationContext context) {
-        return context.chunkGenerator().getFirstOccupiedHeight(x, z, Heightmap.Types.WORLD_SURFACE_WG, context.heightAccessor(), context.randomState());
+        ChunkGenerator chunkgenerator = context.chunkGenerator();
+        LevelHeightAccessor levelheightaccessor = context.heightAccessor();
+        RandomState randomstate = context.randomState();
+        return chunkgenerator.getFirstOccupiedHeight(x, z, Heightmap.Types.WORLD_SURFACE_WG, levelheightaccessor, randomstate);
     }
 }
