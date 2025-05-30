@@ -64,7 +64,6 @@ public class IdFixer {
     public static final ResourceLocation GP = ResourceLocation.fromNamespaceAndPath(ConfluenceMagicLib.CONFLUENCE_ID, "grid_piece");
     public static final ResourceLocation FIXED_GP = ConfluenceMagicLib.asResource("grid_piece");
     private static final Map<String, String> BLOCK_WITH_ITEM_NAME_FIX_MAP = ImmutableMap.<String, String>builder()
-            .put("confluence:tr_crimson_crate", "confluence:crimson_crate")
             .put("confluence:freeze_crate", "confluence:frozen_crate")
             .build();
     private static final Map<String, String> BLOCK_NAME_FIX_MAP = ImmutableMap.<String, String>builder()
