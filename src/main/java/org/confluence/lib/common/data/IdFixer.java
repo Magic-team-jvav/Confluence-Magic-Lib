@@ -73,6 +73,7 @@ public class IdFixer {
             .put("confluence:ebony_cobblestone", "confluence:cobbled_ebonstone")
             .put("confluence:pearl_cobblestone", "confluence:cobbled_pearlstone")
             .put("confluence:tr_crimson_cobblestone", "confluence:cobbled_crimstone")
+
             .put("confluence:ebony_sandstone", "confluence:ebonsandstone")
             .put("confluence:tr_crimson_sandstone", "confluence:crimsandstone")
             .put("confluence:pearl_sandstone", "confluence:pearlsandstone")
@@ -89,8 +90,10 @@ public class IdFixer {
             .put("confluence:ebony_moist_sand_block", "confluence:moistened_ebonsand_block")
             .put("confluence:pearl_moist_sand_block", "confluence:moistened_pearlsand_block")
             .put("confluence:tr_crimson_moist_sand_block", "confluence:moistened_crimsand_block")
+
             .put("confluence:moist_sand_block", "confluence:moistened_sand_block")
             .put("confluence:red_moist_sand_block", "confluence:moistened_red_sand_block")
+
             .put("confluence:tr_lava_bricks", "confluence:hellstone_bricks")
             .put("confluence:tr_emerald_ore", "confluence:emerald_ore")
             .put("confluence:deepslate_tr_emerald_ore", "confluence:deepslate_emerald_ore")
