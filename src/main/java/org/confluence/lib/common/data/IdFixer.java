@@ -155,6 +155,7 @@ public class IdFixer {
             .build();
     private static final Map<String, String> ITEM_NAME_FIX_MAP = ImmutableMap.<String, String>builder()
             .put("confluence:tr_crimson_ingot", "confluence:crimtane_ingot")
+            .put("confluence:raw_tr_crimson", "confluence:raw_crimtane")
             .put("confluence:tr_emerald", "confluence:pure_emerald")
             .put("confluence:tr_amethyst", "confluence:amethyst")
             .put("confluence:tr_crimson_seed", "confluence:crimson_seed")
