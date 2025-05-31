@@ -65,6 +65,7 @@ public class IdFixer {
     public static final ResourceLocation FIXED_GP = ConfluenceMagicLib.asResource("grid_piece");
     private static final Map<String, String> BLOCK_WITH_ITEM_NAME_FIX_MAP = ImmutableMap.<String, String>builder()
             .put("confluence:freeze_crate", "confluence:frozen_crate")
+
             .put("confluence:ebony_stone", "confluence:ebonstone")
             .put("confluence:pearl_stone", "confluence:pearlstone")
             .put("confluence:tr_crimson_stone", "confluence:crimstone")
@@ -114,18 +115,25 @@ public class IdFixer {
 
             .put("confluence:tr_crimson_grass_block", "confluence:crimson_grass_block")
             .put("confluence:tr_crimson_jungle_grass_block", "confluence:crimson_jungle_grass_block")
-
-            .put("confluence:tr_amethyst_branches", "confluence:amethyst_branches")
             .put("confluence:tr_crimson_drooping_vine", "confluence:crimson_drooping_vine")
-            .put("confluence:tr_amethyst_sapling", "confluence:amethyst_sapling")
             .put("confluence:tr_crimson_grass", "confluence:crimson_grass")
             .put("confluence:tr_crimson_cattails_body", "confluence:crimson_cattails_body")
+            .put("confluence:tr_crimson_cattails_head", "confluence:crimson_cattails_head")
+            .put("confluence:tr_crimson_pot", "confluence:crimson_pot")
+            .put("confluence:tr_crimson_crate", "confluence:crimson_crate")
+            .put("confluence:tr_crimson_cattails", "confluence:crimson_cattails")
+
+            .put("confluence:tr_crimson_ore_bricks", "confluence:crimtane_ore_bricks")
+            .put("confluence:tr_crimson_rock_bricks", "confluence:crimstone_bricks")
+
+            .put("confluence:tr_amethyst_branches", "confluence:amethyst_branches")
+            .put("confluence:tr_amethyst_sapling", "confluence:amethyst_sapling")
+
             .put("confluence:tr_emerald_block", "confluence:emerald_block")
             .put("confluence:tr_amethyst_block", "confluence:amethyst_block")
             .put("confluence:tr_polished_granite", "confluence:polished_granite")
             .put("confluence:tr_copper_bricks", "confluence:copper_bricks")
-            .put("confluence:tr_crimson_ore_bricks", "confluence:crimtane_ore_bricks")
-            .put("confluence:tr_crimson_rock_bricks", "confluence:crimstone_bricks")
+
             .put("confluence:tr_gold_bricks", "confluence:golden_bricks")
             .put("confluence:tr_iron_bricks", "confluence:iron_bricks")
             .put("confluence:ebony_rock_bricks", "confluence:ebonstone_bricks")
@@ -135,9 +143,7 @@ public class IdFixer {
             .put("confluence:tr_oak_planks", "confluence:chiseled_oak_planks")
             .put("confluence:tr_northland_planks", "confluence:chiseled_spruce_planks")
             .put("confluence:tr_granite_column", "confluence:granite_column")
-            .put("confluence:tr_crimson_pot", "confluence:crimson_pot")
-            .put("confluence:tr_crimson_crate", "confluence:crimson_crate")
-            .put("confluence:tr_crimson_cattails", "confluence:crimson_cattails")
+
             .build();
     private static final Map<String, String> BLOCK_NAME_FIX_MAP = ImmutableMap.<String, String>builder()
             .put("confluence:copper_coin_pile", "confluence:copper_coin")
