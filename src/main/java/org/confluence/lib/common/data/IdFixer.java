@@ -89,17 +89,21 @@ public class IdFixer {
             .put("confluence:tr_crimson_moist_sand_block", "confluence:moistened_crimsand_block")
             .put("confluence:moist_sand_block", "confluence:moistened_sand_block")
             .put("confluence:red_moist_sand_block", "confluence:moistened_red_sand_block")
+
             .put("confluence:tr_lava_bricks", "confluence:hellstone_bricks")
+
             .put("confluence:tr_emerald_ore", "confluence:emerald_ore")
             .put("confluence:deepslate_tr_emerald_ore", "confluence:deepslate_emerald_ore")
             .put("confluence:sanctification_tr_emerald_ore", "confluence:sanctification_emerald_ore")
             .put("confluence:corruption_tr_emerald_ore", "confluence:corruption_emerald_ore")
             .put("confluence:fleshification_tr_emerald_ore", "confluence:fleshification_emerald_ore")
+
             .put("confluence:tr_amethyst_ore", "confluence:amethyst_ore")
             .put("confluence:deepslate_tr_amethyst_ore", "confluence:deepslate_amethyst_ore")
             .put("confluence:sanctification_tr_amethyst_ore", "confluence:sanctification_amethyst_ore")
             .put("confluence:corruption_tr_amethyst_ore", "confluence:corruption_amethyst_ore")
             .put("confluence:fleshification_tr_amethyst_ore", "confluence:fleshification_amethyst_ore")
+
             .put("confluence:tr_crimson_ore", "confluence:crimtane_ore")
             .put("confluence:deepslate_tr_crimson_ore", "confluence:deepslate_crimtane_ore")
             .put("confluence:sanctification_tr_crimson_ore", "confluence:sanctification_crimtane_ore")
@@ -107,8 +111,10 @@ public class IdFixer {
             .put("confluence:fleshification_tr_crimson_ore", "confluence:fleshification_crimtane_ore")
             .put("confluence:raw_tr_crimson_block", "confluence:raw_crimtane_block")
             .put("confluence:tr_crimson_block", "confluence:crimtane_block")
+
             .put("confluence:tr_crimson_grass_block", "confluence:crimson_grass_block")
             .put("confluence:tr_crimson_jungle_grass_block", "confluence:crimson_jungle_grass_block")
+
             .put("confluence:tr_amethyst_branches", "confluence:amethyst_branches")
             .put("confluence:tr_crimson_drooping_vine", "confluence:crimson_drooping_vine")
             .put("confluence:tr_amethyst_sapling", "confluence:amethyst_sapling")
