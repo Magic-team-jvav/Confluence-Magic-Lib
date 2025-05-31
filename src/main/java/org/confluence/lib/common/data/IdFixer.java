@@ -99,7 +99,7 @@ public class IdFixer {
             .put("confluence:corruption_tr_emerald_ore", "confluence:corruption_pure_emerald_ore")
             .put("confluence:fleshification_tr_emerald_ore", "confluence:fleshification_pure_emerald_ore")
 
-            .put("confluence:pure_amethyst_ore", "confluence:amethyst_ore")
+            .put("confluence:tr_amethyst_ore", "confluence:amethyst_ore")
             .put("confluence:deepslate_tr_amethyst_ore", "confluence:deepslate_amethyst_ore")
             .put("confluence:sanctification_tr_amethyst_ore", "confluence:sanctification_amethyst_ore")
             .put("confluence:corruption_tr_amethyst_ore", "confluence:corruption_amethyst_ore")
@@ -129,7 +129,7 @@ public class IdFixer {
             .put("confluence:tr_amethyst_branches", "confluence:amethyst_branches")
             .put("confluence:tr_amethyst_sapling", "confluence:amethyst_sapling")
 
-            .put("confluence:tr_emerald_block", "confluence:emerald_block")
+            .put("confluence:tr_emerald_block", "confluence:pure_emerald_block")
             .put("confluence:tr_amethyst_block", "confluence:amethyst_block")
             .put("confluence:tr_polished_granite", "confluence:polished_granite")
             .put("confluence:tr_copper_bricks", "confluence:copper_bricks")
