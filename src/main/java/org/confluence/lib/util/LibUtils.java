@@ -30,6 +30,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.EffectCure;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.component.NbtComponent;
@@ -252,5 +253,13 @@ public final class LibUtils {
         CompoundTag tag = new CompoundTag();
         data.put(Player.PERSISTED_NBT_TAG, tag);
         return tag;
+    }
+
+    /**
+     * @return 单人模式中为false；客户端连接服务端时，客户端为true，服务端为false
+     * @apiNote 你应该在逻辑服务端启动后调用这个方法
+     */
+    public static boolean isLogicalAndPhysicalClient() {
+        return FMLEnvironment.dist.isClient() && ServerLifecycleHooks.getCurrentServer() == null;
     }
 }

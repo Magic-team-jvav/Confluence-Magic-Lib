@@ -9,6 +9,8 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.joml.Quaternionf;
 
 import javax.imageio.ImageIO;
@@ -17,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+@OnlyIn(Dist.CLIENT)
 public final class LibClientUtils {
     public static final float HALF_SQRT_3 = (float) (Math.sqrt(3) / 2.0);
     public static final Quaternionf ANGLE_45 = Axis.YP.rotation(Mth.PI * 0.25F);
