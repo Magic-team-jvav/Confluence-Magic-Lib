@@ -1,9 +1,13 @@
 package org.confluence.lib.common.event;
 
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -53,5 +57,20 @@ public final class GameEvents {
     @SubscribeEvent
     public static void playerLogged(PlayerEvent.PlayerLoggedInEvent event) {
         IdFixer.fixPersistentData(event.getEntity());
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST, receiveCanceled = true)
+    public static void checkForNull(LivingDeathEvent event) {
+        if (event.getSource() == null) {
+            event.setCanceled(true);
+            if (event.getEntity() != null && event.getEntity().level() instanceof ServerLevel level) {
+                StringBuilder builder = new StringBuilder();
+                for (StackTraceElement element : level.getServer().getRunningThread().getStackTrace()) {
+                    builder.append(element).append('\n');
+                }
+                ConfluenceMagicLib.LOGGER.error(builder.toString());
+                level.getServer().sendSystemMessage(Component.translatable("error.confluence.null").withStyle(ChatFormatting.RED));
+            }
+        }
     }
 }
