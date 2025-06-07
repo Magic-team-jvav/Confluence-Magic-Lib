@@ -6,6 +6,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
@@ -215,7 +216,10 @@ public final class VectorUtils {
             if (instance != null) scale *= (1.0 - instance.getValue());
         }
         if (scale > 0.0) {
-            if (a instanceof LivingEntity living) {
+            LivingEntity living = null;
+            if (a instanceof TraceableEntity traceable && traceable.getOwner() instanceof LivingEntity living1) living = living1;
+            else if (a instanceof LivingEntity living1) living = living1;
+            if (living != null) {
                 AttributeInstance instance = living.getAttribute(Attributes.ATTACK_KNOCKBACK);
                 if (instance != null) scale *= (1.0 + instance.getValue());
             }
