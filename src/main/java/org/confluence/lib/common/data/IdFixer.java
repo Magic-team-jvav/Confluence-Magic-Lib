@@ -159,6 +159,16 @@ public class IdFixer {
             .putAll(BLOCK_WITH_ITEM_NAME_FIX_MAP)
             .build();
     private static final Map<String, String> ITEM_NAME_FIX_MAP = ImmutableMap.<String, String>builder()
+            .put("confluence:copper_board_sword", "confluence:copper_broadsword")
+            .put("confluence:tin_board_sword", "confluence:tin_broadsword")
+            .put("confluence:lead_board_sword", "confluence:lead_broadsword")
+            .put("confluence:silver_board_sword", "confluence:silver_broadsword")
+            .put("confluence:tungsten_board_sword", "confluence:tungsten_broadsword")
+            .put("confluence:golden_board_sword", "confluence:golden_broadsword")
+            .put("confluence:platinum_board_sword", "confluence:platinum_broadsword")
+
+
+
             .put("confluence:tr_crimson_ingot", "confluence:crimtane_ingot")
             .put("confluence:raw_tr_crimson", "confluence:raw_crimtane")
 
