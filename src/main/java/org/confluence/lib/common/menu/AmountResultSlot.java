@@ -36,4 +36,9 @@ public class AmountResultSlot<R extends AbstractAmountRecipe<?>> extends Slot {
     }
 
     protected void updateMenu() {}
+
+    @Override
+    public boolean isFake() {
+        return true;
+    }
 }

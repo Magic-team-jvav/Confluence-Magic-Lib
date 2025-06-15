@@ -77,7 +77,7 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
                     }
                 } else if (ingredient.test(itemStack)) {
                     matches.add(ingredient);
-                    continue outer;
+                    continue outer; // break;
                 }
             }
         }

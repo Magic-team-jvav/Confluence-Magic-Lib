@@ -218,4 +218,23 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
 
         return itemStack;
     }
+
+    public Container getContainer() {
+        return input;
+    }
+
+    public void clearContainerNoUpdate(Player player) {
+        if (!player.isAlive() || player instanceof ServerPlayer && ((ServerPlayer)player).hasDisconnected()) {
+            for(int j = 0; j < input.getContainerSize(); ++j) {
+                player.drop(input.removeItemNoUpdate(j), false);
+            }
+        } else {
+            for(int i = 0; i < input.getContainerSize(); ++i) {
+                Inventory inventory = player.getInventory();
+                if (inventory.player instanceof ServerPlayer) {
+                    inventory.placeItemBackInInventory(input.removeItemNoUpdate(i), false);
+                }
+            }
+        }
+    }
 }
