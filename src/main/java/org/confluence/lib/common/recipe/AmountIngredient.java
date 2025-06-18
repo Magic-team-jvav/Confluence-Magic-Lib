@@ -64,6 +64,7 @@ public record AmountIngredient(Ingredient ingredient, int amount) implements ICu
         return new Ingredient(new AmountIngredient(Ingredient.of(items), amount));
     }
 
+
     public static Ingredient of(int amount, ItemStack... stacks) {
         return new Ingredient(new AmountIngredient(Ingredient.of(stacks), amount));
     }
