@@ -131,6 +131,7 @@ public class IdFixer {
             .put("confluence:tr_gold_bricks", "confluence:golden_bricks")
             .put("confluence:tr_iron_bricks", "confluence:iron_bricks")
             .put("confluence:ebony_rock_bricks", "confluence:ebonstone_bricks")
+            .put("confluence:pearl_rock_bricks", "confluence:pearlstone_bricks")
             .put("confluence:tr_obsidian_bricks", "confluence:obsidian_bricks")
             .put("confluence:tr_obsidian_small_bricks", "confluence:obsidian_small_bricks")
             .put("confluence:tr_smooth_obsidian", "confluence:smooth_obsidian")
