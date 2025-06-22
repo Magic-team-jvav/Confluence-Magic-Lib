@@ -9,7 +9,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.DifficultyInstance;
@@ -265,12 +264,20 @@ public final class LibUtils {
         return tag;
     }
 
+    public static boolean isPhysicalClient() {
+        return FMLEnvironment.dist.isClient();
+    }
+
     /**
      * @return 单人模式中为false；客户端连接服务端时，客户端为true，服务端为false
-     * @apiNote 你应该在逻辑服务端启动后调用这个方法
+     * @apiNote 你应该在逻辑服务端启动后调用这个方法，且仅适用于在逻辑服务端调用
      */
     public static boolean isLogicalClient() {
-        return FMLEnvironment.dist.isClient() && ServerLifecycleHooks.getCurrentServer() == null;
+        return isPhysicalClient() && ServerLifecycleHooks.getCurrentServer() == null;
+    }
+
+    public static boolean isPhysicalServer() {
+        return FMLEnvironment.dist.isDedicatedServer();
     }
 
     /**
@@ -278,8 +285,7 @@ public final class LibUtils {
      * @apiNote 你应该在逻辑服务端启动后调用这个方法
      */
     public static boolean isLogicalServer() {
-        if (FMLEnvironment.dist.isDedicatedServer()) return true;
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-        return server != null && server.isSameThread();
+        if (isPhysicalServer()) return true;
+        return ServerLifecycleHooks.getCurrentServer() != null && ServerLifecycleHooks.getCurrentServer().isSameThread();
     }
 }
