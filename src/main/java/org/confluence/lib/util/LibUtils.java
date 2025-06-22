@@ -10,6 +10,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -162,6 +163,14 @@ public final class LibUtils {
 
     public static boolean anyHandHasItem(LivingEntity living, Predicate<ItemStack> predicate) {
         return predicate.test(living.getMainHandItem()) || predicate.test(living.getOffhandItem());
+    }
+
+    public static boolean anyHandHasItem(LivingEntity living, Item item) {
+        return living.getMainHandItem().is(item) || living.getOffhandItem().is(item);
+    }
+
+    public static boolean anyHandHasItem(LivingEntity living, TagKey<Item> item) {
+        return living.getMainHandItem().is(item) || living.getOffhandItem().is(item);
     }
 
     public static void devRun(Runnable runnable) {
