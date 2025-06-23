@@ -1,10 +1,10 @@
 package org.confluence.lib.network;
 
-import com.mojang.datafixers.util.Pair;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
@@ -46,6 +46,17 @@ public interface ExtraByteBufCodecs {
             }
         }
     };
+    StreamCodec<? super FriendlyByteBuf, java.util.UUID> UUID = new StreamCodec<>() {
+        @Override
+        public java.util.UUID decode(FriendlyByteBuf buffer) {
+            return buffer.readUUID();
+        }
+
+        @Override
+        public void encode(FriendlyByteBuf buffer, java.util.UUID value) {
+            buffer.writeUUID(value);
+        }
+    };
 
     static <V1, V2, B extends ByteBuf> StreamCodec<B, Tuple<V1, V2>> tuple(StreamCodec<? super B, V1> codecA, StreamCodec<? super B, V2> codecB) {
         return new StreamCodec<>() {
@@ -58,21 +69,6 @@ public interface ExtraByteBufCodecs {
             public void encode(B buffer, Tuple<V1, V2> value) {
                 codecA.encode(buffer, value.getA());
                 codecB.encode(buffer, value.getB());
-            }
-        };
-    }
-
-    static <V1, V2, B extends ByteBuf> StreamCodec<B, Pair<V1, V2>> pair(StreamCodec<? super B, V1> codecA, StreamCodec<? super B, V2> codecB) {
-        return new StreamCodec<>() {
-            @Override
-            public Pair<V1, V2> decode(B buffer) {
-                return new Pair<>(codecA.decode(buffer), codecB.decode(buffer));
-            }
-
-            @Override
-            public void encode(B buffer, Pair<V1, V2> value) {
-                codecA.encode(buffer, value.getFirst());
-                codecB.encode(buffer, value.getSecond());
             }
         };
     }
