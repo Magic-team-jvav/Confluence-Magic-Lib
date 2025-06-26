@@ -91,7 +91,7 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
     public ItemStack getDownResult() {
         int index = getDownIndex();
         if (index == -1) return result.getItem(0);
-        return recipes.get(index).value().getResultItem(null);
+        return recipes.get(index).value().getResultItem(player.registryAccess());
     }
 
     public int getDownIndex() {
@@ -109,14 +109,14 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
         return -1;
     }
 
-    private boolean isValidRecipeIndex(int pRecipeIndex) {
-        return pRecipeIndex >= 0 && pRecipeIndex < recipes.size();
+    protected boolean isValidRecipeIndex(int recipeIndex) {
+        return recipeIndex >= 0 && recipeIndex < recipes.size();
     }
 
     @Override
-    public boolean clickMenuButton(Player pPlayer, int pId) {
-        if (isValidRecipeIndex(pId)) {
-            selectedRecipeIndex.set(pId);
+    public boolean clickMenuButton(Player player, int id) {
+        if (isValidRecipeIndex(id)) {
+            selectedRecipeIndex.set(id);
             setupResultSlot();
         }
         return true;
@@ -125,7 +125,7 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
     public void setupResultSlot() {
         if (!recipes.isEmpty() && isValidRecipeIndex(selectedRecipeIndex.get())) {
             R recipe = recipes.get(selectedRecipeIndex.get()).value();
-            ItemStack itemStack = recipe.getResultItem(null).copy();
+            ItemStack itemStack = recipe.getResultItem(player.registryAccess()).copy();
             if (itemStack.isItemEnabled(player.level().enabledFeatures())) {
                 result.setItem(0, itemStack);
                 resultSlot.setCurrentRecipe(recipe);
@@ -139,18 +139,18 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
     }
 
     @Override
-    public void removed(Player pPlayer) {
-        super.removed(pPlayer);
-        access.execute((level, blockPos) -> clearContainer(pPlayer, input));
+    public void removed(Player player) {
+        super.removed(player);
+        access.execute((level, blockPos) -> clearContainer(player, input));
     }
 
     @Override
-    public boolean canTakeItemForPickAll(ItemStack pStack, Slot pSlot) {
-        return pSlot.container != result && super.canTakeItemForPickAll(pStack, pSlot);
+    public boolean canTakeItemForPickAll(ItemStack stack, Slot slot) {
+        return slot.container != result && super.canTakeItemForPickAll(stack, slot);
     }
 
     @Override
-    public void slotsChanged(Container pContainer) {
+    public void slotsChanged(Container container) {
         input.asCraftingInput(true);
         this.recipes = player.level().getRecipeManager().getRecipesFor(recipeType, input, player.level());
         if (selectedRecipeIndex.get() >= recipes.size()) selectedRecipeIndex.set(recipes.size() - 1);
@@ -160,7 +160,7 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
                 if (!recipes.isEmpty()) {
                     if (selectedRecipeIndex.get() == -1) selectedRecipeIndex.set(0);
                     R recipe = recipes.get(selectedRecipeIndex.get()).value();
-                    itemStack = recipe.getResultItem(null).copy();
+                    itemStack = recipe.getResultItem(player.registryAccess()).copy();
                     resultSlot.setCurrentRecipe(recipe);
                 }
                 result.setItem(0, itemStack);
