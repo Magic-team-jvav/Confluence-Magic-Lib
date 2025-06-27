@@ -58,8 +58,9 @@ public abstract class EitherAmountRecipe4x<T extends MenuRecipeInput> extends Ab
 
     @Override
     public ItemStack assembleAndExtract(T input, HolderLookup.Provider registries) {
-        either.ifLeft(shaped -> consumeShaped(input, 4, 4, shaped));
-        either.ifRight(shapeless -> consumeShapeless(input, shapeless));
+        either
+                .ifLeft(shaped -> consumeShaped(input, 4, 4, shaped))
+                .ifRight(shapeless -> consumeShapeless(input, shapeless));
         return assemble(input, registries);
     }
 
