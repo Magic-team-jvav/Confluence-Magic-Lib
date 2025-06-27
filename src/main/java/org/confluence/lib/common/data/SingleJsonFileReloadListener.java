@@ -46,7 +46,7 @@ public abstract class SingleJsonFileReloadListener extends ContextAwareReloadLis
                     map.put(loc, entry.getValue());
                 }
             } catch (RuntimeException | IOException ioexception) {
-                ConfluenceMagicLib.LOGGER.error("Couldn't {} read {} in data pack {}", identifier(), resourceLocation, resource.sourcePackId(), ioexception);
+                ConfluenceMagicLib.LOGGER.error("Couldn't read {} {} in data pack {}", identifier(), resourceLocation, resource.sourcePackId(), ioexception);
             }
         }
         return map;
