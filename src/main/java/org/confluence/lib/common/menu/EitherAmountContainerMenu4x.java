@@ -75,12 +75,13 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
     }
 
     public int getUpIndex() {
-        if (recipes.isEmpty()) return -1;
-        if (recipes.size() == 1) {
+        int totalSize = getRecipesAmount();
+        if (totalSize == 0) return -1;
+        if (totalSize == 1) {
             return 0;
         } else if (isValidRecipeIndex(selectedRecipeIndex.get())) {
             if (selectedRecipeIndex.get() == 0) {
-                return recipes.size() - 1;
+                return totalSize - 1;
             } else {
                 return selectedRecipeIndex.get() - 1;
             }
@@ -95,12 +96,13 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
     }
 
     public int getDownIndex() {
-        if (recipes.isEmpty()) return -1;
-        if (recipes.size() == 1) {
+        int totalSize = getRecipesAmount();
+        if (totalSize == 0) return -1;
+        if (totalSize == 1) {
             return 0;
         } else if (isValidRecipeIndex(selectedRecipeIndex.get())) {
             int next = selectedRecipeIndex.get() + 1;
-            if (next == recipes.size()) {
+            if (next == totalSize) {
                 return 0;
             } else {
                 return next;
@@ -110,7 +112,7 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
     }
 
     protected boolean isValidRecipeIndex(int recipeIndex) {
-        return recipeIndex >= 0 && recipeIndex < recipes.size();
+        return recipeIndex >= 0 && recipeIndex < getRecipesAmount();
     }
 
     @Override
@@ -123,7 +125,7 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
     }
 
     public void setupResultSlot() {
-        if (!recipes.isEmpty() && isValidRecipeIndex(selectedRecipeIndex.get())) {
+        if (isValidRecipeIndex(selectedRecipeIndex.get())) {
             R recipe = recipes.get(selectedRecipeIndex.get()).value();
             ItemStack itemStack = recipe.getResultItem(player.registryAccess()).copy();
             if (itemStack.isItemEnabled(player.level().enabledFeatures())) {
