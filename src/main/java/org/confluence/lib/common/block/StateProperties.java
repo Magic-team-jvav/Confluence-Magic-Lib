@@ -250,6 +250,10 @@ public class StateProperties {
             this.name = pName;
         }
 
+        public boolean isBase() {
+            return this == BASE;
+        }
+
         /**
          * 获取与该方块相连的多方块的相对方向
          * <p>
