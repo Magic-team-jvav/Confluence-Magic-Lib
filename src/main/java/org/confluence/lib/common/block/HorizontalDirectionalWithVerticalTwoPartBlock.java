@@ -28,25 +28,25 @@ public abstract class HorizontalDirectionalWithVerticalTwoPartBlock extends Hori
     }
 
     @Override
-    public void setPlacedBy(Level pLevel, BlockPos pPos, BlockState pState, @Nullable LivingEntity pPlacer, ItemStack pStack) {
-        if (!pLevel.isClientSide) {
-            BlockPos relativePos = pPos.relative(StateProperties.VerticalTwoPart.getConnectedDirection(pState));
-            pLevel.setBlockAndUpdate(relativePos, pState.setValue(PART, StateProperties.VerticalTwoPart.UP));
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        if (!level.isClientSide) {
+            BlockPos relativePos = pos.relative(StateProperties.VerticalTwoPart.getConnectedDirection(state));
+            level.setBlockAndUpdate(relativePos, state.setValue(PART, StateProperties.VerticalTwoPart.UP));
         }
     }
 
     @Override
-    public @Nullable BlockState getStateForPlacement(BlockPlaceContext pContext) {
-        Level level = pContext.getLevel();
-        BlockState blockState = defaultBlockState().setValue(FACING, pContext.getHorizontalDirection().getOpposite());
-        BlockPos relativePos = pContext.getClickedPos().relative(StateProperties.VerticalTwoPart.getConnectedDirection(blockState));
-        return level.getBlockState(relativePos).canBeReplaced(pContext) ? blockState : null;
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
+        Level level = context.getLevel();
+        BlockState blockState = defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        BlockPos relativePos = context.getClickedPos().relative(StateProperties.VerticalTwoPart.getConnectedDirection(blockState));
+        return level.getBlockState(relativePos).canBeReplaced(context) ? blockState : null;
     }
 
     @Override
-    public void onRemove(BlockState pState, Level pLevel, BlockPos pPos, BlockState pNewState, boolean pMovedByPiston) {
-        super.onRemove(pState, pLevel, pPos, pNewState, pMovedByPiston);
-        pLevel.destroyBlock(pPos.relative(StateProperties.VerticalTwoPart.getConnectedDirection(pState)), false);
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        super.onRemove(state, level, pos, newState, movedByPiston);
+        level.destroyBlock(pos.relative(StateProperties.VerticalTwoPart.getConnectedDirection(state)), false);
     }
 
     @Override
