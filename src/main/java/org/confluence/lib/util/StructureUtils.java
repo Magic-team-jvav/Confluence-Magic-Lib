@@ -211,6 +211,36 @@ public final class StructureUtils {
         }
     }
 
+    //立方体填充，带有随机比例
+    public static void rectangular(BlockPos startPos, BlockPos endPos, int blockstate, Object2IntMap<BlockPos> blockMap, int replace, float placePer, WorldgenRandom random) {
+        int startX = Math.min(endPos.getX(), startPos.getX());
+        int startY = Math.min(endPos.getY(), startPos.getY());
+        int startZ = Math.min(endPos.getZ(), startPos.getZ());
+        int endX = Math.max(endPos.getX(), startPos.getX());
+        int endY = Math.max(endPos.getY(), startPos.getY());
+        int endZ = Math.max(endPos.getZ(), startPos.getZ());
+        int xLength = endX - startX;
+        int yLength = endY - startY;
+        int zLength = endZ - startZ;
+        BlockPos.MutableBlockPos posCheck = startPos.mutable();
+        for (int x = 0; x <= xLength; x++) {
+            for (int y = 0; y <= yLength; y++) {
+                for (int z = 0; z <= zLength; z++) {
+                    posCheck.set(startX + x, startY + y, startZ + z);
+                    if (placePer >= random.nextFloat()) {
+                        if (replace == 0) {
+                            blockMap.put(posCheck.immutable(), blockstate);
+                        } else if (replace == 1 && blockMap.containsKey(posCheck.immutable())) {
+                            blockMap.put(posCheck.immutable(), blockstate);
+                        } else if (replace == 2 && !blockMap.containsKey(posCheck.immutable())) {
+                            blockMap.put(posCheck.immutable(), blockstate);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     //任意角度圆台填充
     public static void frustumSet(Vector3d startPos, Vector3d endPos, double startRadius, double endRadius, int blockstate, Object2IntMap<BlockPos> blockMap) {
         int xStart0 = (int) (startPos.x + startRadius + 1);

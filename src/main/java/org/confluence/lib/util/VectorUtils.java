@@ -1,5 +1,6 @@
 package org.confluence.lib.util;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -549,6 +550,29 @@ public final class VectorUtils {
                             list.add(pointP);
                         }
                     }
+                }
+            }
+        }
+        return list;
+    }
+
+    //立方体坐标列表，带有随机比例
+    public static List<Vector3d> rectangularPos(BlockPos startPos, BlockPos endPos, float chance, WorldgenRandom random) {
+        int startX = Math.min(endPos.getX(), startPos.getX());
+        int startY = Math.min(endPos.getY(), startPos.getY());
+        int startZ = Math.min(endPos.getZ(), startPos.getZ());
+        int endX = Math.max(endPos.getX(), startPos.getX());
+        int endY = Math.max(endPos.getY(), startPos.getY());
+        int endZ = Math.max(endPos.getZ(), startPos.getZ());
+        int xLength = endX - startX;
+        int yLength = endY - startY;
+        int zLength = endZ - startZ;
+        List<Vector3d> list = new ArrayList<>();
+        for (int x = 0; x <= xLength; x++) {
+            for (int y = 0; y <= yLength; y++) {
+                for (int z = 0; z <= zLength; z++) {
+                    Vector3d vct3 = new Vector3d(startX + x, startY + y, startZ + z);
+                    if (chance >= random.nextFloat()) list.add(vct3);
                 }
             }
         }
