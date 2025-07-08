@@ -108,7 +108,7 @@ public abstract class EitherAmountRecipe4x<T extends MenuRecipeInput> extends Ab
         ).apply(instance, factory));
     }
 
-    public static <R extends EitherAmountRecipe4x<?>> StreamCodec<RegistryFriendlyByteBuf, R> eitherSerializerSteamCodec(BiFunction<ItemStack, Either<ShapedRecipePattern, NonNullList<Ingredient>>, R> factory) {
+    public static <R extends EitherAmountRecipe4x<?>> StreamCodec<RegistryFriendlyByteBuf, R> eitherSerializerStreamCodec(BiFunction<ItemStack, Either<ShapedRecipePattern, NonNullList<Ingredient>>, R> factory) {
         return new StreamCodec<>() {
             @Override
             public R decode(RegistryFriendlyByteBuf buffer) {
