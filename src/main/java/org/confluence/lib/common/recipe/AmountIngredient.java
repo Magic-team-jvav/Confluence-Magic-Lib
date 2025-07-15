@@ -57,18 +57,18 @@ public record AmountIngredient(Ingredient ingredient, int amount) implements ICu
     }
 
     public static Ingredient of(int amount, Ingredient ingredient) {
-        return new Ingredient(new AmountIngredient(ingredient, amount));
+        return new AmountIngredient(ingredient, amount).toVanilla();
     }
 
     public static Ingredient of(int amount, ItemLike... items) {
-        return new Ingredient(new AmountIngredient(Ingredient.of(items), amount));
+        return new AmountIngredient(Ingredient.of(items), amount).toVanilla();
     }
 
     public static Ingredient of(int amount, ItemStack... stacks) {
-        return new Ingredient(new AmountIngredient(Ingredient.of(stacks), amount));
+        return new AmountIngredient(Ingredient.of(stacks), amount).toVanilla();
     }
 
     public static Ingredient of(int amount, TagKey<Item> tag) {
-        return new Ingredient(new AmountIngredient(Ingredient.of(tag), amount));
+        return new AmountIngredient(Ingredient.of(tag), amount).toVanilla();
     }
 }
