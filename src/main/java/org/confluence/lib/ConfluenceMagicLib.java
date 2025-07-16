@@ -1,8 +1,12 @@
 package org.confluence.lib;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.neoforged.bus.api.IEventBus;
@@ -15,9 +19,11 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.confluence.lib.common.component.ModRarity;
 import org.confluence.lib.common.component.NbtComponent;
 import org.confluence.lib.common.component.ToolMode;
+import org.confluence.lib.common.particle.CrossDustParticleOptions;
 import org.confluence.lib.common.recipe.AmountIngredient;
 import org.confluence.lib.common.worldgen.structure.GridPiece;
 import org.confluence.lib.common.worldgen.structure.SimpleTemplatePiece;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,10 +48,26 @@ public class ConfluenceMagicLib {
     public static final Supplier<DataComponentType<ToolMode>> TOOL_MODE = TC_DATA_COMPONENT_TYPES.registerComponentType("tool_mode", builder -> builder.persistent(ToolMode.CODEC).networkSynchronized(ToolMode.STREAM_CODEC));
     public static final Supplier<DataComponentType<NbtComponent>> NBT = TC_DATA_COMPONENT_TYPES.registerComponentType("nbt", builder -> builder.persistent(NbtComponent.CODEC).networkSynchronized(NbtComponent.STREAM_CODEC));
 
+    public static final DeferredRegister<ParticleType<?>> PARTICLES = DeferredRegister.create(BuiltInRegistries.PARTICLE_TYPE, LIB_ID);
+    public static final Supplier<ParticleType<CrossDustParticleOptions>> CROSS_DUST_PARTICLE = PARTICLES.register("cross_dust", () -> new ParticleType<>(false) {
+        @Override
+        @NotNull
+        public MapCodec<CrossDustParticleOptions> codec() {
+            return CrossDustParticleOptions.CODEC;
+        }
+
+        @Override
+        @NotNull
+        public StreamCodec<? super RegistryFriendlyByteBuf, CrossDustParticleOptions> streamCodec() {
+            return CrossDustParticleOptions.STREAM_CODEC;
+        }
+    });
+
     public ConfluenceMagicLib(IEventBus modEventBus, ModContainer modContainer) {
         INGREDIENT_TYPES.register(modEventBus);
         PIECE_TYPES.register(modEventBus);
         TC_DATA_COMPONENT_TYPES.register(modEventBus);
+        PARTICLES.register(modEventBus);
     }
 
     public static ResourceLocation asResource(String path) {
