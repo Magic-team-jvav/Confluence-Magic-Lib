@@ -32,19 +32,26 @@ public class PlayerContainer<C extends BlockEntity & PlayerContainer.ValidEntity
         return this.activeContainer == container;
     }
 
+    public void setItemNoUpdate(int index, ItemStack stack) {
+        getItems().set(index, stack);
+        stack.limitSize(this.getMaxStackSize(stack));
+    }
+
     @Override
     public void fromTag(ListTag tag, HolderLookup.Provider levelRegistry) {
         for (int i = 0; i < this.getContainerSize(); i++) {
-            this.setItem(i, ItemStack.EMPTY);
+            setItemNoUpdate(i, ItemStack.EMPTY);
         }
 
         for (int k = 0; k < tag.size(); k++) {
             CompoundTag compoundtag = tag.getCompound(k);
             int j = compoundtag.getByte("Slot") & 255;
             if (j >= 0 && j < getContainerSize()) {
-                setItem(j, ItemStack.parse(levelRegistry, compoundtag).orElse(ItemStack.EMPTY));
+                setItemNoUpdate(j, ItemStack.parse(levelRegistry, compoundtag).orElse(ItemStack.EMPTY));
             }
         }
+
+        setChanged();
     }
 
     @Override
