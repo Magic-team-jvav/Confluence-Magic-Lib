@@ -179,6 +179,8 @@ public class IdFixer {
             .putAll(BLOCK_WITH_ITEM_NAME_FIX_MAP)
             // 1.1.3 -> 1.1.4
             .put("confluence:night_edge", "confluence:nights_edge")
+            // 1.1.4 -> 1.1.5
+            .put("terra_guns:blowpipe", "terra_guns:blowgun")
             .build();
     private static final Map<String, String> BIOME_NAME_FIX_MAP = ImmutableMap.<String, String>builder()
             // 1.1.2 -> 1.1.3
