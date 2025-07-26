@@ -95,8 +95,9 @@ public record ModRarity(String name, int color) implements DataComponentType<Mod
         return color;
     }
 
-    public static @Nullable ModRarity getRarity(ItemStack itemStack) {
-        ModRarity rarity = itemStack.get(ConfluenceMagicLib.MOD_RARITY);
+    public static @Nullable ModRarity getRarity(ItemStack itemStack, boolean prototype) {
+        DataComponentType<ModRarity> type = ConfluenceMagicLib.MOD_RARITY.get();
+        ModRarity rarity = prototype ? itemStack.getPrototype().get(type) : itemStack.get(type);
         if (rarity != null) return rarity;
         return switch (itemStack.getRarity()) {
             case COMMON -> COMMON;
@@ -105,5 +106,9 @@ public record ModRarity(String name, int color) implements DataComponentType<Mod
             case EPIC -> EPIC;
             default -> null;
         };
+    }
+
+    public static @Nullable ModRarity getRarity(ItemStack itemStack) {
+        return getRarity(itemStack, false);
     }
 }
