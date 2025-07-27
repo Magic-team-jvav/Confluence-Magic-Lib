@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -289,13 +290,24 @@ public final class LibUtils {
         return ServerLifecycleHooks.getCurrentServer() != null && ServerLifecycleHooks.getCurrentServer().isSameThread();
     }
 
-    /** @author ChatGPT */
-    public static float cubicBezier(float t, float p0, float p1, float p2, float p3){
+    /**
+     * @author ChatGPT
+     */
+    public static float cubicBezier(float t, float p0, float p1, float p2, float p3) {
         float u = 1 - t;
         float tt = t * t;
         float uu = u * u;
         float uuu = uu * u;
         float ttt = tt * t;
         return uuu * p0 + 3 * uu * t * p1 + 3 * u * tt * p2 + ttt * p3;
+    }
+
+    public static <T> void resetDataComponent(ItemStack itemStack, DataComponentType<T> type) {
+        T value = itemStack.getPrototype().get(type);
+        if (value == null) {
+            itemStack.remove(type);
+        } else {
+            itemStack.set(type, value);
+        }
     }
 }

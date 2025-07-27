@@ -6,6 +6,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
@@ -110,5 +112,15 @@ public record ModRarity(String name, int color) implements DataComponentType<Mod
 
     public static @Nullable ModRarity getRarity(ItemStack itemStack) {
         return getRarity(itemStack, false);
+    }
+
+    public static Style withColor(ItemStack itemStack, Style style) {
+        ModRarity rarity = getRarity(itemStack);
+        if (rarity == null) return itemStack.getRarity().getStyleModifier().apply(style);
+        return style.withColor(rarity.color);
+    }
+
+    public static MutableComponent withColor(ItemStack itemStack, MutableComponent component) {
+        return component.withStyle(style -> withColor(itemStack, style));
     }
 }
