@@ -56,7 +56,7 @@ public abstract class SingleJsonFileReloadListener extends ContextAwareReloadLis
         return map;
     }
 
-    protected abstract void apply(Map<ResourceLocation, JsonElement> object);
+    protected abstract void apply(Map<ResourceLocation, JsonElement> resourceList);
 
     protected abstract ResourceLocation resourcePath();
 
