@@ -1,6 +1,5 @@
 package org.confluence.lib.util;
 
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -70,11 +69,12 @@ public final class FeatureUtils {
     public static @Nullable BlockEntity getBlockEntity(WorldGenLevel level, BlockPos blockPos) {
         BlockEntity blockEntity = level.getBlockEntity(blockPos);
         if (blockEntity == null) {
-            LibUtils.devRun(() -> ConfluenceMagicLib.LOGGER.error("Failed to fetch block entity at ({}, {}, {})", blockPos.getX(), blockPos.getY(), blockPos.getZ()));
+            LibUtils.devRun(() -> ConfluenceMagicLib.LOGGER.warn("Failed to fetch block entity at ({}, {}, {})", blockPos.getX(), blockPos.getY(), blockPos.getZ()));
             return null;
         }
         return blockEntity;
     }
+
     public static void ball8(BlockPos.MutableBlockPos posCheck, boolean replace, int x, int y, int z, BlockState blockState, BlockPos centerPos, WorldGenLevel level) {
         for (int i = 0; i < 8; i++) {
             posCheck.set(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1)));
