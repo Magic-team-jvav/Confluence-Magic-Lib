@@ -182,6 +182,7 @@ public class IdFixer {
             // 1.1.4 -> 1.1.5
             .put("terra_guns:blowpipe", "terra_guns:blowgun")
             .put("confluence:crystal_shards_item", "confluence:crystal_shards")
+            .put("confluence:throwing_knives", "confluence:throwing_knive")
             .build();
     private static final Map<String, String> BIOME_NAME_FIX_MAP = ImmutableMap.<String, String>builder()
             // 1.1.2 -> 1.1.3
