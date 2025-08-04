@@ -146,7 +146,7 @@ tasks.withType(ProcessResources).configureEach {
 
 tasks.register('sourcesJar', Jar) {
     from sourceSets.main.allJava
-    archiveClassifier = 'sources'
+    archiveClassifier.set("sources")
 }
 
 ext {
@@ -157,6 +157,7 @@ publishing {
     publications {
         register('mavenJava', MavenPublication) {
             from components.java
+            artifact tasks.named("sourcesJar")
         }
     }
     repositories {
