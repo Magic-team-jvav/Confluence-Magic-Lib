@@ -144,6 +144,11 @@ tasks.withType(ProcessResources).configureEach {
     }
 }
 
+tasks.register('sourcesJar', Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier = 'sources'
+}
+
 ext {
     releasesUrl = "https://maven.confluence.ink/releases"
     snapshotsUrl = "https://maven.confluence.ink/snapshots"
