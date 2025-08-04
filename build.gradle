@@ -144,10 +144,7 @@ tasks.withType(ProcessResources).configureEach {
     }
 }
 
-tasks.register('sourcesJar', Jar) {
-    from sourceSets.main.allJava
-    archiveClassifier.set("sources")
-}
+java.withSourcesJar()
 
 ext {
     releasesUrl = "https://maven.confluence.ink/releases"
@@ -157,7 +154,6 @@ publishing {
     publications {
         register('mavenJava', MavenPublication) {
             from components.java
-            artifact tasks.named("sourcesJar")
         }
     }
     repositories {
