@@ -1,14 +1,18 @@
 package org.confluence.lib.network;
 
-import com.mojang.datafixers.util.Pair;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.item.crafting.Ingredient;
+import org.confluence.lib.common.recipe.AmountIngredient;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
@@ -26,6 +30,33 @@ public interface ExtraByteBufCodecs {
             buffer.writeLong(value);
         }
     };
+    StreamCodec<RegistryFriendlyByteBuf, NonNullList<Ingredient>> INGREDIENTS = new StreamCodec<>() {
+        @Override
+        public NonNullList<Ingredient> decode(RegistryFriendlyByteBuf buffer) {
+            NonNullList<Ingredient> nonnulllist = NonNullList.withSize(buffer.readVarInt(), AmountIngredient.EMPTY);
+            nonnulllist.replaceAll(ignore -> Ingredient.CONTENTS_STREAM_CODEC.decode(buffer));
+            return nonnulllist;
+        }
+
+        @Override
+        public void encode(RegistryFriendlyByteBuf buffer, NonNullList<Ingredient> value) {
+            buffer.writeVarInt(value.size());
+            for (Ingredient ingredient : value) {
+                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, ingredient);
+            }
+        }
+    };
+    StreamCodec<? super FriendlyByteBuf, java.util.UUID> UUID = new StreamCodec<>() {
+        @Override
+        public java.util.UUID decode(FriendlyByteBuf buffer) {
+            return buffer.readUUID();
+        }
+
+        @Override
+        public void encode(FriendlyByteBuf buffer, java.util.UUID value) {
+            buffer.writeUUID(value);
+        }
+    };
 
     static <V1, V2, B extends ByteBuf> StreamCodec<B, Tuple<V1, V2>> tuple(StreamCodec<? super B, V1> codecA, StreamCodec<? super B, V2> codecB) {
         return new StreamCodec<>() {
@@ -38,21 +69,6 @@ public interface ExtraByteBufCodecs {
             public void encode(B buffer, Tuple<V1, V2> value) {
                 codecA.encode(buffer, value.getA());
                 codecB.encode(buffer, value.getB());
-            }
-        };
-    }
-
-    static <V1, V2, B extends ByteBuf> StreamCodec<B, Pair<V1, V2>> pair(StreamCodec<? super B, V1> codecA, StreamCodec<? super B, V2> codecB) {
-        return new StreamCodec<>() {
-            @Override
-            public Pair<V1, V2> decode(B buffer) {
-                return new Pair<>(codecA.decode(buffer), codecB.decode(buffer));
-            }
-
-            @Override
-            public void encode(B buffer, Pair<V1, V2> value) {
-                codecA.encode(buffer, value.getFirst());
-                codecB.encode(buffer, value.getSecond());
             }
         };
     }

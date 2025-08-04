@@ -10,25 +10,28 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.PushReaction;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class HorizontalDirectionalWithHorizontalTwoPartBlock extends HorizontalDirectionalBlock {
+    public static final EnumProperty<StateProperties.HorizontalTwoPart> PART = StateProperties.HORIZONTAL_TWO_PART;
+
     public HorizontalDirectionalWithHorizontalTwoPartBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(StateProperties.HORIZONTAL_TWO_PART, StateProperties.HorizontalTwoPart.BASE).setValue(FACING, Direction.NORTH));
+        registerDefaultState(stateDefinition.any().setValue(PART, StateProperties.HorizontalTwoPart.BASE).setValue(FACING, Direction.NORTH));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(StateProperties.HORIZONTAL_TWO_PART, FACING);
+        builder.add(PART, FACING);
     }
 
     @Override
     public void setPlacedBy(Level pLevel, BlockPos pPos, BlockState pState, @Nullable LivingEntity pPlacer, ItemStack pStack) {
         if (!pLevel.isClientSide) {
             BlockPos relativePos = pPos.relative(StateProperties.HorizontalTwoPart.getConnectedDirection(pState));
-            pLevel.setBlockAndUpdate(relativePos, pState.setValue(StateProperties.HORIZONTAL_TWO_PART, StateProperties.HorizontalTwoPart.RIGHT));
+            pLevel.setBlockAndUpdate(relativePos, pState.setValue(PART, StateProperties.HorizontalTwoPart.RIGHT));
         }
     }
 

@@ -3,7 +3,6 @@ package org.confluence.lib.util;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -12,7 +11,6 @@ import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import org.joml.Vector3d;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -213,6 +211,36 @@ public final class StructureUtils {
         }
     }
 
+    //立方体填充，带有随机比例
+    public static void rectangular(BlockPos startPos, BlockPos endPos, int blockstate, Object2IntMap<BlockPos> blockMap, int replace, float placePer, WorldgenRandom random) {
+        int startX = Math.min(endPos.getX(), startPos.getX());
+        int startY = Math.min(endPos.getY(), startPos.getY());
+        int startZ = Math.min(endPos.getZ(), startPos.getZ());
+        int endX = Math.max(endPos.getX(), startPos.getX());
+        int endY = Math.max(endPos.getY(), startPos.getY());
+        int endZ = Math.max(endPos.getZ(), startPos.getZ());
+        int xLength = endX - startX;
+        int yLength = endY - startY;
+        int zLength = endZ - startZ;
+        BlockPos.MutableBlockPos posCheck = startPos.mutable();
+        for (int x = 0; x <= xLength; x++) {
+            for (int y = 0; y <= yLength; y++) {
+                for (int z = 0; z <= zLength; z++) {
+                    posCheck.set(startX + x, startY + y, startZ + z);
+                    if (placePer >= random.nextFloat()) {
+                        if (replace == 0) {
+                            blockMap.put(posCheck.immutable(), blockstate);
+                        } else if (replace == 1 && blockMap.containsKey(posCheck.immutable())) {
+                            blockMap.put(posCheck.immutable(), blockstate);
+                        } else if (replace == 2 && !blockMap.containsKey(posCheck.immutable())) {
+                            blockMap.put(posCheck.immutable(), blockstate);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     //任意角度圆台填充
     public static void frustumSet(Vector3d startPos, Vector3d endPos, double startRadius, double endRadius, int blockstate, Object2IntMap<BlockPos> blockMap) {
         int xStart0 = (int) (startPos.x + startRadius + 1);
@@ -235,29 +263,51 @@ public final class StructureUtils {
         int setStartZ = Math.min(zStart1, zEnd1);
         int setEndZ = Math.max(zStart0, zEnd0);
 
-        Vector3d pointP = new Vector3d();
-        double length = Math.sqrt(Mth.square(endPos.x - startPos.x) + Mth.square(endPos.y - startPos.y) + Mth.square(endPos.z - startPos.z));
+        Vector3d pointP;
+        Vector3d pointP2;
+        double length = startPos.distance(endPos);
         double lengthGet;
         double lengthP;
-        double x2;
-        double y2;
 
         for (int x = setStartX; x <= setEndX; x++) {
-            x2 = Mth.square(endPos.x - x);
-            pointP.x = x;
             for (int y = setStartY; y <= setEndY; y++) {
-                y2 = Mth.square(endPos.y - y) + x2;
-                pointP.y = y;
                 for (int z = setStartZ; z <= setEndZ; z++) {
-                    pointP.z = z;
+                    pointP = new Vector3d(x, y, z);
                     if (!isProjectionBetweenPoints(startPos, endPos, pointP)) continue;
-                    lengthGet = Math.sqrt(y2 + Mth.square(endPos.z - z));
+                    pointP2 = getProjectionOnLineSegment(startPos, endPos, pointP);
+                    lengthGet = pointP2.distance(endPos);//0;//Math.sqrt(y2 + Mth.square(endPos.z - z) - getDistanceToLineSegment(startPos, endPos, pointP));
                     lengthP = lengthGet / length;
-                    if (getDistanceToLineSegment(startPos, endPos, pointP) <= (startRadius * lengthP + endRadius * (1.0D - lengthP))) {
+                    if (pointP.distance(pointP2) <= (startRadius * lengthP + endRadius * (1.0D - lengthP))) {
                         blockMap.put(new BlockPos(x, y, z), blockstate);
                     }
                 }
             }
+        }
+    }
+
+    //金字塔填充
+    public static void pyramidSet(BlockPos centerPos, int blockstate, int layerCount, Object2IntMap<BlockPos> blockMap) {
+        for (int i = 0; i < layerCount; i++) {
+            rectangular(centerPos.offset(layerCount - i, i, layerCount - i), centerPos.offset(i - layerCount, i, i - layerCount), blockstate, blockMap, 0);
+        }
+    }
+
+    //迷宫填充
+    public static void mazeSet(BlockPos centerPos, double distance, int layer, int blockstate, int width, int height, WorldgenRandom random, float difficulty, Object2IntMap<BlockPos> blockMap) {
+        Map<Vector3d, BooleanStorage4> mazePos = mazePos(new Vector3d(centerPos.getX(), centerPos.getY(), centerPos.getZ()), distance, layer, random, difficulty);
+        Vector3d key;
+        BlockPos keySet;
+        BooleanStorage4 value;
+        int length = (int) (distance / 2) + 1;
+
+        for (Map.Entry<Vector3d, BooleanStorage4> entry : mazePos.entrySet()) {
+            key = entry.getKey();
+            keySet = new BlockPos((int) key.x, (int) key.y, (int) key.z);
+            value = entry.getValue().copy();
+            if (value.get(0)) rectangular(keySet.offset(-width, 0, -width), keySet.offset(length, height, width), blockstate, blockMap, 0);
+            if (value.get(1)) rectangular(keySet.offset(-width, 0, -width), keySet.offset(width, height, length), blockstate, blockMap, 0);
+            if (value.get(2)) rectangular(keySet.offset(width, 0, width), keySet.offset(-length, height, -width), blockstate, blockMap, 0);
+            if (value.get(3)) rectangular(keySet.offset(width, 0, width), keySet.offset(-width, height, -length), blockstate, blockMap, 0);
         }
     }
 

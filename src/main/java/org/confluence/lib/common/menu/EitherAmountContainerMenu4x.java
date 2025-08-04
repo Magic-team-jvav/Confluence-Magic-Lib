@@ -10,14 +10,14 @@ import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
+import org.confluence.lib.common.recipe.EitherAmountRecipe4x;
 import org.confluence.lib.common.recipe.MenuRecipeInput;
-import org.confluence.lib.common.recipe.ShapedAmountRecipe4x;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 
-public abstract class ShapedAmountContainerMenu4x<I extends MenuRecipeInput, R extends ShapedAmountRecipe4x<I>, S extends ToggleAmountResultSlot<R>, A extends ContainerLevelAccess> extends AbstractContainerMenu {
+public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R extends EitherAmountRecipe4x<I>, S extends ToggleAmountResultSlot<R>, A extends ContainerLevelAccess> extends AbstractContainerMenu {
     public static final int INPUT_START = 1;
     public static final int INPUT_END = 17;
     public static final int INV_SLOT_START = 17;
@@ -33,7 +33,7 @@ public abstract class ShapedAmountContainerMenu4x<I extends MenuRecipeInput, R e
     protected final DataSlot selectedRecipeIndex = DataSlot.standalone();
     protected List<RecipeHolder<R>> recipes = new ArrayList<>();
 
-    public <M extends ShapedAmountContainerMenu4x<I, R, S, A>> ShapedAmountContainerMenu4x(MenuType<M> menuType, RecipeType<R> recipeType, int containerId, Inventory inventory, A access, BiFunction<M, Integer, I> inputFactory, Function6<I, ResultContainer, Integer, Integer, Integer, Runnable, S> resultSlotFactory) {
+    public <M extends EitherAmountContainerMenu4x<I, R, S, A>> EitherAmountContainerMenu4x(MenuType<M> menuType, RecipeType<R> recipeType, int containerId, Inventory inventory, A access, BiFunction<M, Integer, I> inputFactory, Function6<I, ResultContainer, Integer, Integer, Integer, Runnable, S> resultSlotFactory) {
         super(menuType, containerId);
         this.recipeType = recipeType;
         this.player = inventory.player;
@@ -75,12 +75,13 @@ public abstract class ShapedAmountContainerMenu4x<I extends MenuRecipeInput, R e
     }
 
     public int getUpIndex() {
-        if (recipes.isEmpty()) return -1;
-        if (recipes.size() == 1) {
+        int totalSize = getRecipesAmount();
+        if (totalSize == 0) return -1;
+        if (totalSize == 1) {
             return 0;
         } else if (isValidRecipeIndex(selectedRecipeIndex.get())) {
             if (selectedRecipeIndex.get() == 0) {
-                return recipes.size() - 1;
+                return totalSize - 1;
             } else {
                 return selectedRecipeIndex.get() - 1;
             }
@@ -91,16 +92,17 @@ public abstract class ShapedAmountContainerMenu4x<I extends MenuRecipeInput, R e
     public ItemStack getDownResult() {
         int index = getDownIndex();
         if (index == -1) return result.getItem(0);
-        return recipes.get(index).value().getResultItem(null);
+        return recipes.get(index).value().getResultItem(player.registryAccess());
     }
 
     public int getDownIndex() {
-        if (recipes.isEmpty()) return -1;
-        if (recipes.size() == 1) {
+        int totalSize = getRecipesAmount();
+        if (totalSize == 0) return -1;
+        if (totalSize == 1) {
             return 0;
         } else if (isValidRecipeIndex(selectedRecipeIndex.get())) {
             int next = selectedRecipeIndex.get() + 1;
-            if (next == recipes.size()) {
+            if (next == totalSize) {
                 return 0;
             } else {
                 return next;
@@ -109,23 +111,23 @@ public abstract class ShapedAmountContainerMenu4x<I extends MenuRecipeInput, R e
         return -1;
     }
 
-    private boolean isValidRecipeIndex(int pRecipeIndex) {
-        return pRecipeIndex >= 0 && pRecipeIndex < recipes.size();
+    protected boolean isValidRecipeIndex(int recipeIndex) {
+        return recipeIndex >= 0 && recipeIndex < getRecipesAmount();
     }
 
     @Override
-    public boolean clickMenuButton(Player pPlayer, int pId) {
-        if (isValidRecipeIndex(pId)) {
-            selectedRecipeIndex.set(pId);
+    public boolean clickMenuButton(Player player, int id) {
+        if (isValidRecipeIndex(id)) {
+            selectedRecipeIndex.set(id);
             setupResultSlot();
         }
         return true;
     }
 
     public void setupResultSlot() {
-        if (!recipes.isEmpty() && isValidRecipeIndex(selectedRecipeIndex.get())) {
+        if (isValidRecipeIndex(selectedRecipeIndex.get())) {
             R recipe = recipes.get(selectedRecipeIndex.get()).value();
-            ItemStack itemStack = recipe.getResultItem(null).copy();
+            ItemStack itemStack = recipe.getResultItem(player.registryAccess()).copy();
             if (itemStack.isItemEnabled(player.level().enabledFeatures())) {
                 result.setItem(0, itemStack);
                 resultSlot.setCurrentRecipe(recipe);
@@ -139,18 +141,18 @@ public abstract class ShapedAmountContainerMenu4x<I extends MenuRecipeInput, R e
     }
 
     @Override
-    public void removed(Player pPlayer) {
-        super.removed(pPlayer);
-        access.execute((level, blockPos) -> clearContainer(pPlayer, input));
+    public void removed(Player player) {
+        super.removed(player);
+        access.execute((level, blockPos) -> clearContainer(player, input));
     }
 
     @Override
-    public boolean canTakeItemForPickAll(ItemStack pStack, Slot pSlot) {
-        return pSlot.container != result && super.canTakeItemForPickAll(pStack, pSlot);
+    public boolean canTakeItemForPickAll(ItemStack stack, Slot slot) {
+        return slot.container != result && super.canTakeItemForPickAll(stack, slot);
     }
 
     @Override
-    public void slotsChanged(Container pContainer) {
+    public void slotsChanged(Container container) {
         input.asCraftingInput(true);
         this.recipes = player.level().getRecipeManager().getRecipesFor(recipeType, input, player.level());
         if (selectedRecipeIndex.get() >= recipes.size()) selectedRecipeIndex.set(recipes.size() - 1);
@@ -160,12 +162,14 @@ public abstract class ShapedAmountContainerMenu4x<I extends MenuRecipeInput, R e
                 if (!recipes.isEmpty()) {
                     if (selectedRecipeIndex.get() == -1) selectedRecipeIndex.set(0);
                     R recipe = recipes.get(selectedRecipeIndex.get()).value();
-                    itemStack = recipe.getResultItem(null).copy();
+                    itemStack = recipe.getResultItem(player.registryAccess()).copy();
                     resultSlot.setCurrentRecipe(recipe);
                 }
                 result.setItem(0, itemStack);
                 setRemoteSlot(0, itemStack);
                 serverPlayer.connection.send(new ClientboundContainerSetSlotPacket(containerId, incrementStateId(), 0, itemStack));
+            } else if (!recipes.isEmpty()) {
+                if (selectedRecipeIndex.get() == -1) selectedRecipeIndex.set(0);
             }
         });
     }
@@ -215,5 +219,24 @@ public abstract class ShapedAmountContainerMenu4x<I extends MenuRecipeInput, R e
         }
 
         return itemStack;
+    }
+
+    public Container getContainer() {
+        return input;
+    }
+
+    public void clearContainerNoUpdate(Player player) {
+        if (!player.isAlive() || player instanceof ServerPlayer && ((ServerPlayer)player).hasDisconnected()) {
+            for(int j = 0; j < input.getContainerSize(); ++j) {
+                player.drop(input.removeItemNoUpdate(j), false);
+            }
+        } else {
+            for(int i = 0; i < input.getContainerSize(); ++i) {
+                Inventory inventory = player.getInventory();
+                if (inventory.player instanceof ServerPlayer) {
+                    inventory.placeItemBackInInventory(input.removeItemNoUpdate(i), false);
+                }
+            }
+        }
     }
 }

@@ -8,6 +8,10 @@ public class ReturnException extends RuntimeException{
         this.value = value;
     }
 
+    public ReturnException() {
+        this(null);
+    }
+
     public Object getValue(){
         return value;
     }

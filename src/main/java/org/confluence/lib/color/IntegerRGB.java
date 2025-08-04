@@ -1,5 +1,7 @@
 package org.confluence.lib.color;
 
+import java.util.Objects;
+
 public record IntegerRGB(int red, int green, int blue) {
     public static final IntegerRGB HALLOW_A = of(0xFF0051);
     public static final IntegerRGB HALLOW_B = of(0x12FFE2);
@@ -39,5 +41,16 @@ public record IntegerRGB(int red, int green, int blue) {
 
     public int get() {
         return (red << 16) + (green << 8) + blue;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        return o instanceof IntegerRGB(int red1, int green1, int blue1) && red == red1 && blue == blue1 && green == green1;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(red, green, blue);
     }
 }

@@ -19,12 +19,12 @@ public class CollectRecipeProvider extends RecipeProvider {
     }
 
     @Override
-    protected void buildRecipes(RecipeOutput p_recipeOutput, HolderLookup.Provider holderLookup) {
+    protected final void buildRecipes(RecipeOutput p_recipeOutput, HolderLookup.Provider holderLookup) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    protected void buildRecipes(RecipeOutput recipeOutput) {
+    protected final void buildRecipes(RecipeOutput recipeOutput) {
         throw new UnsupportedOperationException();
     }
 

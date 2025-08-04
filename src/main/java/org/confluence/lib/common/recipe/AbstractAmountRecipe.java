@@ -1,7 +1,9 @@
 package org.confluence.lib.common.recipe;
 
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -10,6 +12,8 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectFunction;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -18,11 +22,13 @@ import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.crafting.ICustomIngredient;
+import org.confluence.lib.network.ExtraByteBufCodecs;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.function.BiFunction;
 
 public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Recipe<T> {
     public static final MapCodec<NonNullList<Ingredient>> INGREDIENTS_CODEC = Ingredient.CODEC_NONEMPTY.listOf().fieldOf("ingredients").flatXmap(list -> {
@@ -30,9 +36,9 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
         if (ingredients.length == 0) {
             return DataResult.error(() -> "No ingredients for recipe");
         } else {
-            return DataResult.success(NonNullList.of(AmountIngredient.EMPTY, ingredients));
+            return DataResult.success(NonNullList.of(AmountIngredient.EMPTY, ingredients), Lifecycle.stable());
         }
-    }, DataResult::success);
+    }, ingredients -> DataResult.success(ingredients, Lifecycle.stable()));
     private static final Object2ObjectFunction<Ingredient, Tuple<Integer, IntArraySet>> FUNCTION = I -> new Tuple<>(((Ingredient) I).getCustomIngredient() instanceof AmountIngredient ai ? ai.amount() : 1, new IntArraySet());
     public final ItemStack result;
     public final NonNullList<Ingredient> ingredients;
@@ -71,7 +77,7 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
                     }
                 } else if (ingredient.test(itemStack)) {
                     matches.add(ingredient);
-                    continue outer;
+                    continue outer; // break;
                 }
             }
         }
@@ -212,5 +218,27 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
             }
         }
         return new Vector2i(x, y);
+    }
+
+    public static <R extends AbstractAmountRecipe<?>> MapCodec<R> shapelessSerializerMapCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
+        return RecordCodecBuilder.mapCodec(instance -> instance.group(
+                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
+                INGREDIENTS_CODEC.forGetter(recipe -> recipe.ingredients)
+        ).apply(instance, factory));
+    }
+
+    public static <R extends AbstractAmountRecipe<?>> StreamCodec<RegistryFriendlyByteBuf, R> shapelessSerializerSteamCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
+        return new StreamCodec<>() {
+            @Override
+            public R decode(RegistryFriendlyByteBuf buffer) {
+                return factory.apply(ItemStack.STREAM_CODEC.decode(buffer), ExtraByteBufCodecs.INGREDIENTS.decode(buffer));
+            }
+
+            @Override
+            public void encode(RegistryFriendlyByteBuf buffer, R recipe) {
+                ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
+                ExtraByteBufCodecs.INGREDIENTS.encode(buffer, recipe.ingredients);
+            }
+        };
     }
 }

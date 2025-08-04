@@ -1,7 +1,7 @@
 package org.confluence.lib.common.worldgen.structure;
 
 import com.mojang.serialization.Codec;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.BlockPos;
@@ -23,7 +23,9 @@ import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 import org.confluence.lib.ConfluenceMagicLib;
+import org.confluence.lib.common.data.IdFixer;
 import org.confluence.lib.util.LibUtils;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,11 +34,11 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class GridPiece extends StructurePiece {
-    public static final Codec<List<Tuple<Integer, LongArrayList>>> BLOCK_MAP_CODEC = LibUtils.tupleCodec(Codec.INT, Codec.LONG.listOf().xmap(LongArrayList::new, Function.identity())).listOf();
+    public static final Codec<List<Tuple<Integer, IntArrayList>>> BLOCK_MAP_CODEC = LibUtils.tupleCodec(Codec.INT, Codec.INT.listOf().xmap(IntArrayList::new, Function.identity())).listOf();
     public static final Codec<List<Tuple<BlockPos, ResourceLocation>>> FEATURES_CODEC = LibUtils.tupleCodec(BlockPos.CODEC, ResourceLocation.CODEC).listOf();
 
     private final ChunkPos startPos;
-    private final List<Tuple<Integer, LongArrayList>> blockMap;
+    private final List<Tuple<Integer, IntArrayList>> blockMap;
     public List<BlockState> blockList;
     private final List<Tuple<BlockPos, ResourceLocation>> features;
 
@@ -52,11 +54,11 @@ public class GridPiece extends StructurePiece {
     }
 
     private void convertToList(Object2IntMap<BlockPos> blockMap, Map<BlockPos, ResourceLocation> features) {
-        Map<Integer, LongArrayList> map = new HashMap<>();
+        Map<Integer, IntArrayList> map = new HashMap<>();
         for (Object2IntMap.Entry<BlockPos> posEntry : blockMap.object2IntEntrySet()) {
-            map.computeIfAbsent(posEntry.getIntValue(), index -> new LongArrayList()).add(posEntry.getKey().asLong());
+            map.computeIfAbsent(posEntry.getIntValue(), index -> new IntArrayList()).add(LibUtils.compressRelativePos(posEntry.getKey()));
         }
-        for (Map.Entry<Integer, LongArrayList> entry : map.entrySet()) {
+        for (Map.Entry<Integer, IntArrayList> entry : map.entrySet()) {
             this.blockMap.add(new Tuple<>(entry.getKey(), entry.getValue()));
         }
         features.entrySet().stream().sorted(Map.Entry.comparingByValue())
@@ -66,26 +68,47 @@ public class GridPiece extends StructurePiece {
     public GridPiece(CompoundTag tag) {
         super(ConfluenceMagicLib.GRID_PIECE.get(), tag);
         this.startPos = new ChunkPos(tag.getLong("StartPos"));
-        this.blockMap = BLOCK_MAP_CODEC.parse(NbtOps.INSTANCE, tag.get("BlockMap")).getOrThrow();
-        this.blockList = BlockState.CODEC.listOf().parse(NbtOps.INSTANCE, tag.get("BlockList")).getOrThrow();
-        this.features = FEATURES_CODEC.parse(NbtOps.INSTANCE, tag.get("Features")).getOrThrow();
+        if (tag.contains("BlockMap")) {
+            this.blockMap = decodeBlockMap(tag);
+            this.features = FEATURES_CODEC.parse(NbtOps.INSTANCE, tag.get("Features")).getOrThrow();
+        } else {
+            this.blockMap = List.of();
+            this.features = List.of();
+        }
+    }
+
+    @Deprecated(since = "1.1.3")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
+    private List<Tuple<Integer, IntArrayList>> decodeBlockMap(CompoundTag tag) {
+        final List<Tuple<Integer, IntArrayList>> blockMap;
+        if (tag.getBoolean("confluence:fixed_relative_pos")) {
+            blockMap = BLOCK_MAP_CODEC.parse(NbtOps.INSTANCE, tag.get("BlockMap")).getOrThrow();
+            this.blockList = BlockState.CODEC.listOf().parse(NbtOps.INSTANCE, tag.get("BlockList")).getOrThrow();
+        } else {
+            blockMap = IdFixer.FIXED_BLOCK_MAP_CODEC.parse(NbtOps.INSTANCE, tag.get("BlockMap")).getOrThrow();
+            this.blockList = BlockState.CODEC.mapResult(IdFixer.fixBlockName(BlockState.CODEC)).listOf().parse(NbtOps.INSTANCE, tag.get("BlockList")).getOrThrow();
+        }
+        return blockMap;
     }
 
     @Override
     protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
         tag.putLong("StartPos", startPos.toLong());
-        tag.put("BlockMap", BLOCK_MAP_CODEC.encodeStart(NbtOps.INSTANCE, blockMap).getOrThrow());
-        tag.put("BlockList", BlockState.CODEC.listOf().encodeStart(NbtOps.INSTANCE, blockList).getOrThrow());
-        tag.put("Features", FEATURES_CODEC.encodeStart(NbtOps.INSTANCE, features).getOrThrow());
+        if (blockMap.stream().anyMatch(tuple -> !tuple.getB().isEmpty())) {
+            tag.put("BlockMap", BLOCK_MAP_CODEC.encodeStart(NbtOps.INSTANCE, blockMap).getOrThrow());
+            tag.put("BlockList", BlockState.CODEC.listOf().encodeStart(NbtOps.INSTANCE, blockList).getOrThrow());
+            tag.put("Features", FEATURES_CODEC.encodeStart(NbtOps.INSTANCE, features).getOrThrow());
+        }
+        tag.putBoolean("confluence:fixed_relative_pos", true);
     }
 
     @Override
     public void postProcess(WorldGenLevel level, StructureManager structureManager, ChunkGenerator generator, RandomSource random, BoundingBox box, ChunkPos chunkPos, BlockPos pos) {
         if (blockList == null || !chunkPos.equals(startPos)) return;
-        for (Tuple<Integer, LongArrayList> pair : blockMap) {
+        for (Tuple<Integer, IntArrayList> pair : blockMap) {
             BlockState blockState = blockList.get(pair.getA());
-            for (long blockPos : pair.getB()) {
-                level.setBlock(BlockPos.of(blockPos), blockState, 2);
+            for (int blockPos : pair.getB()) {
+                level.setBlock(LibUtils.decompressRelativePos(startPos, blockPos), blockState, 2);
             }
             pair.getB().clear();
         }

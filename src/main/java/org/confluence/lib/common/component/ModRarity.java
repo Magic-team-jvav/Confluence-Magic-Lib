@@ -6,20 +6,18 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import org.confluence.lib.ConfluenceMagicLib;
-import org.confluence.lib.client.animate.ColorAnimation;
 import org.confluence.lib.client.animate.ExpertColorAnimation;
 import org.confluence.lib.client.animate.MasterColorAnimation;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
 
-
-public final class ModRarity implements DataComponentType<ModRarity> {
+public record ModRarity(String name, int color) implements DataComponentType<ModRarity> {
     public static final ModRarity COMMON = new ModRarity("common", 16777215);
     public static final ModRarity UNCOMMON = new ModRarity("uncommon", 16777045);
     public static final ModRarity RARE = new ModRarity("rare", 5636095);
@@ -39,8 +37,8 @@ public final class ModRarity implements DataComponentType<ModRarity> {
     public static final ModRarity RED = new ModRarity("red", 0xFF2864);
     public static final ModRarity PURPLE = new ModRarity("purple", 0xB428FF);
 
-    public static final ModRarity EXPERT = new ModRarity("expert", ExpertColorAnimation.INSTANCE);
-    public static final ModRarity MASTER = new ModRarity("master", MasterColorAnimation.INSTANCE);
+    public static final ModRarity EXPERT = new ModRarity("expert", -1);
+    public static final ModRarity MASTER = new ModRarity("master", -2);
     public static final ModRarity QUEST = new ModRarity("quest", 0xFFAF00);
 
     public static final HashBiMap<Integer, ModRarity> ID_MAP = Util.make(HashBiMap.create(), map -> {
@@ -67,66 +65,14 @@ public final class ModRarity implements DataComponentType<ModRarity> {
     });
 
     public static final Codec<ModRarity> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.STRING.fieldOf("name").forGetter(ModRarity::getName),
-            ColorAnimation.CODEC.fieldOf("animation").forGetter(ModRarity::getAnimation),
-            Style.Serializer.CODEC.fieldOf("style").forGetter(ModRarity::getStyle)
+            Codec.STRING.fieldOf("name").forGetter(ModRarity::name),
+            Codec.INT.fieldOf("color").forGetter(ModRarity::color)
     ).apply(instance, ModRarity::new));
     public static final StreamCodec<RegistryFriendlyByteBuf, ModRarity> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.STRING_UTF8, ModRarity::getName,
-            ByteBufCodecs.INT, ModRarity::getColor,
-            Style.Serializer.TRUSTED_STREAM_CODEC, ModRarity::getStyle,
+            ByteBufCodecs.STRING_UTF8, ModRarity::name,
+            ByteBufCodecs.INT, ModRarity::color,
             ModRarity::new
     );
-
-    private final ColorAnimation animation;
-    private final String name;
-    private final Style style;
-
-    public ModRarity(String name, int color) {
-        this.name = name;
-        this.animation = new ColorAnimation(color);
-        this.style = Style.EMPTY.withColor(color);
-    }
-
-    public ModRarity(String name, ColorAnimation animation) {
-        this.name = name;
-        this.animation = animation;
-        this.style = Style.EMPTY.withColor(animation.getColor());
-    }
-
-    public ModRarity(String name, Style style) {
-        this.name = name;
-        this.animation = new ColorAnimation(0);
-        this.style = style;
-    }
-
-    public ModRarity(String name, int color, Style style) {
-        this.name = name;
-        this.animation = new ColorAnimation(color);
-        this.style = style;
-    }
-
-    public ModRarity(String string, ColorAnimation animation, Style style) {
-        this.name = string;
-        this.animation = animation;
-        this.style = style;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public int getColor() {
-        return animation.getColor();
-    }
-
-    public Style getStyle() {
-        return style;
-    }
-
-    public ColorAnimation getAnimation() {
-        return animation;
-    }
 
     @Override
     public @Nullable Codec<ModRarity> codec() {
@@ -139,22 +85,21 @@ public final class ModRarity implements DataComponentType<ModRarity> {
     }
 
     @Override
-    public boolean equals(Object object) {
-        if (this == object) return true;
-        if (!(object instanceof ModRarity modRarity)) return false;
-        return Objects.equals(getName(), modRarity.getName()) && Objects.equals(getStyle(), modRarity.getStyle());
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        return o instanceof ModRarity rarity && rarity.color == color && rarity.name.equals(name);
     }
 
     @Override
-    public int hashCode() {
-        int result = Objects.hashCode(getAnimation());
-        result = 31 * result + Objects.hashCode(getName());
-        result = 31 * result + Objects.hashCode(getStyle());
-        return result;
+    public int color() {
+        if (color == -1) return ExpertColorAnimation.INSTANCE.getColor();
+        if (color == -2) return MasterColorAnimation.INSTANCE.getColor();
+        return color;
     }
 
-    public static @Nullable ModRarity getRarity(ItemStack itemStack) {
-        ModRarity rarity = itemStack.get(ConfluenceMagicLib.MOD_RARITY);
+    public static @Nullable ModRarity getRarity(ItemStack itemStack, boolean prototype) {
+        DataComponentType<ModRarity> type = ConfluenceMagicLib.MOD_RARITY.get();
+        ModRarity rarity = prototype ? itemStack.getPrototype().get(type) : itemStack.get(type);
         if (rarity != null) return rarity;
         return switch (itemStack.getRarity()) {
             case COMMON -> COMMON;
@@ -163,5 +108,19 @@ public final class ModRarity implements DataComponentType<ModRarity> {
             case EPIC -> EPIC;
             default -> null;
         };
+    }
+
+    public static @Nullable ModRarity getRarity(ItemStack itemStack) {
+        return getRarity(itemStack, false);
+    }
+
+    public static Style withColor(ItemStack itemStack, Style style) {
+        ModRarity rarity = getRarity(itemStack);
+        if (rarity == null) return itemStack.getRarity().getStyleModifier().apply(style);
+        return style.withColor(rarity.color);
+    }
+
+    public static MutableComponent withColor(ItemStack itemStack, MutableComponent component) {
+        return component.withStyle(style -> withColor(itemStack, style));
     }
 }

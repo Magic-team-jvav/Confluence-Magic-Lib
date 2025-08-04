@@ -69,9 +69,173 @@ public final class FeatureUtils {
     public static @Nullable BlockEntity getBlockEntity(WorldGenLevel level, BlockPos blockPos) {
         BlockEntity blockEntity = level.getBlockEntity(blockPos);
         if (blockEntity == null) {
-            LibUtils.devRun(() -> ConfluenceMagicLib.LOGGER.error("Failed to fetch block entity at ({}, {}, {})", blockPos.getX(), blockPos.getY(), blockPos.getZ()));
+            LibUtils.devRun(() -> ConfluenceMagicLib.LOGGER.warn("Failed to fetch block entity at ({}, {}, {})", blockPos.getX(), blockPos.getY(), blockPos.getZ()));
             return null;
         }
         return blockEntity;
+    }
+
+    public static void ball8(BlockPos.MutableBlockPos posCheck, boolean replace, int x, int y, int z, BlockState blockState, BlockPos centerPos, WorldGenLevel level) {
+        for (int i = 0; i < 8; i++) {
+            posCheck.set(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1)));
+            if (replace || level.getBlockState(posCheck).isAir()) {
+                level.setBlock(posCheck.immutable(), blockState, 3);
+            }
+        }
+    }
+
+    public static void ball8(BlockPos.MutableBlockPos posCheck, boolean replace, int x, int y, int z, BlockState blockState1, BlockState blockState2, BlockPos centerPos, WorldGenLevel level, int checkY) {
+        for (int i = 0; i < 8; i++) {
+            posCheck.set(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1)));
+            if (replace || level.getBlockState(posCheck).isAir()) {
+                if (posCheck.getY() > checkY) {
+                    level.setBlock(posCheck.immutable(), blockState1, 3);
+                } else {
+                    level.setBlock(posCheck.immutable(), blockState2, 3);
+                }
+            }
+        }
+    }
+
+    public static void ball8(BlockPos.MutableBlockPos posCheck, boolean replace, int x, int y, int z, BlockState blockState, BlockPos centerPos, WorldGenLevel level, float placePer, RandomSource random) {
+        for (int i = 0; i < 8; i++) {
+            if (placePer >= random.nextFloat()) {
+                posCheck.set(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1)));
+                if (replace || level.getBlockState(posCheck).isAir()) {
+                    level.setBlock(posCheck.immutable(), blockState, 3);
+                }
+            }
+        }
+    }
+
+    //填充方法
+    //球体填充
+    public static void ball(double radiusD, BlockPos centerPos, BlockState blockState, boolean replace, WorldGenLevel level) {
+        int radius = (int) radiusD + 1;
+        double radius2 = radiusD * radiusD;
+        int x2;
+        int y2;
+        BlockPos.MutableBlockPos posCheck = centerPos.mutable();
+        for (int x = 0; x < radius; x++) {
+            x2 = x * x;
+            for (int y = 0; y < radius; y++) {
+                y2 = y * y;
+                for (int z = 0; z < radius; z++) {
+                    if ((x2 + y2 + z * z <= radius2)) {
+                        ball8(posCheck, replace, x, y, z, blockState, centerPos, level);
+                    }
+                }
+            }
+        }
+    }
+
+    //球体填充，带有指定y坐标上下不同种方块填充
+    public static void ball(double radiusD, BlockPos centerPos, BlockState blockState1, BlockState blockState2, boolean replace, WorldGenLevel level, int checkY) {
+        int radius = (int) radiusD + 1;
+        double radius2 = radiusD * radiusD;
+        int x2;
+        int y2;
+        BlockPos.MutableBlockPos posCheck = centerPos.mutable();
+        for (int x = 0; x < radius; x++) {
+            x2 = x * x;
+            for (int y = 0; y < radius; y++) {
+                y2 = y * y;
+                for (int z = 0; z < radius; z++) {
+                    if ((x2 + y2 + z * z <= radius2)) {
+                        ball8(posCheck, replace, x, y, z, blockState1, blockState2, centerPos, level, checkY);
+                    }
+                }
+            }
+        }
+    }
+
+    //球体填充，带有随机比例
+    public static void ball(double radiusD, BlockPos centerPos, BlockState blockState, boolean replace, WorldGenLevel level, float placePer, RandomSource random) {
+        int radius = (int) radiusD + 1;
+        double radius2 = radiusD * radiusD;
+        int x2;
+        int y2;
+        BlockPos.MutableBlockPos posCheck = centerPos.mutable();
+        for (int x = 0; x < radius; x++) {
+            x2 = x * x;
+            for (int y = 0; y < radius; y++) {
+                y2 = y * y;
+                for (int z = 0; z < radius; z++) {
+                    if ((x2 + y2 + z * z <= radius2)) {
+                        ball8(posCheck, replace, x, y, z, blockState, centerPos, level, placePer, random);
+                    }
+                }
+            }
+        }
+    }
+
+    //立方体填充
+    public static void rectangular(BlockPos startPos, BlockPos endPos, BlockState blockstate, WorldGenLevel level, boolean replace) {
+        int startX = Math.min(endPos.getX(), startPos.getX());
+        int startY = Math.min(endPos.getY(), startPos.getY());
+        int startZ = Math.min(endPos.getZ(), startPos.getZ());
+        int endX = Math.max(endPos.getX(), startPos.getX());
+        int endY = Math.max(endPos.getY(), startPos.getY());
+        int endZ = Math.max(endPos.getZ(), startPos.getZ());
+        int xLength = endX - startX;
+        int yLength = endY - startY;
+        int zLength = endZ - startZ;
+        BlockPos.MutableBlockPos posCheck = startPos.mutable();
+        for (int x = 0; x <= xLength; x++) {
+            for (int y = 0; y <= yLength; y++) {
+                for (int z = 0; z <= zLength; z++) {
+                    posCheck.set(startX + x, startY + y, startZ + z);
+                    if (replace || level.getBlockState(posCheck.immutable()).canBeReplaced()) level.setBlock(posCheck.immutable(), blockstate, 3);
+                }
+            }
+        }
+    }
+
+    //椭球体填充
+    public static void ellipsoid(double radiusDX, double radiusDY, double radiusDZ, BlockPos centerPos, BlockState blockState, boolean replace, WorldGenLevel level) {
+        int radiusX = (int) radiusDX + 1;
+        int radiusY = (int) radiusDY + 1;
+        int radiusZ = (int) radiusDZ + 1;
+        double rX = radiusDX * radiusDX;
+        double rY = radiusDY * radiusDY;
+        double rZ = radiusDZ * radiusDZ;
+        int x2;
+        int y2;
+        BlockPos.MutableBlockPos posCheck = centerPos.mutable();
+        for (int x = 0; x < radiusX; x++) {
+            x2 = x * x;
+            for (int y = 0; y < radiusY; y++) {
+                y2 = y * y;
+                for (int z = 0; z < radiusZ; z++) {
+                    if ((x2 / rX + y2 / rY + (z * z) / rZ) <= 1) {
+                        ball8(posCheck, replace, x, y, z, blockState, centerPos, level);
+                    }
+                }
+            }
+        }
+    }
+
+    //立方体检查
+    public static boolean rectangularCheck(BlockPos startPos, BlockPos endPos, WorldGenLevel level) {
+        int startX = Math.min(endPos.getX(), startPos.getX());
+        int startY = Math.min(endPos.getY(), startPos.getY());
+        int startZ = Math.min(endPos.getZ(), startPos.getZ());
+        int endX = Math.max(endPos.getX(), startPos.getX());
+        int endY = Math.max(endPos.getY(), startPos.getY());
+        int endZ = Math.max(endPos.getZ(), startPos.getZ());
+        int xLength = endX - startX;
+        int yLength = endY - startY;
+        int zLength = endZ - startZ;
+        boolean bl = true;
+        BlockPos.MutableBlockPos posCheck = startPos.mutable();
+        for (int x = 0; (x <= xLength) && bl; x++) {
+            for (int y = 0; (y <= yLength) && bl; y++) {
+                for (int z = 0; (z <= zLength) && bl; z++) {
+                    posCheck.set(startX + x, startY + y, startZ + z);
+                    if (!level.getBlockState(posCheck.immutable()).canBeReplaced()) bl = false;
+                }
+            }
+        }
+        return bl;
     }
 }

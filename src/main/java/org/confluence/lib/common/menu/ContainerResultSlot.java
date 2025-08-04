@@ -34,4 +34,9 @@ public class ContainerResultSlot extends Slot {
     }
 
     protected void updateMenu() {}
+
+    @Override
+    public boolean isFake() {
+        return true;
+    }
 }

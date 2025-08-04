@@ -1,5 +1,7 @@
 package org.confluence.lib.color;
 
+import java.util.Objects;
+
 public record IntegerRGBA(int red, int green, int blue, int alpha) {
     public static IntegerRGBA of(int rgba) {
         return new IntegerRGBA((rgba & 0x00FF0000) >> 16, (rgba & 0x0000FF00) >> 8, rgba & 0x000000FF, (rgba & 0xFF000000) >> 24);
@@ -15,5 +17,16 @@ public record IntegerRGBA(int red, int green, int blue, int alpha) {
 
     public int get() {
         return (alpha << 24) + (red << 16) + (green << 8) + blue;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        return o instanceof IntegerRGBA(int red1, int green1, int blue1, int alpha1) && red == red1 && blue == blue1 && green == green1 && alpha == alpha1;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(red, green, blue, alpha);
     }
 }

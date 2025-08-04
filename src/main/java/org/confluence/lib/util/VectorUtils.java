@@ -1,11 +1,13 @@
 package org.confluence.lib.util;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
@@ -77,7 +79,7 @@ public final class VectorUtils {
      *
      * @param currDir            当前弹幕的方向向量
      * @param targetDir          方向向量，记录了追踪的最终方向与长度（想要达到的速度）
-     * @param angleInterpolator      提供角度插值；输入为当前方向和追踪方向的角度差，输出为追踪所变换的角度
+     * @param angleInterpolator  提供角度插值；输入为当前方向和追踪方向的角度差，输出为追踪所变换的角度
      * @param lengthInterpolator 提供向量长度（即速度）插值；输入为当前方向和追踪方向的长度差，输出为追踪所变换的向量长度
      * @return 变换完毕的向量
      */
@@ -215,7 +217,10 @@ public final class VectorUtils {
             if (instance != null) scale *= (1.0 - instance.getValue());
         }
         if (scale > 0.0) {
-            if (a instanceof LivingEntity living) {
+            LivingEntity living = null;
+            if (a instanceof TraceableEntity traceable && traceable.getOwner() instanceof LivingEntity living1) living = living1;
+            else if (a instanceof LivingEntity living1) living = living1;
+            if (living != null) {
                 AttributeInstance instance = living.getAttribute(Attributes.ATTACK_KNOCKBACK);
                 if (instance != null) scale *= (1.0 + instance.getValue());
             }
@@ -279,84 +284,61 @@ public final class VectorUtils {
         } while (refined);
     }
 
-    public static Map<Vector3d, List<Boolean>> mazePos(Vector3d centerPos, double distance, int layer, WorldgenRandom random, float difficulty) {
-        Map<Vector3i, List<Boolean>> nowMap = new HashMap<>();
-        Map<Vector3i, List<Boolean>> thanMap = new HashMap<>();
-        Map<Vector3i, List<Boolean>> setMap = new HashMap<>();
-        Map<Vector3d, List<Boolean>> outMap = new HashMap<>();
+    public static Map<Vector3d, BooleanStorage4> mazePos(Vector3d centerPos, double distance, int layer, WorldgenRandom random, float difficulty) {
+        Map<Vector3i, BooleanStorage4> nowMap = new HashMap<>();
+        Map<Vector3i, BooleanStorage4> thanMap = new HashMap<>();
+        Map<Vector3i, BooleanStorage4> setMap = new HashMap<>();
+        Map<Vector3d, BooleanStorage4> outMap = new HashMap<>();
         int x;
         int z;
         double dX;
         double dZ;
         int xOffset;
         int zOffset;
-        int cannelFacing;
         int layer2 = layer * 2;
-        int layer4 = layer * 4;
         Vector3i key;
         Vector3i thanKey;
-        List<Boolean> value = new ArrayList<>();
-        List<Boolean> setList = new ArrayList<>();
-        List<Boolean> thanList = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            setList.add(false);
-        }
-        thanMap.put(new Vector3i(0, 0, 0), new ArrayList<>(List.copyOf(setList)));
+        thanMap.put(new Vector3i(), new BooleanStorage4());
         int maxCount = (layer2 + 1) * (layer2 + 1);
-        for (int j = 0; (j < layer4) && (setMap.size() < maxCount); j++) {
+        while (setMap.size() < maxCount) {
             nowMap.clear();
             nowMap.putAll(thanMap);
-            if (j > layer2) {
-                nowMap.putAll(setMap);
-            }
+            nowMap.putAll(setMap);
             thanMap.clear();
-            for (Map.Entry<Vector3i, List<Boolean>> entry : nowMap.entrySet()) {
+            for (Map.Entry<Vector3i, BooleanStorage4> entry : nowMap.entrySet()) {
                 key = entry.getKey();
                 x = key.x;
                 z = key.z;
-                List<Boolean> a = new ArrayList<>(entry.getValue());
-                List<Boolean> b = new ArrayList<>(a);
+                BooleanStorage4 a = entry.getValue().copy();
+                BooleanStorage4 b = a.copy();
                 for (int i = 0; i < 4; i++) {
-                    cannelFacing = listRandom(b, random);
-                    xOffset = (int) Mth.cos(cannelFacing * Mth.PI / 2) + x;
-                    zOffset = (int) Mth.sin(cannelFacing * Mth.PI / 2) + z;
+                    xOffset = (int) Mth.cos(i * Mth.HALF_PI) + x;
+                    zOffset = (int) Mth.sin(i * Mth.HALF_PI) + z;
                     thanKey = new Vector3i(xOffset, 0, zOffset);
-                    b.set(cannelFacing, true);
-                    if (xOffset <= layer && xOffset >= -layer && zOffset <= layer && zOffset >= -layer && !setMap.containsKey(thanKey) && !nowMap.containsKey(thanKey) && !thanMap.containsKey(thanKey)) {
-                        a.set(cannelFacing, true);
-                        thanList.clear();
-                        for (int k = 0; k < 4; k++) {
-                            thanList.add(false);
-                        }
-                        thanList.set((cannelFacing + 2) % 4, true);
-                        thanMap.put(thanKey, new ArrayList<>(List.copyOf(thanList)));
-                        if ((1.0F - 0.5F * difficulty) > random.nextFloat()) break;
+                    b.set(i, true);
+                    if (((1.0F - 0.5F * difficulty) > random.nextFloat()) && (xOffset <= layer) && (xOffset >= -layer) && (zOffset <= layer) && (zOffset >= -layer) && !setMap.containsKey(thanKey) && !nowMap.containsKey(thanKey) && !thanMap.containsKey(thanKey)) {
+                        a.set(i, true);
+                        BooleanStorage4 thenList = new BooleanStorage4();
+                        thenList.set((i + 2) % 4, true);
+                        thanMap.put(thanKey, thenList);
                     }
-                    boolean bk = true;
-                    for (Boolean aBoolean : b) {
-                        if (!aBoolean) {
-                            bk = false;
-                            break;
-                        }
-                    }
-                    if (bk) break;
                 }
-                setMap.put(key, new ArrayList<>(List.copyOf(a)));
+                setMap.put(key, a);
             }
         }
-        for (Map.Entry<Vector3i, List<Boolean>> entry : setMap.entrySet()) {
+        for (Map.Entry<Vector3i, BooleanStorage4> entry : setMap.entrySet()) {
             key = entry.getKey();
             x = key.x;
             z = key.z;
             dX = x * distance + centerPos.x;
             dZ = z * distance + centerPos.z;
-            List<Boolean> outList = new ArrayList<>(entry.getValue());
+            BooleanStorage4 outList = entry.getValue().copy();
             outMap.put(new Vector3d(dX, centerPos.y, dZ), outList);
         }
         return outMap;
     }
 
-    private static Integer listRandom(List<Boolean> list, WorldgenRandom random) {
+    public static Integer listRandom(BooleanStorage4 list, WorldgenRandom random) {
         boolean aBoolean = true;
         int listW = 0;
         for (int i = 0; (i < 100) && aBoolean; i++) {
@@ -416,11 +398,14 @@ public final class VectorUtils {
 
     // 判断垂足是否在线段上
     public static boolean isProjectionBetweenPoints(Vector3d pointA, Vector3d pointB, Vector3d projection) {
-        Vector3d vectorAtoProjection = new Vector3d(projection);
-        vectorAtoProjection.sub(pointA);
-        Vector3d vectorAtoB = new Vector3d(pointB);
-        vectorAtoB.sub(pointA);
-        return vectorAtoProjection.dot(vectorAtoB) >= 0 && vectorAtoProjection.dot(vectorAtoProjection) <= vectorAtoB.dot(vectorAtoB);
+        Vector3d point2 = getProjectionOnLineSegment(pointA, pointB, projection);
+        double xMax = Math.max(pointA.x, pointB.x) + 0.5;
+        double xMin = Math.min(pointA.x, pointB.x) - 0.5;
+        double yMax = Math.max(pointA.y, pointB.y) + 0.5;
+        double yMin = Math.min(pointA.y, pointB.y) - 0.5;
+        double zMax = Math.max(pointA.z, pointB.z) + 0.5;
+        double zMin = Math.min(pointA.z, pointB.z) - 0.5;
+        return ((point2.x < xMax) && (point2.x > xMin) && (point2.y < yMax) && (point2.y > yMin) && (point2.z < zMax) && (point2.z > zMin));
     }
 
     //生成坐标列表
@@ -544,31 +529,50 @@ public final class VectorUtils {
         int setStartZ = Math.min(zStart1, zEnd1);
         int setEndZ = Math.max(zStart0, zEnd0);
 
-        Vector3d pointP = new Vector3d();
-        double length = Math.sqrt(Mth.square(endPos.x - startPos.x) + Mth.square(endPos.y - startPos.y) + Mth.square(endPos.z - startPos.z));
+        Vector3d pointP;
+        Vector3d pointP2;
+        double length = startPos.distance(endPos);
         double lengthGet;
         double lengthP;
-        double x2;
-        double y2;
 
-        List<Vector3d> list = new LinkedList<>();
+        List<Vector3d> list = new ArrayList<>();
 
         for (int x = setStartX; x <= setEndX; x++) {
-            x2 = Mth.square(endPos.x - x);
-            pointP.x = x;
             for (int y = setStartY; y <= setEndY; y++) {
-                y2 = Mth.square(endPos.y - y) + x2;
-                pointP.y = y;
                 for (int z = setStartZ; z <= setEndZ; z++) {
-                    if (chance >= 1 || chance >= random.nextFloat()) {
-                        pointP.z = z;
+                    if (chance > random.nextFloat()) {
+                        pointP = new Vector3d(x, y, z);
                         if (!isProjectionBetweenPoints(startPos, endPos, pointP)) continue;
-                        lengthGet = Math.sqrt(y2 + Mth.square(endPos.z - z));
+                        pointP2 = getProjectionOnLineSegment(startPos, endPos, pointP);
+                        lengthGet = pointP2.distance(endPos);//0;//Math.sqrt(y2 + Mth.square(endPos.z - z) - getDistanceToLineSegment(startPos, endPos, pointP));
                         lengthP = lengthGet / length;
-                        if (getDistanceToLineSegment(startPos, endPos, pointP) <= (startRadius * lengthP + endRadius * (1.0D - lengthP))) {
-                            list.add(new Vector3d(pointP));
+                        if (pointP.distance(pointP2) <= (startRadius * lengthP + endRadius * (1.0D - lengthP))) {
+                            list.add(pointP);
                         }
                     }
+                }
+            }
+        }
+        return list;
+    }
+
+    //立方体坐标列表，带有随机比例
+    public static List<Vector3d> rectangularPos(BlockPos startPos, BlockPos endPos, float chance, WorldgenRandom random) {
+        int startX = Math.min(endPos.getX(), startPos.getX());
+        int startY = Math.min(endPos.getY(), startPos.getY());
+        int startZ = Math.min(endPos.getZ(), startPos.getZ());
+        int endX = Math.max(endPos.getX(), startPos.getX());
+        int endY = Math.max(endPos.getY(), startPos.getY());
+        int endZ = Math.max(endPos.getZ(), startPos.getZ());
+        int xLength = endX - startX;
+        int yLength = endY - startY;
+        int zLength = endZ - startZ;
+        List<Vector3d> list = new ArrayList<>();
+        for (int x = 0; x <= xLength; x++) {
+            for (int y = 0; y <= yLength; y++) {
+                for (int z = 0; z <= zLength; z++) {
+                    Vector3d vct3 = new Vector3d(startX + x, startY + y, startZ + z);
+                    if (chance >= random.nextFloat()) list.add(vct3);
                 }
             }
         }

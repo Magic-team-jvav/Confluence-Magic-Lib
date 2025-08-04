@@ -6,15 +6,23 @@
     "refmap": "confluence_magic_lib.refmap.json",
     "mixins": [
         "LivingEntityMixin",
+        "PlayerMixin",
+        "PrimaryLevelDataMixin",
         "ShapedRecipePatternMixin",
-        "accessor.LanguageProviderAccessor"
+        "accessor.LanguageProviderAccessor",
+        "fixer.ChestBlockEntityAccessor",
+        "fixer.ChunkSerializerFixer",
+        "fixer.DataComponentPatch$PatchKeyFixer",
+        "fixer.ItemStackFixer",
+        "fixer.PiecesContainerFixer"
     ],
     "client": [
         "client.BlockModelShaperMixin",
         "client.GuiGraphicsMixin",
+        "client.LocalPlayerMixin",
         "client.MissingTextureAtlasSpriteMixin"
     ],
     "injectors": {
         "defaultRequire": 1
-  }
+    }
 }

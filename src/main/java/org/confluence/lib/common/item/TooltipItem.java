@@ -23,17 +23,12 @@ public class TooltipItem extends CustomRarityItem {
     }
 
     public TooltipItem(Properties properties, ModRarity rarity, String tooltip) {
-        this(properties, rarity, Collections.singletonList(Component.translatable(tooltip).withStyle(ChatFormatting.DARK_GRAY)));
-    }
-
-    public List<Component> getTooltips() {
-        return tooltips;
+        this(properties, rarity, Collections.singletonList(Component.translatable(tooltip).withStyle(ChatFormatting.GRAY)));
     }
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         tooltipComponents.addAll(tooltips);
-        super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }
 
     public static List<Component> getTooltipsFromString(String id, int lineCount, ChatFormatting chatFormatting) {
