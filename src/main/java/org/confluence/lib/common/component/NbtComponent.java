@@ -23,4 +23,14 @@ public record NbtComponent(CompoundTag nbt) implements DataComponentType<NbtComp
     public StreamCodec<? super RegistryFriendlyByteBuf, NbtComponent> streamCodec() {
         return STREAM_CODEC;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return o == this || (o instanceof NbtComponent(CompoundTag nbt1) && nbt.equals(nbt1));
+    }
+
+    @Override
+    public int hashCode() {
+        return nbt.hashCode();
+    }
 }

@@ -86,8 +86,12 @@ public record ModRarity(String name, int color) implements DataComponentType<Mod
 
     @Override
     public boolean equals(Object o) {
-        if (o == this) return true;
-        return o instanceof ModRarity rarity && rarity.color == color && rarity.name.equals(name);
+        return o == this || (o instanceof ModRarity(String name1, int color1) && color == color1 && name.equals(name1));
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * name.hashCode() + color;
     }
 
     @Override

@@ -10,8 +10,11 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderTooltipEvent;
 import org.confluence.lib.ConfluenceMagicLib;
+import org.confluence.lib.client.animate.ExpertColorAnimation;
+import org.confluence.lib.client.animate.MasterColorAnimation;
 import org.confluence.lib.common.LibTags;
 import org.confluence.lib.common.component.ModRarity;
 
@@ -20,7 +23,13 @@ import java.util.Optional;
 
 @EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
 public final class LibGameEvents {
-    @SubscribeEvent(priority = EventPriority.HIGHEST, receiveCanceled = true)
+    @SubscribeEvent
+    public static void clientTick$Post(ClientTickEvent.Pre event) {
+        ExpertColorAnimation.INSTANCE.updateColor();
+        MasterColorAnimation.INSTANCE.updateColor();
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void renderTooltip$GatherComponents(RenderTooltipEvent.GatherComponents event) {
         ItemStack itemStack = event.getItemStack();
         if (itemStack.isEmpty()) return;
