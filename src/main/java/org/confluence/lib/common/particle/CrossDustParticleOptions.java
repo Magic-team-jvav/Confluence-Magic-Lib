@@ -4,9 +4,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
@@ -21,27 +18,9 @@ import org.joml.Vector4f;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-@Getter
-@EqualsAndHashCode
-@ToString
+@ParametersAreNonnullByDefault
+@MethodsReturnNonnullByDefault
 public final class CrossDustParticleOptions implements ParticleOptions {
-    private final boolean large;
-    /** argb */
-    private final int centerColor;
-    /** argb */
-    private final int edgeColor;
-    private final Vector3f velocity;
-    private final Vector4f speedCurve;
-    private final float scale;
-    private final int lifetime;
-    private final int roll;
-    private final Vector4f rollCurve;
-    private final boolean noGravity;
-    private final boolean noPhysics;
-    private final boolean fullBrightness;
-    private final boolean pulse;
-    private final int flags;
-
     public static final int FLAG_LARGE = 0b00001;
     public static final int FLAG_NO_GRAVITY = 0b00010;
     public static final int FLAG_NO_PHYSICS = 0b00100;
@@ -49,15 +28,15 @@ public final class CrossDustParticleOptions implements ParticleOptions {
     public static final int FLAG_PULSE = 0b10000;
 
     public static final MapCodec<CrossDustParticleOptions> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-        Codec.INT.fieldOf("centerColor").forGetter(thisOptions -> thisOptions.centerColor),
-        Codec.INT.fieldOf("edgeColor").forGetter(thisOptions -> thisOptions.edgeColor),
-        ExtraCodecs.VECTOR3F.fieldOf("velocity").forGetter(thisOptions -> thisOptions.velocity),
-        ExtraCodecs.VECTOR4F.fieldOf("speedCurve").forGetter(thisOptions -> thisOptions.speedCurve),
-        Codec.FLOAT.fieldOf("scale").forGetter(thisOptions -> thisOptions.scale),
-        Codec.INT.fieldOf("lifetime").forGetter(thisOptions -> thisOptions.lifetime),
-        Codec.INT.fieldOf("roll").forGetter(thisOptions -> thisOptions.roll),
-        ExtraCodecs.VECTOR4F.fieldOf("rollCurve").forGetter(thisOptions -> thisOptions.rollCurve),
-        Codec.INT.fieldOf("flags").forGetter(thisOptions -> thisOptions.flags)
+            Codec.INT.fieldOf("centerColor").forGetter(thisOptions -> thisOptions.centerColor),
+            Codec.INT.fieldOf("edgeColor").forGetter(thisOptions -> thisOptions.edgeColor),
+            ExtraCodecs.VECTOR3F.fieldOf("velocity").forGetter(thisOptions -> thisOptions.velocity),
+            ExtraCodecs.VECTOR4F.fieldOf("speedCurve").forGetter(thisOptions -> thisOptions.speedCurve),
+            Codec.FLOAT.fieldOf("scale").forGetter(thisOptions -> thisOptions.scale),
+            Codec.INT.fieldOf("lifetime").forGetter(thisOptions -> thisOptions.lifetime),
+            Codec.INT.fieldOf("roll").forGetter(thisOptions -> thisOptions.roll),
+            ExtraCodecs.VECTOR4F.fieldOf("rollCurve").forGetter(thisOptions -> thisOptions.rollCurve),
+            Codec.INT.fieldOf("flags").forGetter(thisOptions -> thisOptions.flags)
     ).apply(instance, CrossDustParticleOptions::new));
 
     private static final StreamCodec<ByteBuf, Vector4f> VEC4F_CODEC = new StreamCodec<>() {
@@ -74,8 +53,6 @@ public final class CrossDustParticleOptions implements ParticleOptions {
         }
     };
 
-    @ParametersAreNonnullByDefault
-    @MethodsReturnNonnullByDefault
     public static final StreamCodec<FriendlyByteBuf, CrossDustParticleOptions> STREAM_CODEC = new StreamCodec<>() {
         @Override
         public CrossDustParticleOptions decode(FriendlyByteBuf buffer) {
@@ -104,6 +81,23 @@ public final class CrossDustParticleOptions implements ParticleOptions {
             ByteBufCodecs.VAR_INT.encode(buffer, value.flags);
         }
     };
+
+    public final boolean large;
+    /** argb */
+    public final int centerColor;
+    /** argb */
+    public final int edgeColor;
+    public final Vector3f velocity;
+    public final Vector4f speedCurve;
+    public final float scale;
+    public final int lifetime;
+    public final int roll;
+    public final Vector4f rollCurve;
+    public final boolean noGravity;
+    public final boolean noPhysics;
+    public final boolean fullBrightness;
+    public final boolean pulse;
+    public final int flags;
 
 
     public CrossDustParticleOptions(boolean large, int centerColor, int edgeColor, Vector3f velocity, Vector4f speedCurve, float scale, int lifetime, int roll, Vector4f rollCurve, boolean noGravity, boolean noPhysics, boolean fullBrightness, boolean pulse) {
