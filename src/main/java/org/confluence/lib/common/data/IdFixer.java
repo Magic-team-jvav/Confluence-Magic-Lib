@@ -102,8 +102,9 @@ public class IdFixer {
                 ops.getMap(input).ifSuccess(map -> {
                     T t = map.get("Name");
                     if (t != null) ops.getStringValue(t).ifSuccess(s -> {
-                        String s1 = BLOCK_NAME_FIX_MAP.get(s);
-                        if (s1 != null) ops.mergeToMap(input, ops.createString("Name"), ops.createString(s1))
+                        String s1 = s;
+                        while ((s = BLOCK_NAME_FIX_MAP.get(s1)) != null) s1 = s;
+                        ops.mergeToMap(input, ops.createString("Name"), ops.createString(s1))
                                 .ifSuccess(t1 -> mutableObject.setValue(codec.decode(ops, t1)));
                     });
                 });
@@ -148,8 +149,9 @@ public class IdFixer {
             public <T> DataResult<Pair<Holder<Item>, T>> apply(DynamicOps<T> ops, T input, DataResult<Pair<Holder<Item>, T>> a) {
                 if (a.isSuccess()) return a;
                 return ops.getStringValue(input).result().map(s -> {
-                    String s1 = ITEM_NAME_FIX_MAP.get(s);
-                    return s1 == null ? a : codec.decode(ops, ops.createString(s1));
+                    String s1 = s;
+                    while ((s = ITEM_NAME_FIX_MAP.get(s1)) != null) s1 = s;
+                    return codec.decode(ops, ops.createString(s1));
                 }).orElse(a);
             }
 
@@ -166,8 +168,9 @@ public class IdFixer {
             public <T> DataResult<Pair<Holder<Biome>, T>> apply(DynamicOps<T> ops, T input, DataResult<Pair<Holder<Biome>, T>> a) {
                 if (a.isSuccess()) return a;
                 return ops.getStringValue(input).result().map(s -> {
-                    String s1 = BIOME_NAME_FIX_MAP.get(s);
-                    return s1 == null ? a : codec.decode(ops, ops.createString(s1));
+                    String s1 = s;
+                    while ((s = BIOME_NAME_FIX_MAP.get(s1)) != null) s1 = s;
+                    return codec.decode(ops, ops.createString(s1));
                 }).orElse(a);
             }
 
