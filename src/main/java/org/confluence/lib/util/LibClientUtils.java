@@ -54,7 +54,7 @@ public final class LibClientUtils {
      * 将游戏缓存的贴图写入文件
      *
      * @param nativeImage 游戏缓存的贴图
-     * @param path        文件全路径，比如<code>FMLPaths.GAMEDIR.getPrefab().resolve("redstone.png")</code>
+     * @param path        文件全路径，比如<code>FMLPaths.GAMEDIR.get().resolve("redstone.png")</code>
      * @param argbMixer   argb的混合方法
      */
     public static void writeImageToFile(NativeImage nativeImage, Path path, Function4<Integer, Integer, Integer, Integer, Integer> argbMixer) {
