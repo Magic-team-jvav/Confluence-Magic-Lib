@@ -205,13 +205,17 @@ public final class LibUtils {
     }
 
     public static CompoundTag getItemStackNbt(ItemStack itemStack) {
+        return getItemStackNbtNoCopy(itemStack).copy();
+    }
+
+    public static CompoundTag getItemStackNbtNoCopy(ItemStack itemStack) {
         NbtComponent nbtComponent = itemStack.get(ConfluenceMagicLib.NBT);
         if (nbtComponent == null) {
             CompoundTag nbt = new CompoundTag();
             itemStack.set(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
             return nbt;
         }
-        return nbtComponent.nbt().copy();
+        return nbtComponent.nbt();
     }
 
     public static @Nullable CompoundTag getItemStackNbtIfPresent(ItemStack itemStack) {
