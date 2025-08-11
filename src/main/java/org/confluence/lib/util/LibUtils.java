@@ -11,6 +11,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -308,5 +309,9 @@ public final class LibUtils {
         } else {
             itemStack.set(type, value);
         }
+    }
+
+    public static boolean checkChance(double value, RandomSource random) {
+        return value >= 1.0 || (value > 0.0 && random.nextDouble() < value);
     }
 }
