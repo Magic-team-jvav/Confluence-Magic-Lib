@@ -226,12 +226,7 @@ public final class LibUtils {
 
     public static void updateItemStackNbt(ItemStack itemStack, Consumer<CompoundTag> consumer) {
         NbtComponent nbtComponent = itemStack.get(ConfluenceMagicLib.NBT);
-        CompoundTag nbt;
-        if (nbtComponent == null) {
-            nbt = new CompoundTag();
-        } else {
-            nbt = nbtComponent.nbt().copy();
-        }
+        CompoundTag nbt = nbtComponent == null ? new CompoundTag() : nbtComponent.nbt().copy();
         consumer.accept(nbt);
         itemStack.set(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
     }
