@@ -1,14 +1,12 @@
 package org.confluence.lib.util;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
@@ -51,15 +49,8 @@ public final class LibUtils {
     public static final int MAX_STACK_SIZE = 9999;
     public static final String NO_DROPS_TAG = "confluence:no_drops";
     public static final EffectCure DENY_HEAL = EffectCure.get("confluence:deny_heal");
-    public static final Codec<Vec2> VEC_2_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.FLOAT.fieldOf("x").forGetter(vec2 -> vec2.x),
-            Codec.FLOAT.fieldOf("y").forGetter(vec2 -> vec2.y)
-    ).apply(instance, Vec2::new));
-    public static final StreamCodec<ByteBuf, Vec2> VEC_2_STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.FLOAT, vec2 -> vec2.x,
-            ByteBufCodecs.FLOAT, vec2 -> vec2.y,
-            Vec2::new
-    );
+    public static final @Deprecated Codec<Vec2> VEC_2_CODEC = LibCodecUtils.VEC_2_CODEC;
+    public static final @Deprecated StreamCodec<ByteBuf, Vec2> VEC_2_STREAM_CODEC = LibStreamCodecUtils.VEC_2_STREAM_CODEC;
 
     @ApiStatus.Internal
     public static void forMixin$Inject() {}
@@ -180,19 +171,14 @@ public final class LibUtils {
         }
     }
 
+    @Deprecated
     public static <A, B> Codec<Tuple<A, B>> tupleCodec(Codec<A> aCodec, Codec<B> bCodec) {
-        return RecordCodecBuilder.create(instance -> instance.group(
-                aCodec.fieldOf("a").forGetter(Tuple::getA),
-                bCodec.fieldOf("b").forGetter(Tuple::getB)
-        ).apply(instance, Tuple::new));
+        return LibCodecUtils.tupleCodec(aCodec, bCodec);
     }
 
+    @Deprecated
     public static <L, M, R> Codec<ImmutableTriple<L, M, R>> tripleCodec(Codec<L> lCodec, Codec<M> mCodec, Codec<R> rCodec) {
-        return RecordCodecBuilder.create(instance -> instance.group(
-                lCodec.fieldOf("l").forGetter(ImmutableTriple::getLeft),
-                mCodec.fieldOf("m").forGetter(ImmutableTriple::getMiddle),
-                rCodec.fieldOf("r").forGetter(ImmutableTriple::getRight)
-        ).apply(instance, ImmutableTriple::new));
+        return LibCodecUtils.tripleCodec(lCodec, mCodec, rCodec);
     }
 
     public static void setItemAndDropChance(Mob mob, DifficultyInstance difficulty, EquipmentSlot slot, Item item, float chance) {
