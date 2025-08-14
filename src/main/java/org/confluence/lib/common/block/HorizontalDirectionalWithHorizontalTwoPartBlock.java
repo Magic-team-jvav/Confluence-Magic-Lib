@@ -1,5 +1,6 @@
 package org.confluence.lib.common.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.LivingEntity;
@@ -14,12 +15,18 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.PushReaction;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class HorizontalDirectionalWithHorizontalTwoPartBlock extends HorizontalDirectionalBlock {
+public class HorizontalDirectionalWithHorizontalTwoPartBlock extends HorizontalDirectionalBlock {
+    public static final MapCodec<HorizontalDirectionalWithHorizontalTwoPartBlock> CODEC = simpleCodec(HorizontalDirectionalWithHorizontalTwoPartBlock::new);
     public static final EnumProperty<StateProperties.HorizontalTwoPart> PART = StateProperties.HORIZONTAL_TWO_PART;
 
     public HorizontalDirectionalWithHorizontalTwoPartBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(PART, StateProperties.HorizontalTwoPart.BASE).setValue(FACING, Direction.NORTH));
+    }
+
+    @Override
+    protected MapCodec<? extends HorizontalDirectionalWithHorizontalTwoPartBlock> codec() {
+        return CODEC;
     }
 
     @Override

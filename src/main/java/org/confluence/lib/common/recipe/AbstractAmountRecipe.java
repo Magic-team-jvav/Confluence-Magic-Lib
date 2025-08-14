@@ -228,17 +228,10 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
     }
 
     public static <R extends AbstractAmountRecipe<?>> StreamCodec<RegistryFriendlyByteBuf, R> shapelessSerializerSteamCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
-        return new StreamCodec<>() {
-            @Override
-            public R decode(RegistryFriendlyByteBuf buffer) {
-                return factory.apply(ItemStack.STREAM_CODEC.decode(buffer), ExtraByteBufCodecs.INGREDIENTS.decode(buffer));
-            }
-
-            @Override
-            public void encode(RegistryFriendlyByteBuf buffer, R recipe) {
-                ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
-                ExtraByteBufCodecs.INGREDIENTS.encode(buffer, recipe.ingredients);
-            }
-        };
+        return StreamCodec.composite(
+                ItemStack.STREAM_CODEC, r -> r.result,
+                ExtraByteBufCodecs.INGREDIENTS, r -> r.getIngredients(),
+                factory
+        );
     }
 }

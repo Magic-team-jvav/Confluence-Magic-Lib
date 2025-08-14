@@ -85,20 +85,11 @@ public abstract class EitherAmountRecipe4x<T extends MenuRecipeInput> extends Ab
     }
 
     public static <R extends EitherAmountRecipe4x<?>> StreamCodec<RegistryFriendlyByteBuf, R> shapedSerializerSteamCodec(BiFunction<ItemStack, ShapedRecipePattern, R> factory) {
-        return new StreamCodec<>() {
-            @Override
-            public R decode(RegistryFriendlyByteBuf buffer) {
-                ItemStack itemstack = ItemStack.STREAM_CODEC.decode(buffer);
-                ShapedRecipePattern shapedrecipepattern = ShapedRecipePattern.STREAM_CODEC.decode(buffer);
-                return factory.apply(itemstack, shapedrecipepattern);
-            }
-
-            @Override
-            public void encode(RegistryFriendlyByteBuf buffer, R recipe) {
-                ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
-                ShapedRecipePattern.STREAM_CODEC.encode(buffer, recipe.either.left().orElseThrow());
-            }
-        };
+        return StreamCodec.composite(
+                ItemStack.STREAM_CODEC, r -> r.result,
+                ShapedRecipePattern.STREAM_CODEC, r -> r.either.left().orElseThrow(),
+                factory
+        );
     }
 
     public static <R extends EitherAmountRecipe4x<?>> MapCodec<R> eitherSerializerMapCodec(BiFunction<ItemStack, Either<ShapedRecipePattern, NonNullList<Ingredient>>, R> factory) {
@@ -109,17 +100,10 @@ public abstract class EitherAmountRecipe4x<T extends MenuRecipeInput> extends Ab
     }
 
     public static <R extends EitherAmountRecipe4x<?>> StreamCodec<RegistryFriendlyByteBuf, R> eitherSerializerStreamCodec(BiFunction<ItemStack, Either<ShapedRecipePattern, NonNullList<Ingredient>>, R> factory) {
-        return new StreamCodec<>() {
-            @Override
-            public R decode(RegistryFriendlyByteBuf buffer) {
-                return factory.apply(ItemStack.STREAM_CODEC.decode(buffer), EITHER_CODEC.decode(buffer));
-            }
-
-            @Override
-            public void encode(RegistryFriendlyByteBuf buffer, R recipe) {
-                ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
-                EITHER_CODEC.encode(buffer, recipe.either);
-            }
-        };
+        return StreamCodec.composite(
+                ItemStack.STREAM_CODEC, r -> r.result,
+                EITHER_CODEC, r -> r.either,
+                factory
+        );
     }
 }
