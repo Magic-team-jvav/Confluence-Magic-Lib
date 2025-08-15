@@ -44,9 +44,9 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
         this.pos = pos;
     }
 
-    public void initializeIfNeeded(Level pLevel, BlockPos pPos) {
-        if (level == null) this.level = pLevel;
-        if (pos == null) this.pos = pPos;
+    public void initializeIfNeeded(Level level, BlockPos pos) {
+        if (this.level == null) this.level = level;
+        if (this.pos == null) this.pos = pos;
     }
 
     public void initializeIfNeeded(Player player) {
@@ -103,6 +103,10 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
     @Override
     public <T> Optional<T> evaluate(BiFunction<Level, BlockPos, T> levelPosConsumer) {
         return level == null || pos == null ? Optional.empty() : Optional.of(levelPosConsumer.apply(level, pos));
+    }
+
+    public static EnvironmentLevelAccess empty() {
+        return new EnvironmentLevelAccess(null, null);
     }
 
     public static Matcher matcher(@Nullable HolderSet<Biome> biome, @Nullable SearchContext block, boolean graveyard) {
