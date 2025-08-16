@@ -37,7 +37,7 @@ import java.util.function.Function;
 @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
 public class IdFixer {
     public static final Codec<List<Tuple<Integer, IntArrayList>>> FIXED_BLOCK_MAP_CODEC = Codec.lazyInitialized(() -> {
-        Codec<List<Tuple<Integer, LongArrayList>>> codec = LibCodecUtils.tupleCodec(Codec.INT, Codec.LONG.listOf().xmap(LongArrayList::new, Function.identity())).listOf();
+        Codec<List<Tuple<Integer, LongArrayList>>> codec = LibCodecUtils.tuple(Codec.INT, Codec.LONG.listOf().xmap(LongArrayList::new, Function.identity())).listOf();
         return new Codec<>() {
             @Override
             public <T> DataResult<Pair<List<Tuple<Integer, IntArrayList>>, T>> decode(DynamicOps<T> ops, T input) {

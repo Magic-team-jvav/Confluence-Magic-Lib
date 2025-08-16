@@ -7,27 +7,27 @@ import net.minecraft.world.phys.Vec2;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 
 public final class LibCodecUtils {
-    public static final Codec<Vec2> VEC_2_CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final Codec<Vec2> VEC_2 = RecordCodecBuilder.create(instance -> instance.group(
             Codec.FLOAT.fieldOf("x").forGetter(vec2 -> vec2.x),
             Codec.FLOAT.fieldOf("y").forGetter(vec2 -> vec2.y)
     ).apply(instance, Vec2::new));
 
-    public static <A, B> Codec<Tuple<A, B>> tupleCodec(Codec<A> aCodec, Codec<B> bCodec) {
-        return tupleCodec("a", aCodec, "b", bCodec);
+    public static <A, B> Codec<Tuple<A, B>> tuple(Codec<A> aCodec, Codec<B> bCodec) {
+        return tuple("a", aCodec, "b", bCodec);
     }
 
-    public static <A, B> Codec<Tuple<A, B>> tupleCodec(String aName, Codec<A> aCodec, String bName, Codec<B> bCodec) {
+    public static <A, B> Codec<Tuple<A, B>> tuple(String aName, Codec<A> aCodec, String bName, Codec<B> bCodec) {
         return RecordCodecBuilder.create(instance -> instance.group(
                 aCodec.fieldOf(aName).forGetter(Tuple::getA),
                 bCodec.fieldOf(bName).forGetter(Tuple::getB)
         ).apply(instance, Tuple::new));
     }
 
-    public static <L, M, R> Codec<ImmutableTriple<L, M, R>> tripleCodec(Codec<L> lCodec, Codec<M> mCodec, Codec<R> rCodec) {
-        return tripleCodec("l", lCodec, "m", mCodec, "r", rCodec);
+    public static <L, M, R> Codec<ImmutableTriple<L, M, R>> triple(Codec<L> lCodec, Codec<M> mCodec, Codec<R> rCodec) {
+        return triple("l", lCodec, "m", mCodec, "r", rCodec);
     }
 
-    public static <L, M, R> Codec<ImmutableTriple<L, M, R>> tripleCodec(String lName, Codec<L> lCodec, String mName, Codec<M> mCodec, String rName, Codec<R> rCodec) {
+    public static <L, M, R> Codec<ImmutableTriple<L, M, R>> triple(String lName, Codec<L> lCodec, String mName, Codec<M> mCodec, String rName, Codec<R> rCodec) {
         return RecordCodecBuilder.create(instance -> instance.group(
                 lCodec.fieldOf(lName).forGetter(ImmutableTriple::getLeft),
                 mCodec.fieldOf(mName).forGetter(ImmutableTriple::getMiddle),

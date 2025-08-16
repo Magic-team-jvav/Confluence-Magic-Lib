@@ -1,5 +1,7 @@
 package org.confluence.lib.util;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
@@ -39,6 +41,8 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -49,7 +53,7 @@ public final class LibUtils {
     public static final int MAX_STACK_SIZE = 9999;
     public static final String NO_DROPS_TAG = "confluence:no_drops";
     public static final EffectCure DENY_HEAL = EffectCure.get("confluence:deny_heal");
-    public static final @Deprecated Codec<Vec2> VEC_2_CODEC = LibCodecUtils.VEC_2_CODEC;
+    public static final @Deprecated Codec<Vec2> VEC_2_CODEC = LibCodecUtils.VEC_2;
     public static final @Deprecated StreamCodec<ByteBuf, Vec2> VEC_2_STREAM_CODEC = LibStreamCodecUtils.VEC_2_STREAM_CODEC;
 
     @ApiStatus.Internal
@@ -173,12 +177,12 @@ public final class LibUtils {
 
     @Deprecated
     public static <A, B> Codec<Tuple<A, B>> tupleCodec(Codec<A> aCodec, Codec<B> bCodec) {
-        return LibCodecUtils.tupleCodec(aCodec, bCodec);
+        return LibCodecUtils.tuple(aCodec, bCodec);
     }
 
     @Deprecated
     public static <L, M, R> Codec<ImmutableTriple<L, M, R>> tripleCodec(Codec<L> lCodec, Codec<M> mCodec, Codec<R> rCodec) {
-        return LibCodecUtils.tripleCodec(lCodec, mCodec, rCodec);
+        return LibCodecUtils.triple(lCodec, mCodec, rCodec);
     }
 
     public static void setItemAndDropChance(Mob mob, DifficultyInstance difficulty, EquipmentSlot slot, Item item, float chance) {
@@ -299,5 +303,21 @@ public final class LibUtils {
 
     public static boolean checkChance(double value, RandomSource random) {
         return value >= 1.0 || (value > 0.0 && random.nextDouble() < value);
+    }
+
+    public static <K, V> Map<K, V> convertTupleListToMap(List<Tuple<K, V>> list) {
+        ImmutableMap.Builder<K, V> map = ImmutableMap.builder();
+        for (Tuple<K, V> tuple : list) {
+            map.put(tuple.getA(), tuple.getB());
+        }
+        return map.build();
+    }
+
+    public static <K, V> List<Tuple<K, V>> convertMapToTupleList(Map<K, V> map) {
+        ImmutableList.Builder<Tuple<K, V>> list = ImmutableList.builder();
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            list.add(new Tuple<>(entry.getKey(), entry.getValue()));
+        }
+        return list.build();
     }
 }

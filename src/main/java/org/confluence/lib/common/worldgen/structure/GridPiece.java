@@ -35,8 +35,8 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class GridPiece extends StructurePiece {
-    public static final Codec<List<Tuple<Integer, IntArrayList>>> BLOCK_MAP_CODEC = LibCodecUtils.tupleCodec(Codec.INT, Codec.INT.listOf().xmap(IntArrayList::new, Function.identity())).listOf();
-    public static final Codec<List<Tuple<BlockPos, ResourceLocation>>> FEATURES_CODEC = LibCodecUtils.tupleCodec(BlockPos.CODEC, ResourceLocation.CODEC).listOf();
+    public static final Codec<List<Tuple<Integer, IntArrayList>>> BLOCK_MAP_CODEC = LibCodecUtils.tuple(Codec.INT, Codec.INT.listOf().xmap(IntArrayList::new, Function.identity())).listOf();
+    public static final Codec<List<Tuple<BlockPos, ResourceLocation>>> FEATURES_CODEC = LibCodecUtils.tuple(BlockPos.CODEC, ResourceLocation.CODEC).listOf();
 
     private final ChunkPos startPos;
     private final List<Tuple<Integer, IntArrayList>> blockMap;

@@ -33,12 +33,12 @@ public record AmountIngredient(Ingredient ingredient, int amount) implements ICu
     }
 
     @Override
-    public boolean test(@Nullable ItemStack pStack) {
-        if (pStack == null) return false;
-        if (pStack.getCount() < amount) {
+    public boolean test(@Nullable ItemStack stack) {
+        if (stack == null) return false;
+        if (stack.getCount() < amount) {
             return false;
         } else {
-            return ingredient.test(pStack);
+            return ingredient.test(stack);
         }
     }
 
@@ -70,5 +70,9 @@ public record AmountIngredient(Ingredient ingredient, int amount) implements ICu
 
     public static Ingredient of(int amount, TagKey<Item> tag) {
         return new AmountIngredient(Ingredient.of(tag), amount).toVanilla();
+    }
+
+    public static Ingredient of(ItemStack stack) {
+        return new AmountIngredient(Ingredient.of(stack), stack.getCount()).toVanilla();
     }
 }
