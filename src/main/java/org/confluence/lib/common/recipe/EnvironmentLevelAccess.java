@@ -3,6 +3,7 @@ package org.confluence.lib.common.recipe;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.Util;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -10,6 +11,7 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
@@ -29,6 +31,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -168,6 +171,20 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
         private static boolean isGraveyard(Level level, BlockPos pos) {
             return true; // confluence mixin here
         }
+
+        public List<Component> toDescriptions() {
+            List<Component> list = new ArrayList<>();
+            biome.ifPresent(biomes -> {
+                for (Holder<Biome> holder : biomes) {
+                    list.add(Component.translatable(Util.makeDescriptionId("biome", holder.getKey().location())));
+                }
+            });
+            // todo block
+            if (graveyard) {
+                list.add(Component.translatable("jei.tooltip.environment.graveyard"));
+            }
+            return list;
+        }
     }
 
     public record SearchContext(int inflate, Optional<HolderSet<Block>> blocks, List<StatePropertiesPredicate> statePredicates, Optional<HolderSet<Fluid>> fluids) {
@@ -198,13 +215,13 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
             return true;
         }
 
-        public String toDescription() {
+        public Component toDescription() {
             // todo
-            return "{" +
+            return Component.literal('{' +
                     ", blocks=" + blocks +
                     ", statePredicates=" + statePredicates +
                     ", fluids=" + fluids +
-                    '}';
+                    '}');
         }
     }
 }
