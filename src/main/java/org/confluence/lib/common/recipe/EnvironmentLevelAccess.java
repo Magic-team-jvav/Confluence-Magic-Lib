@@ -30,6 +30,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -148,6 +149,20 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
 
         public boolean matchesGraveyard(Level level, BlockPos pos) {
             return !graveyard || isGraveyard(level, pos);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return o == this || (o instanceof Matcher(Optional<HolderSet<Biome>> biome1, Optional<SearchContext> block1, boolean graveyard1) &&
+                    graveyard == graveyard1 && Objects.equals(block, block1) && Objects.equals(biome, biome1));
+        }
+
+        @Override
+        public int hashCode() {
+            int result = Objects.hashCode(biome);
+            result = 31 * result + Objects.hashCode(block);
+            result = 31 * result + Boolean.hashCode(graveyard);
+            return result;
         }
 
         private static boolean isGraveyard(Level level, BlockPos pos) {
