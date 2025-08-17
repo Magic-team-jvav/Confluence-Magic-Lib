@@ -3,6 +3,7 @@ package org.confluence.lib.common.recipe;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
 import net.minecraft.core.BlockPos;
@@ -113,22 +114,22 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
         return new EnvironmentLevelAccess(null, null);
     }
 
-    public static Matcher matcher(@Nullable HolderSet<Biome> biome, @Nullable SearchContext block, boolean graveyard) {
-        return new Matcher(Optional.ofNullable(biome), Optional.ofNullable(block), graveyard);
+    public static Matcher matcher(@Nullable HolderSet<Biome> biome, @Nullable SearchContext block, boolean ectoMist) {
+        return new Matcher(Optional.ofNullable(biome), Optional.ofNullable(block), ectoMist);
     }
 
-    public record Matcher(Optional<HolderSet<Biome>> biome, Optional<SearchContext> block, boolean graveyard) {
+    public record Matcher(Optional<HolderSet<Biome>> biome, Optional<SearchContext> block, boolean ectoMist) {
         public static final Matcher EMPTY = new Matcher(Optional.empty(), Optional.empty(), false);
         public static final Codec<Matcher> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 RegistryCodecs.homogeneousList(Registries.BIOME).lenientOptionalFieldOf("biome").forGetter(Matcher::biome),
                 SearchContext.CODEC.lenientOptionalFieldOf("block").forGetter(Matcher::block),
-                Codec.BOOL.lenientOptionalFieldOf("graveyard", false).forGetter(Matcher::graveyard)
+                Codec.BOOL.lenientOptionalFieldOf("ecto_mist", false).forGetter(Matcher::ectoMist)
         ).apply(instance, Matcher::new));
         public static final MapCodec<Matcher> MAP_CODEC = CODEC.lenientOptionalFieldOf("environment", EMPTY);
         public static final StreamCodec<RegistryFriendlyByteBuf, Matcher> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.optional(ByteBufCodecs.holderSet(Registries.BIOME)), Matcher::biome,
                 ByteBufCodecs.optional(SearchContext.STREAM_CODEC), Matcher::block,
-                ByteBufCodecs.BOOL, Matcher::graveyard,
+                ByteBufCodecs.BOOL, Matcher::ectoMist,
                 Matcher::new
         );
 
@@ -138,7 +139,7 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
             if (level == null || pos == null) return false;
             if (!matchesBiome(level, pos)) return false;
             if (!matchesBlock(level, pos)) return false;
-            if (!matchesGraveyard(level, pos)) return false;
+            if (!matchesEctoMist(level, pos)) return false;
             return true;
         }
 
@@ -150,38 +151,45 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
             return block.isEmpty() || block.get().matches(level, pos);
         }
 
-        public boolean matchesGraveyard(Level level, BlockPos pos) {
-            return !graveyard || isGraveyard(level, pos);
+        /**
+         * 灵雾环境
+         */
+        public boolean matchesEctoMist(Level level, BlockPos pos) {
+            return !ectoMist || isEctoMist(level, pos);
         }
 
         @Override
         public boolean equals(Object o) {
-            return o == this || (o instanceof Matcher(Optional<HolderSet<Biome>> biome1, Optional<SearchContext> block1, boolean graveyard1) &&
-                    graveyard == graveyard1 && Objects.equals(block, block1) && Objects.equals(biome, biome1));
+            return o == this || (o instanceof Matcher(Optional<HolderSet<Biome>> biome1, Optional<SearchContext> block1, boolean ectoMist1) &&
+                    ectoMist == ectoMist1 && Objects.equals(block, block1) && Objects.equals(biome, biome1));
         }
 
         @Override
         public int hashCode() {
             int result = Objects.hashCode(biome);
             result = 31 * result + Objects.hashCode(block);
-            result = 31 * result + Boolean.hashCode(graveyard);
+            result = 31 * result + Boolean.hashCode(ectoMist);
             return result;
         }
 
-        private static boolean isGraveyard(Level level, BlockPos pos) {
+        private static boolean isEctoMist(Level level, BlockPos pos) {
             return true; // confluence mixin here
         }
 
         public List<Component> toDescriptions() {
             List<Component> list = new ArrayList<>();
             biome.ifPresent(biomes -> {
+                list.add(Component.translatable("jei.tooltip.environment.biome").withStyle(ChatFormatting.AQUA));
                 for (Holder<Biome> holder : biomes) {
-                    list.add(Component.translatable(Util.makeDescriptionId("biome", holder.getKey().location())));
+                    list.add(Component.translatable(Util.makeDescriptionId("biome", holder.getKey().location())).withStyle(ChatFormatting.GRAY));
                 }
             });
-            // todo block
-            if (graveyard) {
-                list.add(Component.translatable("jei.tooltip.environment.graveyard"));
+            block.ifPresent(context -> {
+                list.add(Component.translatable("jei.tooltip.environment.block").withStyle(ChatFormatting.AQUA));
+                list.addAll(context.toDescriptions());
+            });
+            if (ectoMist) {
+                list.add(Component.translatable("jei.tooltip.environment.ecto_mist").withStyle(ChatFormatting.AQUA));
             }
             return list;
         }
@@ -215,13 +223,50 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
             return true;
         }
 
-        public Component toDescription() {
+        public String toDescription() {
             // todo
-            return Component.literal('{' +
+            return '{' +
                     ", blocks=" + blocks +
                     ", statePredicates=" + statePredicates +
                     ", fluids=" + fluids +
-                    '}');
+                    '}';
+        }
+
+        public List<Component> toDescriptions() {
+            List<Component> list = new ArrayList<>();
+            list.add(Component.translatable("jei.tooltip.environment.block.inflate", inflate).withStyle(ChatFormatting.GRAY));
+            blocks.ifPresent(blockz -> {
+                list.add(Component.translatable("jei.tooltip.environment.block.blocks").withStyle(ChatFormatting.GRAY));
+                blockz.stream().map(holder -> holder.value().getName().withStyle(ChatFormatting.DARK_GRAY)).forEach(list::add);
+            });
+            for (StatePropertiesPredicate predicate : statePredicates) {
+                list.add(Component.translatable("jei.tooltip.environment.block.predicates").withStyle(ChatFormatting.GRAY));
+                for (StatePropertiesPredicate.PropertyMatcher property : predicate.properties()) {
+                    String s = property.name() + '=';
+                    if (property.valueMatcher() instanceof StatePropertiesPredicate.ExactMatcher(String value)) {
+                        s += value;
+                    } else if (property.valueMatcher() instanceof StatePropertiesPredicate.RangedMatcher(Optional<String> minValue, Optional<String> maxValue)) {
+                        if (minValue.isPresent()) {
+                            if (maxValue.isPresent()) {
+                                s += '[' + minValue.get() + ", " + maxValue.get() + ']';
+                            } else {
+                                s += '[' + minValue.get() + ",)";
+                            }
+                        } else if (maxValue.isPresent()) {
+                            s += "(," + maxValue.get() + ']';
+                        }
+                    } else {
+                        s += property.valueMatcher();
+                    }
+                    list.add(Component.translatable("jei.tooltip.environment.block.predicates.property", s).withStyle(ChatFormatting.DARK_GRAY));
+                }
+            }
+            fluids.ifPresent(fluidz -> {
+                list.add(Component.translatable("jei.tooltip.environment.block.fluids").withStyle(ChatFormatting.GRAY));
+                fluidz.stream().map(holder -> holder.value().getFluidType()).distinct()
+                        .forEach(type -> list.add(Component.translatable(type.getDescriptionId()).withStyle(ChatFormatting.DARK_GRAY)));
+            });
+            return list;
         }
     }
 }

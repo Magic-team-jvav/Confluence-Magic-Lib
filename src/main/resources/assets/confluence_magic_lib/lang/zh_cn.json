@@ -1,4 +1,12 @@
 {
     "tooltip.confluence.work_in_progress": "仍在开发中！",
-    "error.confluence.null": "发现一个空指针异常！请报告给《汇流来世》以寻求帮助！"
+    "error.confluence.null": "发现一个空指针异常！请报告给《汇流来世》以寻求帮助！",
+    "jei.tooltip.environment.biome": "需要任意生物群系：",
+    "jei.tooltip.environment.block": "需要任意方块在附近：",
+    "jei.tooltip.environment.block.inflate": "搜索范围：%s",
+    "jei.tooltip.environment.block.blocks": "方块：",
+    "jei.tooltip.environment.block.predicates": "方块状态：",
+    "jei.tooltip.environment.block.predicates.property": "属性：%s",
+    "jei.tooltip.environment.block.fluids": "流体：",
+    "jei.tooltip.environment.ecto_mist": "需要灵雾环境"
 }
