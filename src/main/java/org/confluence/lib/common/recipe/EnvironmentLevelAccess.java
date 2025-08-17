@@ -223,15 +223,6 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
             return true;
         }
 
-        public String toDescription() {
-            // todo
-            return '{' +
-                    ", blocks=" + blocks +
-                    ", statePredicates=" + statePredicates +
-                    ", fluids=" + fluids +
-                    '}';
-        }
-
         public List<Component> toDescriptions() {
             List<Component> list = new ArrayList<>();
             list.add(Component.translatable("jei.tooltip.environment.block.inflate", inflate).withStyle(ChatFormatting.GRAY));
