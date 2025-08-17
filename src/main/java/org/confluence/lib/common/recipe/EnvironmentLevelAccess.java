@@ -118,18 +118,18 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
         return new Matcher(Optional.ofNullable(biome), Optional.ofNullable(block), ectoMist);
     }
 
-    public record Matcher(Optional<HolderSet<Biome>> biome, Optional<SearchContext> block, boolean ectoMist) {
+    public record Matcher(Optional<HolderSet<Biome>> biome, Optional<SearchContext> block, boolean graveyard) {
         public static final Matcher EMPTY = new Matcher(Optional.empty(), Optional.empty(), false);
         public static final Codec<Matcher> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 RegistryCodecs.homogeneousList(Registries.BIOME).lenientOptionalFieldOf("biome").forGetter(Matcher::biome),
                 SearchContext.CODEC.lenientOptionalFieldOf("block").forGetter(Matcher::block),
-                Codec.BOOL.lenientOptionalFieldOf("ecto_mist", false).forGetter(Matcher::ectoMist)
+                Codec.BOOL.lenientOptionalFieldOf("graveyard", false).forGetter(Matcher::graveyard)
         ).apply(instance, Matcher::new));
         public static final MapCodec<Matcher> MAP_CODEC = CODEC.lenientOptionalFieldOf("environment", EMPTY);
         public static final StreamCodec<RegistryFriendlyByteBuf, Matcher> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.optional(ByteBufCodecs.holderSet(Registries.BIOME)), Matcher::biome,
                 ByteBufCodecs.optional(SearchContext.STREAM_CODEC), Matcher::block,
-                ByteBufCodecs.BOOL, Matcher::ectoMist,
+                ByteBufCodecs.BOOL, Matcher::graveyard,
                 Matcher::new
         );
 
@@ -139,7 +139,7 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
             if (level == null || pos == null) return false;
             if (!matchesBiome(level, pos)) return false;
             if (!matchesBlock(level, pos)) return false;
-            if (!matchesEctoMist(level, pos)) return false;
+            if (!matchesGraveyard(level, pos)) return false;
             return true;
         }
 
@@ -154,25 +154,25 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
         /**
          * 灵雾环境
          */
-        public boolean matchesEctoMist(Level level, BlockPos pos) {
-            return !ectoMist || isEctoMist(level, pos);
+        public boolean matchesGraveyard(Level level, BlockPos pos) {
+            return !graveyard || isGraveyard(level, pos);
         }
 
         @Override
         public boolean equals(Object o) {
             return o == this || (o instanceof Matcher(Optional<HolderSet<Biome>> biome1, Optional<SearchContext> block1, boolean ectoMist1) &&
-                    ectoMist == ectoMist1 && Objects.equals(block, block1) && Objects.equals(biome, biome1));
+                    graveyard == ectoMist1 && Objects.equals(block, block1) && Objects.equals(biome, biome1));
         }
 
         @Override
         public int hashCode() {
             int result = Objects.hashCode(biome);
             result = 31 * result + Objects.hashCode(block);
-            result = 31 * result + Boolean.hashCode(ectoMist);
+            result = 31 * result + Boolean.hashCode(graveyard);
             return result;
         }
 
-        private static boolean isEctoMist(Level level, BlockPos pos) {
+        private static boolean isGraveyard(Level level, BlockPos pos) {
             return true; // confluence mixin here
         }
 
@@ -188,8 +188,8 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
                 list.add(Component.translatable("jei.tooltip.environment.block").withStyle(ChatFormatting.AQUA));
                 list.addAll(context.toDescriptions());
             });
-            if (ectoMist) {
-                list.add(Component.translatable("jei.tooltip.environment.ecto_mist").withStyle(ChatFormatting.AQUA));
+            if (graveyard) {
+                list.add(Component.translatable("jei.tooltip.environment.graveyard").withStyle(ChatFormatting.AQUA));
             }
             return list;
         }

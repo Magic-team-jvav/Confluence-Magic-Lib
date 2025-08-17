@@ -8,5 +8,5 @@
     "jei.tooltip.environment.block.predicates": "方块状态：",
     "jei.tooltip.environment.block.predicates.property": "属性：%s",
     "jei.tooltip.environment.block.fluids": "流体：",
-    "jei.tooltip.environment.ecto_mist": "需要灵雾环境"
+    "jei.tooltip.environment.graveyard": "需要灵雾环境"
 }

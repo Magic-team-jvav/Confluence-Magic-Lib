@@ -8,5 +8,5 @@
     "jei.tooltip.environment.block.predicates": "Block States:",
     "jei.tooltip.environment.block.predicates.property": "Property: %s",
     "jei.tooltip.environment.block.fluids": "Fluids:",
-    "jei.tooltip.environment.ecto_mist": "Requires ecto mist"
+    "jei.tooltip.environment.graveyard": "Requires graveyard"
 }
