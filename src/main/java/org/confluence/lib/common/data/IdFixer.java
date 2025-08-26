@@ -19,6 +19,7 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.state.StateHolder;
 import net.neoforged.fml.ModLoader;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.confluence.lib.ConfluenceMagicLib;
@@ -101,11 +102,11 @@ public class IdFixer {
                 if (a.isSuccess()) return a;
                 MutableObject<DataResult<Pair<A, T>>> mutableObject = new MutableObject<>(a);
                 ops.getMap(input).ifSuccess(map -> {
-                    T t = map.get("Name");
+                    T t = map.get(StateHolder.NAME_TAG);
                     if (t != null) ops.getStringValue(t).ifSuccess(s -> {
                         String s1 = s;
                         while ((s = BLOCK_NAME_FIX_MAP.get(s1)) != null) s1 = s;
-                        ops.mergeToMap(input, ops.createString("Name"), ops.createString(s1))
+                        ops.mergeToMap(input, ops.createString(StateHolder.NAME_TAG), ops.createString(s1))
                                 .ifSuccess(t1 -> mutableObject.setValue(codec.decode(ops, t1)));
                     });
                 });
