@@ -21,17 +21,21 @@ public class LangMerger {
     public static void main(String[] args) {
         if (FMLEnvironment.production || args.length == 0) return;
         Path startPath = Paths.get(args[0]);
+        String s1 = startPath.toString();
 
         try {
             Files.walkFileTree(startPath, EnumSet.noneOf(FileVisitOption.class), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
                     if (file.getFileName().toString().equals("en_us.json")) {
-                        try (Reader reader = new FileReader(file.toFile())) {
-                            for (Map.Entry<String, JsonElement> entry : GsonHelper.parse(reader).entrySet()) {
-                                mergedResult.add(entry.getKey(), entry.getValue());
-                            }
-                        } catch (Exception ignored) {}
+                        String s2 = file.toString();
+                        if (s2.contains("resources") && !s2.contains("build") && !s2.contains("resourcepacks") && !s2.equals(s1)) {
+                            try (Reader reader = new FileReader(file.toFile())) {
+                                for (Map.Entry<String, JsonElement> entry : GsonHelper.parse(reader).entrySet()) {
+                                    mergedResult.add(entry.getKey(), entry.getValue());
+                                }
+                            } catch (Exception ignored) {}
+                        }
                     }
                     return FileVisitResult.CONTINUE;
                 }
