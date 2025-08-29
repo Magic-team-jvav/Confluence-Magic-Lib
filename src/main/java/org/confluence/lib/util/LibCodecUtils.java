@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.phys.Vec2;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 
 public final class LibCodecUtils {
     public static final Codec<Vec2> VEC_2 = RecordCodecBuilder.create(instance -> instance.group(
@@ -23,15 +24,15 @@ public final class LibCodecUtils {
         ).apply(instance, Tuple::new));
     }
 
-    public static <L, M, R> Codec<ImmutableTriple<L, M, R>> triple(Codec<L> lCodec, Codec<M> mCodec, Codec<R> rCodec) {
+    public static <L, M, R> Codec<Triple<L, M, R>> triple(Codec<L> lCodec, Codec<M> mCodec, Codec<R> rCodec) {
         return triple("l", lCodec, "m", mCodec, "r", rCodec);
     }
 
-    public static <L, M, R> Codec<ImmutableTriple<L, M, R>> triple(String lName, Codec<L> lCodec, String mName, Codec<M> mCodec, String rName, Codec<R> rCodec) {
+    public static <L, M, R> Codec<Triple<L, M, R>> triple(String lName, Codec<L> lCodec, String mName, Codec<M> mCodec, String rName, Codec<R> rCodec) {
         return RecordCodecBuilder.create(instance -> instance.group(
-                lCodec.fieldOf(lName).forGetter(ImmutableTriple::getLeft),
-                mCodec.fieldOf(mName).forGetter(ImmutableTriple::getMiddle),
-                rCodec.fieldOf(rName).forGetter(ImmutableTriple::getRight)
+                lCodec.fieldOf(lName).forGetter(Triple::getLeft),
+                mCodec.fieldOf(mName).forGetter(Triple::getMiddle),
+                rCodec.fieldOf(rName).forGetter(Triple::getRight)
         ).apply(instance, ImmutableTriple::new));
     }
 }
