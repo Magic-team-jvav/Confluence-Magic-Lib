@@ -26,6 +26,10 @@ public final class FeatureUtils {
         return level.isStateAtPosition(blockPos, BlockBehaviour.BlockStateBase::isAir);
     }
 
+    public static boolean isPosLiquid(WorldGenLevel level, BlockPos blockPos) {
+        return level.isStateAtPosition(blockPos, BlockBehaviour.BlockStateBase::liquid);
+    }
+
     public static boolean isPosSturdy(WorldGenLevel level, BlockPos blockPos, Direction face) {
         return level.isStateAtPosition(blockPos, blockState -> blockState.isFaceSturdy(level, blockPos, face));
     }
