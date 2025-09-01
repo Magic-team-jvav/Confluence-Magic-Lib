@@ -7,10 +7,6 @@ import org.confluence.lib.common.component.NbtComponent;
 import org.confluence.lib.util.LibUtils;
 
 public class ColoredItem extends CustomRarityItem {
-    public ColoredItem(ModRarity rarity) {
-        super(rarity);
-    }
-
     public ColoredItem(Properties properties, ModRarity rarity) {
         super(properties, rarity);
     }
@@ -25,5 +21,11 @@ public class ColoredItem extends CustomRarityItem {
             return 0xFF66CCFF;
         }
         return nbtComponent.nbt().getInt("color");
+    }
+
+    public static void merge(ItemStack carried, ItemStack onSlot) {
+        if (onSlot.getItem() instanceof ColoredItem && ItemStack.isSameItem(onSlot, carried)) {
+            ColoredItem.setColor(carried, ColoredItem.getColor(onSlot));
+        }
     }
 }
