@@ -8,6 +8,8 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.phys.Vec2;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Map;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 @ParametersAreNonnullByDefault
@@ -37,5 +39,9 @@ public final class LibStreamCodecUtils {
 
     public static <B extends ByteBuf, TA, TB> StreamCodec<B, Tuple<TA, TB>> tuple(StreamCodec<? super B, TA> aCodec, StreamCodec<? super B, TB> bCodec) {
         return StreamCodec.composite(aCodec, Tuple::getA, bCodec, Tuple::getB, Tuple::new);
+    }
+
+    public static <B extends ByteBuf, K, V> StreamCodec<B, Map<K, V>> map(IntFunction<Map<K, V>> factory, StreamCodec<? super B, K> keyCodec, StreamCodec<? super B, V> valueCodec) {
+        return ByteBufCodecs.map(factory, keyCodec, valueCodec);
     }
 }
