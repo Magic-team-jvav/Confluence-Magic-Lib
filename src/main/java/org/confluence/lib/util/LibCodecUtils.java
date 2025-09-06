@@ -1,11 +1,18 @@
 package org.confluence.lib.util;
 
+import com.google.common.collect.ImmutableListMultimap;
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.phys.Vec2;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
+
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 public final class LibCodecUtils {
     public static final Codec<Vec2> VEC_2 = RecordCodecBuilder.create(instance -> instance.group(
@@ -34,5 +41,29 @@ public final class LibCodecUtils {
                 mCodec.fieldOf(mName).forGetter(Triple::getMiddle),
                 rCodec.fieldOf(rName).forGetter(Triple::getRight)
         ).apply(instance, ImmutableTriple::new));
+    }
+
+    public static <A> Codec<List<A>> homogenousList(Codec<A> codec, boolean disallowInline) {
+        Codec<List<A>> listCodec = codec.listOf();
+        return disallowInline ? listCodec : Codec.either(listCodec, codec).xmap(
+                either -> either.map(Function.identity(), List::of),
+                list -> list.size() == 1 ? Either.right(list.getFirst()) : Either.left(list)
+        );
+    }
+
+    public static <K, V> Codec<ImmutableListMultimap<K, V>> multimapCodec(Codec<K> keyCodec, Codec<V> valueCodec) {
+        return Codec.unboundedMap(keyCodec, LibCodecUtils.homogenousList(valueCodec, false)).xmap(map -> {
+            ImmutableListMultimap.Builder<K, V> builder = ImmutableListMultimap.builder();
+            for (Map.Entry<K, List<V>> entry : map.entrySet()) {
+                builder.putAll(entry.getKey(), entry.getValue());
+            }
+            return builder.build();
+        }, multimap -> {
+            Map<K, List<V>> map = new Hashtable<>();
+            for (K holder : multimap.keySet()) {
+                map.put(holder, multimap.get(holder));
+            }
+            return map;
+        });
     }
 }
