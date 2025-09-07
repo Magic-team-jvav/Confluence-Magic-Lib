@@ -2,20 +2,28 @@ package org.confluence.lib.common.event;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ClickAction;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.ItemStackedOnOtherEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.data.IdFixer;
 import org.confluence.lib.common.data.saved.IGlobalData;
+import org.confluence.lib.common.item.IFunctionCouldEnable;
+import org.confluence.lib.event.SwitchItemFunctionEvent;
 import org.confluence.lib.mixed.IExtraSyncedData;
 import org.confluence.lib.network.SetEntityDataPacketS2C;
 import org.confluence.lib.util.LibUtils;
@@ -63,13 +71,30 @@ public final class GameEvents {
     public static void checkForNull(LivingDeathEvent event) {
         if (event.getSource() == null) {
             event.setCanceled(true);
-            if (event.getEntity() != null && event.getEntity().level() instanceof ServerLevel level) {
+            MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+            if (server != null) {
                 StringBuilder builder = new StringBuilder();
-                for (StackTraceElement element : level.getServer().getRunningThread().getStackTrace()) {
+                for (StackTraceElement element : server.getRunningThread().getStackTrace()) {
                     builder.append(element).append('\n');
                 }
                 ConfluenceMagicLib.LOGGER.error(builder.toString());
-                level.getServer().sendSystemMessage(Component.translatable("error.confluence.null").withStyle(ChatFormatting.RED));
+                server.sendSystemMessage(Component.translatable("error.confluence.null").withStyle(ChatFormatting.RED));
+            }
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGH, receiveCanceled = true)
+    public static void itemStackedOnOther(ItemStackedOnOtherEvent event) {
+        if (event.getClickAction() != ClickAction.SECONDARY) return;
+        ItemStack carried = event.getCarriedItem();
+        ItemStack onSlot = event.getStackedOnItem();
+        // 需要注意创造模式物品栏是仅客户端的，所以创造模式无法正常使用
+        if (carried.isEmpty() && onSlot.getItem() instanceof IFunctionCouldEnable couldEnable) {
+            Player player = event.getPlayer();
+            if (!NeoForge.EVENT_BUS.post(new SwitchItemFunctionEvent.Pre(player, onSlot)).isCanceled()) {
+                couldEnable.cycleEnable(onSlot);
+                NeoForge.EVENT_BUS.post(new SwitchItemFunctionEvent.Post(player, onSlot, couldEnable.isEnabled(onSlot)));
+                event.setCanceled(true);
             }
         }
     }

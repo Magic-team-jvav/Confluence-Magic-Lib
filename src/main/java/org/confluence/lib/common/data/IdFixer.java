@@ -23,7 +23,7 @@ import net.minecraft.world.level.block.state.StateHolder;
 import net.neoforged.fml.ModLoader;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.confluence.lib.ConfluenceMagicLib;
-import org.confluence.lib.api.NameFixRegisterEvent;
+import org.confluence.lib.event.NameFixRegisterEvent;
 import org.confluence.lib.util.LibCodecUtils;
 import org.confluence.lib.util.LibUtils;
 import org.jetbrains.annotations.ApiStatus;

@@ -1,4 +1,4 @@
-package org.confluence.lib.api;
+package org.confluence.lib.event;
 
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.resources.ResourceLocation;

@@ -6,11 +6,14 @@ import com.mojang.datafixers.util.Function4;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.item.ClampedItemPropertyFunction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import org.confluence.lib.common.item.IFunctionCouldEnable;
 import org.joml.Quaternionf;
 
 import javax.imageio.ImageIO;
@@ -27,6 +30,10 @@ public final class LibClientUtils {
     public static final Quaternionf ANGLE_N90 = Axis.YP.rotation(-Mth.HALF_PI);
     public static final int[] FULL_BRIGHT = {0xF000F0, 0xF000F0, 0xF000F0, 0xF000F0};
     public static final float INV_255 = 1.0F / 255.0F;
+    public static final ClampedItemPropertyFunction COULD_ENABLE_PROPERTY_FUNCTION = (stack, level, living, seed) -> {
+        CompoundTag tag = LibUtils.getItemStackNbtIfPresent(stack);
+        return tag != null && tag.getBoolean(IFunctionCouldEnable.DISABLE_KEY) ? 0 : 1;
+    };
 
     public static void setupOverlayRenderState(boolean blend, boolean depthTest) {
         if (blend) {
