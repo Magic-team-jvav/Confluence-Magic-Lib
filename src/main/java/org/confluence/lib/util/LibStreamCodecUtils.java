@@ -1,6 +1,9 @@
 package org.confluence.lib.util;
 
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
+import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -43,5 +46,10 @@ public final class LibStreamCodecUtils {
 
     public static <B extends ByteBuf, K, V> StreamCodec<B, Map<K, V>> map(IntFunction<Map<K, V>> factory, StreamCodec<? super B, K> keyCodec, StreamCodec<? super B, V> valueCodec) {
         return ByteBufCodecs.map(factory, keyCodec, valueCodec);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <B extends ByteBuf, T> StreamCodec<B, Object2BooleanMap<T>> object2BooleanMap(StreamCodec<? super B, T> codec) {
+        return (StreamCodec<B, Object2BooleanMap<T>>) map(Object2BooleanOpenHashMap::new, codec, ByteBufCodecs.BOOL).<Object2BooleanMap<T>>map(Object2BooleanOpenHashMap::new, Object2ObjectOpenHashMap::new);
     }
 }
