@@ -9,7 +9,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
-import org.confluence.lib.network.ExtraByteBufCodecs;
+import org.confluence.lib.util.LibStreamCodecUtils;
 
 public abstract class EnvironmentAmountRecipe extends AbstractAmountRecipe<EnvironmentRecipeInput> {
     protected final EnvironmentLevelAccess.Matcher environment;
@@ -39,7 +39,7 @@ public abstract class EnvironmentAmountRecipe extends AbstractAmountRecipe<Envir
     public static <R extends EnvironmentAmountRecipe> StreamCodec<RegistryFriendlyByteBuf, R> environmentShapelessSerializerSteamCodec(Function3<ItemStack, NonNullList<Ingredient>, EnvironmentLevelAccess.Matcher, R> factory) {
         return StreamCodec.composite(
                 ItemStack.STREAM_CODEC, r -> r.result,
-                ExtraByteBufCodecs.INGREDIENTS, AbstractAmountRecipe::getIngredients,
+                LibStreamCodecUtils.INGREDIENTS, AbstractAmountRecipe::getIngredients,
                 EnvironmentLevelAccess.Matcher.STREAM_CODEC, EnvironmentAmountRecipe::getEnvironment,
                 factory
         );

@@ -22,7 +22,7 @@ import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.crafting.ICustomIngredient;
-import org.confluence.lib.network.ExtraByteBufCodecs;
+import org.confluence.lib.util.LibStreamCodecUtils;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
 
@@ -230,7 +230,7 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
     public static <R extends AbstractAmountRecipe<?>> StreamCodec<RegistryFriendlyByteBuf, R> shapelessSerializerSteamCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
         return StreamCodec.composite(
                 ItemStack.STREAM_CODEC, r -> r.result,
-                ExtraByteBufCodecs.INGREDIENTS, r -> r.getIngredients(),
+                LibStreamCodecUtils.INGREDIENTS, r -> r.getIngredients(),
                 factory
         );
     }

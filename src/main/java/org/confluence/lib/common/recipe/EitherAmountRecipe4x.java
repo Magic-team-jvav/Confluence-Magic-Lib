@@ -14,13 +14,13 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.Level;
 import org.confluence.lib.mixed.LibShapedRecipePattern;
-import org.confluence.lib.network.ExtraByteBufCodecs;
+import org.confluence.lib.util.LibStreamCodecUtils;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public abstract class EitherAmountRecipe4x<T extends MenuRecipeInput> extends AbstractAmountRecipe<T> {
-    public static final StreamCodec<RegistryFriendlyByteBuf, Either<ShapedRecipePattern, NonNullList<Ingredient>>> EITHER_CODEC = ByteBufCodecs.either(ShapedRecipePattern.STREAM_CODEC, ExtraByteBufCodecs.INGREDIENTS);
+    public static final StreamCodec<RegistryFriendlyByteBuf, Either<ShapedRecipePattern, NonNullList<Ingredient>>> EITHER_CODEC = ByteBufCodecs.either(ShapedRecipePattern.STREAM_CODEC, LibStreamCodecUtils.INGREDIENTS);
     public final Either<ShapedRecipePattern, NonNullList<Ingredient>> either;
 
     public EitherAmountRecipe4x(ItemStack result, ShapedRecipePattern pattern) {

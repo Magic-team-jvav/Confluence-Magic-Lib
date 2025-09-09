@@ -8,11 +8,11 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.item.crafting.Ingredient;
-import org.confluence.lib.common.recipe.AmountIngredient;
+import org.confluence.lib.util.LibStreamCodecUtils;
+import org.jetbrains.annotations.ApiStatus;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
@@ -20,6 +20,8 @@ import java.util.List;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
+@Deprecated(forRemoval = true)
+@ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
 public interface ExtraByteBufCodecs {
     StreamCodec<ByteBuf, Long> LONG = new StreamCodec<>() {
         public Long decode(ByteBuf buffer) {
@@ -30,33 +32,8 @@ public interface ExtraByteBufCodecs {
             buffer.writeLong(value);
         }
     };
-    StreamCodec<RegistryFriendlyByteBuf, NonNullList<Ingredient>> INGREDIENTS = new StreamCodec<>() {
-        @Override
-        public NonNullList<Ingredient> decode(RegistryFriendlyByteBuf buffer) {
-            NonNullList<Ingredient> nonnulllist = NonNullList.withSize(buffer.readVarInt(), AmountIngredient.EMPTY);
-            nonnulllist.replaceAll(ignore -> Ingredient.CONTENTS_STREAM_CODEC.decode(buffer));
-            return nonnulllist;
-        }
-
-        @Override
-        public void encode(RegistryFriendlyByteBuf buffer, NonNullList<Ingredient> value) {
-            buffer.writeVarInt(value.size());
-            for (Ingredient ingredient : value) {
-                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, ingredient);
-            }
-        }
-    };
-    StreamCodec<? super FriendlyByteBuf, java.util.UUID> UUID = new StreamCodec<>() {
-        @Override
-        public java.util.UUID decode(FriendlyByteBuf buffer) {
-            return buffer.readUUID();
-        }
-
-        @Override
-        public void encode(FriendlyByteBuf buffer, java.util.UUID value) {
-            buffer.writeUUID(value);
-        }
-    };
+    StreamCodec<RegistryFriendlyByteBuf, NonNullList<Ingredient>> INGREDIENTS = LibStreamCodecUtils.INGREDIENTS;
+    StreamCodec<? super FriendlyByteBuf, java.util.UUID> UUID = LibStreamCodecUtils.UUID;
 
     static <V1, V2, B extends ByteBuf> StreamCodec<B, Tuple<V1, V2>> tuple(StreamCodec<? super B, V1> codecA, StreamCodec<? super B, V2> codecB) {
         return new StreamCodec<>() {
@@ -96,14 +73,6 @@ public interface ExtraByteBufCodecs {
     }
 
     static <T, B extends ByteBuf> StreamCodec<B, TagKey<T>> tagKey(ResourceKey<Registry<T>> resourceKey) {
-        return new StreamCodec<>() {
-            public TagKey<T> decode(B buffer) {
-                return TagKey.create(resourceKey, ResourceLocation.STREAM_CODEC.decode(buffer));
-            }
-
-            public void encode(B buffer, TagKey<T> tagKey) {
-                ResourceLocation.STREAM_CODEC.encode(buffer, tagKey.location());
-            }
-        };
+        return LibStreamCodecUtils.tagKey(resourceKey);
     }
 }

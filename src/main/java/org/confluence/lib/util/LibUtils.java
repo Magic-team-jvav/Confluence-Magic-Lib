@@ -54,7 +54,7 @@ public final class LibUtils {
     public static final String NO_DROPS_TAG = "confluence:no_drops";
     public static final EffectCure DENY_HEAL = EffectCure.get("confluence:deny_heal");
     public static final @Deprecated Codec<Vec2> VEC_2_CODEC = LibCodecUtils.VEC_2;
-    public static final @Deprecated StreamCodec<ByteBuf, Vec2> VEC_2_STREAM_CODEC = LibStreamCodecUtils.VEC_2_STREAM_CODEC;
+    public static final @Deprecated StreamCodec<ByteBuf, Vec2> VEC_2_STREAM_CODEC = LibStreamCodecUtils.VEC_2;
 
     @ApiStatus.Internal
     public static void forMixin$Inject() {}
