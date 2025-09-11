@@ -19,7 +19,7 @@ import org.confluence.lib.util.LibStreamCodecUtils;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public abstract class EitherAmountRecipe4x<T extends MenuRecipeInput> extends AbstractAmountRecipe<T> {
+public abstract class EitherAmountRecipe4x<I extends MenuRecipeInput> extends AbstractAmountRecipe<I> {
     public static final StreamCodec<RegistryFriendlyByteBuf, Either<ShapedRecipePattern, NonNullList<Ingredient>>> EITHER_CODEC = ByteBufCodecs.either(ShapedRecipePattern.STREAM_CODEC, LibStreamCodecUtils.INGREDIENTS);
     public final Either<ShapedRecipePattern, NonNullList<Ingredient>> either;
 
@@ -49,7 +49,7 @@ public abstract class EitherAmountRecipe4x<T extends MenuRecipeInput> extends Ab
     }
 
     @Override
-    public boolean matches(T input, Level level) {
+    public boolean matches(I input, Level level) {
         return either.map(
                 shaped -> shaped.matches(input.asCraftingInput(false)),
                 shapeless -> matches(input.size(), input::getItem, shapeless)
@@ -57,7 +57,7 @@ public abstract class EitherAmountRecipe4x<T extends MenuRecipeInput> extends Ab
     }
 
     @Override
-    public ItemStack assembleAndExtract(T input, HolderLookup.Provider registries) {
+    public ItemStack assembleAndExtract(I input, HolderLookup.Provider registries) {
         either
                 .ifLeft(shaped -> consumeShaped(input, 4, 4, shaped))
                 .ifRight(shapeless -> consumeShapeless(input, shapeless));

@@ -53,8 +53,12 @@ public final class LibUtils {
     public static final int MAX_STACK_SIZE = 9999;
     public static final String NO_DROPS_TAG = "confluence:no_drops";
     public static final EffectCure DENY_HEAL = EffectCure.get("confluence:deny_heal");
-    public static final @Deprecated Codec<Vec2> VEC_2_CODEC = LibCodecUtils.VEC_2;
-    public static final @Deprecated StreamCodec<ByteBuf, Vec2> VEC_2_STREAM_CODEC = LibStreamCodecUtils.VEC_2;
+    @Deprecated(since = "1.2.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
+    public static final Codec<Vec2> VEC_2_CODEC = LibCodecUtils.VEC_2;
+    @Deprecated(since = "1.2.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
+    public static final StreamCodec<ByteBuf, Vec2> VEC_2_STREAM_CODEC = LibStreamCodecUtils.VEC_2;
 
     @ApiStatus.Internal
     public static void forMixin$Inject() {}
@@ -175,12 +179,14 @@ public final class LibUtils {
         }
     }
 
-    @Deprecated
+    @Deprecated(since = "1.2.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
     public static <A, B> Codec<Tuple<A, B>> tupleCodec(Codec<A> aCodec, Codec<B> bCodec) {
         return LibCodecUtils.tuple(aCodec, bCodec);
     }
 
-    @Deprecated
+    @Deprecated(since = "1.2.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
     public static <L, M, R> Codec<Triple<L, M, R>> tripleCodec(Codec<L> lCodec, Codec<M> mCodec, Codec<R> rCodec) {
         return LibCodecUtils.triple(lCodec, mCodec, rCodec);
     }

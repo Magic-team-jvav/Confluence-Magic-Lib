@@ -24,6 +24,7 @@ import org.confluence.lib.common.particle.CrossDustParticleOptions;
 import org.confluence.lib.common.recipe.AmountIngredient;
 import org.confluence.lib.common.worldgen.structure.GridPiece;
 import org.confluence.lib.common.worldgen.structure.SimpleTemplatePiece;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +76,8 @@ public class ConfluenceMagicLib {
         return ResourceLocation.fromNamespaceAndPath(LIB_ID, path);
     }
 
-    @Deprecated
+    @Deprecated(since = "1.2.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
     public static boolean isConfluenceLoaded() {
         return IS_CONFLUENCE_LOADED.get();
     }
