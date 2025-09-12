@@ -9,6 +9,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public class WipNotDisplayOutput implements CreativeModeTab.Output {
+    private static boolean forceAllow = !FMLEnvironment.production;
     private final CreativeModeTab.Output delegate;
 
     public WipNotDisplayOutput(CreativeModeTab.Output delegate) {
@@ -17,11 +18,16 @@ public class WipNotDisplayOutput implements CreativeModeTab.Output {
 
     @Override
     public void accept(ItemStack stack, CreativeModeTab.TabVisibility tabVisibility) {
-        if (displayable(stack)) return;
-        delegate.accept(stack, tabVisibility);
+        if (displayable(stack)) {
+            delegate.accept(stack, tabVisibility);
+        }
     }
 
     public static boolean displayable(ItemStack stack) {
-        return FMLEnvironment.production && stack.is(LibTags.Items.WIP);
+        return forceAllow || !stack.is(LibTags.Items.WIP);
+    }
+
+    public static void forceAllow() {
+        forceAllow = true;
     }
 }
