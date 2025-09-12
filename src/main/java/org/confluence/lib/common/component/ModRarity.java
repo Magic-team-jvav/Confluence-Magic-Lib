@@ -38,8 +38,8 @@ public final class ModRarity implements DataComponentType<ModRarity> {
     public static final ModRarity RED = new ModRarity("red", 0xFF2864);
     public static final ModRarity PURPLE = new ModRarity("purple", 0xB428FF);
 
-    public static final ModRarity EXPERT = new ModRarity("expert", -1);
-    public static final ModRarity MASTER = new ModRarity("master", -2);
+    public static final ModRarity EXPERT = new ModRarity("expert", -1, true);
+    public static final ModRarity MASTER = new ModRarity("master", -2, true);
     public static final ModRarity QUEST = new ModRarity("quest", 0xFFAF00);
 
     public static final HashBiMap<Integer, ModRarity> ID_MAP = Util.make(HashBiMap.create(), map -> {
@@ -76,14 +76,25 @@ public final class ModRarity implements DataComponentType<ModRarity> {
     );
     private final String name;
     private final int color;
+    private final boolean special;
     private TextColor textColor;
 
     public ModRarity(String name, int color) {
         this.name = name;
         this.color = color;
+        this.special = false;
+    }
+
+    public ModRarity(String name, int color, boolean special) {
+        this.name = name;
+        this.color = color;
+        this.special = special;
     }
 
     public TextColor asTextColor() {
+        if (special) {
+            return TextColor.fromRgb(color());
+        }
         if (textColor == null) {
             this.textColor = TextColor.fromRgb(color);
         }
@@ -114,6 +125,10 @@ public final class ModRarity implements DataComponentType<ModRarity> {
         if (color == -1) return ExpertColorAnimation.INSTANCE.getColor();
         if (color == -2) return MasterColorAnimation.INSTANCE.getColor();
         return color;
+    }
+
+    public boolean isSpecial() {
+        return special;
     }
 
     public static @Nullable ModRarity getRarity(ItemStack itemStack, boolean prototype) {
