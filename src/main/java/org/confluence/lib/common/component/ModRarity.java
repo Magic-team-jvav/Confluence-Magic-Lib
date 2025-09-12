@@ -8,6 +8,7 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
@@ -17,7 +18,7 @@ import org.confluence.lib.client.animate.MasterColorAnimation;
 import org.jetbrains.annotations.Nullable;
 
 
-public record ModRarity(String name, int color) implements DataComponentType<ModRarity> {
+public final class ModRarity implements DataComponentType<ModRarity> {
     public static final ModRarity COMMON = new ModRarity("common", 16777215);
     public static final ModRarity UNCOMMON = new ModRarity("uncommon", 16777045);
     public static final ModRarity RARE = new ModRarity("rare", 5636095);
@@ -73,6 +74,21 @@ public record ModRarity(String name, int color) implements DataComponentType<Mod
             ByteBufCodecs.INT, ModRarity::color,
             ModRarity::new
     );
+    private final String name;
+    private final int color;
+    private TextColor textColor;
+
+    public ModRarity(String name, int color) {
+        this.name = name;
+        this.color = color;
+    }
+
+    public TextColor asTextColor() {
+        if (textColor == null) {
+            this.textColor = TextColor.fromRgb(color);
+        }
+        return textColor;
+    }
 
     @Override
     public @Nullable Codec<ModRarity> codec() {
@@ -86,7 +102,7 @@ public record ModRarity(String name, int color) implements DataComponentType<Mod
 
     @Override
     public boolean equals(Object o) {
-        return o == this || (o instanceof ModRarity(String name1, int color1) && color == color1 && name.equals(name1));
+        return o == this || (o instanceof ModRarity r && color == r.color && name.equals(r.name));
     }
 
     @Override
@@ -94,7 +110,6 @@ public record ModRarity(String name, int color) implements DataComponentType<Mod
         return 31 * name.hashCode() + color;
     }
 
-    @Override
     public int color() {
         if (color == -1) return ExpertColorAnimation.INSTANCE.getColor();
         if (color == -2) return MasterColorAnimation.INSTANCE.getColor();
@@ -102,8 +117,7 @@ public record ModRarity(String name, int color) implements DataComponentType<Mod
     }
 
     public static @Nullable ModRarity getRarity(ItemStack itemStack, boolean prototype) {
-        DataComponentType<ModRarity> type = ConfluenceMagicLib.MOD_RARITY.get();
-        ModRarity rarity = prototype ? itemStack.getPrototype().get(type) : itemStack.get(type);
+        ModRarity rarity = getModRarity(itemStack, prototype);
         if (rarity != null) return rarity;
         return switch (itemStack.getRarity()) {
             case COMMON -> COMMON;
@@ -118,6 +132,11 @@ public record ModRarity(String name, int color) implements DataComponentType<Mod
         return getRarity(itemStack, false);
     }
 
+    public static @Nullable ModRarity getModRarity(ItemStack itemStack, boolean prototype) {
+        DataComponentType<ModRarity> type = ConfluenceMagicLib.MOD_RARITY.get();
+        return prototype ? itemStack.getPrototype().get(type) : itemStack.get(type);
+    }
+
     public static Style withColor(ItemStack itemStack, Style style) {
         ModRarity rarity = getRarity(itemStack);
         if (rarity == null) return itemStack.getRarity().getStyleModifier().apply(style);
@@ -126,5 +145,16 @@ public record ModRarity(String name, int color) implements DataComponentType<Mod
 
     public static MutableComponent withColor(ItemStack itemStack, MutableComponent component) {
         return component.withStyle(style -> withColor(itemStack, style));
+    }
+
+    public String name() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return "ModRarity[" +
+                "name=" + name + ", " +
+                "color=" + color + ']';
     }
 }
