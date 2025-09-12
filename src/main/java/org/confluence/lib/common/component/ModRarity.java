@@ -17,8 +17,7 @@ import org.confluence.lib.client.animate.ExpertColorAnimation;
 import org.confluence.lib.client.animate.MasterColorAnimation;
 import org.jetbrains.annotations.Nullable;
 
-
-public final class ModRarity implements DataComponentType<ModRarity> {
+public class ModRarity implements DataComponentType<ModRarity> {
     public static final ModRarity COMMON = new ModRarity("common", 16777215);
     public static final ModRarity UNCOMMON = new ModRarity("uncommon", 16777045);
     public static final ModRarity RARE = new ModRarity("rare", 5636095);
