@@ -1,5 +1,7 @@
 package org.confluence.lib.util;
 
+import com.mojang.datafixers.util.Function7;
+import com.mojang.datafixers.util.Function8;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
@@ -20,6 +22,7 @@ import org.confluence.lib.common.recipe.AmountIngredient;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
@@ -114,6 +117,96 @@ public final class LibStreamCodecUtils {
             @Override
             public void encode(B buffer, V value) {
                 delegate.get().encode(buffer, value);
+            }
+        };
+    }
+
+    public static <B, C, T1, T2, T3, T4, T5, T6, T7> StreamCodec<B, C> composite(
+            final StreamCodec<? super B, T1> codec1,
+            final Function<C, T1> getter1,
+            final StreamCodec<? super B, T2> codec2,
+            final Function<C, T2> getter2,
+            final StreamCodec<? super B, T3> codec3,
+            final Function<C, T3> getter3,
+            final StreamCodec<? super B, T4> codec4,
+            final Function<C, T4> getter4,
+            final StreamCodec<? super B, T5> codec5,
+            final Function<C, T5> getter5,
+            final StreamCodec<? super B, T6> codec6,
+            final Function<C, T6> getter6,
+            final StreamCodec<? super B, T7> codec7,
+            final Function<C, T7> getter7,
+            final Function7<T1, T2, T3, T4, T5, T6, T7, C> factory
+    ) {
+        return new StreamCodec<>() {
+            @Override
+            public C decode(B buffer) {
+                T1 t1 = codec1.decode(buffer);
+                T2 t2 = codec2.decode(buffer);
+                T3 t3 = codec3.decode(buffer);
+                T4 t4 = codec4.decode(buffer);
+                T5 t5 = codec5.decode(buffer);
+                T6 t6 = codec6.decode(buffer);
+                T7 t7 = codec7.decode(buffer);
+                return factory.apply(t1, t2, t3, t4, t5, t6, t7);
+            }
+
+            @Override
+            public void encode(B buffer, C composite) {
+                codec1.encode(buffer, getter1.apply(composite));
+                codec2.encode(buffer, getter2.apply(composite));
+                codec3.encode(buffer, getter3.apply(composite));
+                codec4.encode(buffer, getter4.apply(composite));
+                codec5.encode(buffer, getter5.apply(composite));
+                codec6.encode(buffer, getter6.apply(composite));
+                codec7.encode(buffer, getter7.apply(composite));
+            }
+        };
+    }
+
+    public static <B, C, T1, T2, T3, T4, T5, T6, T7, T8> StreamCodec<B, C> composite(
+            final StreamCodec<? super B, T1> codec1,
+            final Function<C, T1> getter1,
+            final StreamCodec<? super B, T2> codec2,
+            final Function<C, T2> getter2,
+            final StreamCodec<? super B, T3> codec3,
+            final Function<C, T3> getter3,
+            final StreamCodec<? super B, T4> codec4,
+            final Function<C, T4> getter4,
+            final StreamCodec<? super B, T5> codec5,
+            final Function<C, T5> getter5,
+            final StreamCodec<? super B, T6> codec6,
+            final Function<C, T6> getter6,
+            final StreamCodec<? super B, T7> codec7,
+            final Function<C, T7> getter7,
+            final StreamCodec<? super B, T8> codec8,
+            final Function<C, T8> getter8,
+            final Function8<T1, T2, T3, T4, T5, T6, T7, T8, C> factory
+    ) {
+        return new StreamCodec<>() {
+            @Override
+            public C decode(B buffer) {
+                T1 t1 = codec1.decode(buffer);
+                T2 t2 = codec2.decode(buffer);
+                T3 t3 = codec3.decode(buffer);
+                T4 t4 = codec4.decode(buffer);
+                T5 t5 = codec5.decode(buffer);
+                T6 t6 = codec6.decode(buffer);
+                T7 t7 = codec7.decode(buffer);
+                T8 t8 = codec8.decode(buffer);
+                return factory.apply(t1, t2, t3, t4, t5, t6, t7, t8);
+            }
+
+            @Override
+            public void encode(B buffer, C composite) {
+                codec1.encode(buffer, getter1.apply(composite));
+                codec2.encode(buffer, getter2.apply(composite));
+                codec3.encode(buffer, getter3.apply(composite));
+                codec4.encode(buffer, getter4.apply(composite));
+                codec5.encode(buffer, getter5.apply(composite));
+                codec6.encode(buffer, getter6.apply(composite));
+                codec7.encode(buffer, getter7.apply(composite));
+                codec8.encode(buffer, getter8.apply(composite));
             }
         };
     }
