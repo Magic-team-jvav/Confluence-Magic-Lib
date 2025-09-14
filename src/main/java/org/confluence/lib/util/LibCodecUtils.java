@@ -3,6 +3,7 @@ package org.confluence.lib.util;
 import com.google.common.collect.ImmutableListMultimap;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.phys.Vec2;
@@ -65,5 +66,12 @@ public final class LibCodecUtils {
             }
             return map;
         });
+    }
+
+    public static Codec<Float> floatRange(float min, float max) {
+        return Codec.FLOAT.validate(value -> value.compareTo(min) >= 0 && value.compareTo(max) <= 0
+                ? DataResult.success(value)
+                : DataResult.error(() -> "Value must be within range [" + min + ";" + max + "]: " + value)
+        );
     }
 }
