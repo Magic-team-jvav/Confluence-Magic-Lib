@@ -12,9 +12,11 @@ import java.util.concurrent.CompletableFuture;
 
 public class CollectRecipeProvider extends RecipeProvider {
     private final List<AbstractRecipeProvider> subProviders;
+    private final String name;
 
-    public CollectRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries, Factory... factories) {
+    public CollectRecipeProvider(String name, PackOutput output, CompletableFuture<HolderLookup.Provider> registries, Factory... factories) {
         super(output, registries);
+        this.name = name;
         this.subProviders = Arrays.stream(factories).map(factory -> factory.create(output, registries)).toList();
     }
 
@@ -33,6 +35,11 @@ public class CollectRecipeProvider extends RecipeProvider {
         return CompletableFuture.allOf(subProviders.stream()
                 .map(subProvider -> subProvider.run(output, registries))
                 .toArray(CompletableFuture[]::new));
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     @FunctionalInterface
