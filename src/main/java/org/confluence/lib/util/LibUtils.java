@@ -17,6 +17,8 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.WaterAnimal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -325,5 +327,9 @@ public final class LibUtils {
             list.add(new Tuple<>(entry.getKey(), entry.getValue()));
         }
         return list.build();
+    }
+
+    public static boolean isAnimal(LivingEntity living) {
+        return living instanceof Animal || living instanceof WaterAnimal;
     }
 }
