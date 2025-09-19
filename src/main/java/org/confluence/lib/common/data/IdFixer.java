@@ -26,7 +26,6 @@ import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.event.NameFixRegisterEvent;
 import org.confluence.lib.util.LibCodecUtils;
 import org.confluence.lib.util.LibUtils;
-import org.jetbrains.annotations.ApiStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +33,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-@Deprecated(since = "1.1.3")
-@ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
 public class IdFixer {
     public static final Codec<List<Tuple<Integer, IntArrayList>>> FIXED_BLOCK_MAP_CODEC = Codec.lazyInitialized(() -> {
         Codec<List<Tuple<Integer, LongArrayList>>> codec = LibCodecUtils.tuple(Codec.INT, Codec.LONG.listOf().xmap(LongArrayList::new, Function.identity())).listOf();
@@ -185,21 +182,21 @@ public class IdFixer {
 
     public static void postRegisterEvents() {
         ImmutableMap.Builder<String, String> blockWithItem = ImmutableMap.builder();
-        ModLoader.postEventWrapContainerInModOrder(new NameFixRegisterEvent.BlockWithItem(blockWithItem));
+        ModLoader.postEvent(new NameFixRegisterEvent.BlockWithItem(blockWithItem));
         ImmutableMap<String, String> map = blockWithItem.build();
 
         ImmutableMap.Builder<String, String> block = ImmutableMap.builder();
-        ModLoader.postEventWrapContainerInModOrder(new NameFixRegisterEvent.Block(block));
+        ModLoader.postEvent(new NameFixRegisterEvent.Block(block));
         block.putAll(map);
         BLOCK_NAME_FIX_MAP = block.build();
 
         ImmutableMap.Builder<String, String> item = ImmutableMap.builder();
-        ModLoader.postEventWrapContainerInModOrder(new NameFixRegisterEvent.Item(item));
+        ModLoader.postEvent(new NameFixRegisterEvent.Item(item));
         item.putAll(map);
         ITEM_NAME_FIX_MAP = item.build();
 
         ImmutableMap.Builder<String, String> biome = ImmutableMap.builder();
-        ModLoader.postEventWrapContainerInModOrder(new NameFixRegisterEvent.Biome(biome));
+        ModLoader.postEvent(new NameFixRegisterEvent.Biome(biome));
         BIOME_NAME_FIX_MAP = biome.build();
     }
 }
