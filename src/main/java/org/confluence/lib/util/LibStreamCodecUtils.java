@@ -121,6 +121,49 @@ public final class LibStreamCodecUtils {
         };
     }
 
+    public static StreamCodec<ByteBuf, boolean[]> booleanArray(int size) {
+        int length = size % 8 == 0 ? size / 8 : size / 8 + 1;
+        return new StreamCodec<>() {
+            @Override
+            public boolean[] decode(ByteBuf buffer) {
+                boolean[] result = new boolean[size];
+                for (int i = 0; i < length; i++) {
+                    byte b = buffer.readByte();
+                    int startIndex = i * 8;
+
+                    for (int j = 0; j < 8; j++) {
+                        int index = startIndex + j;
+                        if (index < size) {
+                            result[index] = (b & (1 << j)) != 0;
+                        }
+                    }
+                }
+                return result;
+            }
+
+            @Override
+            public void encode(ByteBuf buffer, boolean[] value) {
+                if (value.length != size) {
+                    throw new IllegalArgumentException("Boolean array size mismatch. Expected: " + size + ", actual: " + value.length);
+                }
+
+                for (int i = 0; i < length; i++) {
+                    byte b = 0;
+                    int startIndex = i * 8;
+
+                    for (int j = 0; j < 8; j++) {
+                        int index = startIndex + j;
+                        if (index < value.length && value[index]) {
+                            b |= (byte) (1 << j);
+                        }
+                    }
+
+                    buffer.writeByte(b);
+                }
+            }
+        };
+    }
+
     public static <B, C, T1, T2, T3, T4, T5, T6, T7> StreamCodec<B, C> composite(
             final StreamCodec<? super B, T1> codec1,
             final Function<C, T1> getter1,
