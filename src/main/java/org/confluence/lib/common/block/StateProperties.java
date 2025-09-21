@@ -7,8 +7,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class StateProperties {
@@ -23,6 +26,8 @@ public class StateProperties {
     public static final EnumProperty<ForwardTwoPart> FORWARD_TWO_PART = EnumProperty.create("forward_two_part", ForwardTwoPart.class);
     public static final EnumProperty<HorizontalFourPart> HORIZONTAL_FOUR_PART = EnumProperty.create("horizontal_four_part", HorizontalFourPart.class);
     public static final EnumProperty<VerticalFourPart> VERTICAL_FOUR_PART = EnumProperty.create("vertical_four_part", VerticalFourPart.class);
+    public static final EnumProperty<HorizontalNinePart> HORIZONTAL_NINE_PART = EnumProperty.create("horizontal_nine_part", HorizontalNinePart.class);
+    public static final EnumProperty<HorizontalTenPart> HORIZONTAL_TEN_PART = EnumProperty.create("horizontal_ten_part", HorizontalTenPart.class);
 
     public enum HorizontalTwoPart implements StringRepresentable {
         BASE("base"),
@@ -312,6 +317,127 @@ public class StateProperties {
 
         public boolean isUpper() {
             return this == UP || this == RIGHT_UP;
+        }
+    }
+
+    public enum HorizontalNinePart implements StringRepresentable {
+        CENTER("center"),
+        FRONT("front"),
+        LEFT("left"),
+        RIGHT("right"),
+        BACK("back"),
+        LEFT_FRONT("left_front"),
+        RIGHT_FRONT("right_front"),
+        LEFT_BACK("left_back"),
+        RIGHT_BACK("right_back");
+        private final String name;
+        HorizontalNinePart(String name) {
+            this.name = name;
+        }
+        @Contract(pure = true)
+        @Override
+        public @NotNull String getSerializedName() {
+            return name;
+        }
+
+        /**
+         * 从某个方块获取中心方块的相对位置，或从中心获取某个方块的相对位置
+         * </P>
+         * 前提是必须要存在该属性
+         *
+         * @param now 正在处理的位置，获取中心时填入本方块位置，获取对应其它方块时填入中心方块位置
+         * @param reverseRelative 是否反转延伸。当该值为false时返回中心，为true时返回对应块位置
+         * @return 请求的方块位置
+         */
+        public BlockPos toCenter(BlockPos now, Direction facing, boolean reverseRelative) {
+            if (reverseRelative) facing = facing.getOpposite();
+            return switch (this){
+                case FRONT ->  now.relative(facing.getOpposite());
+                case LEFT_FRONT -> now.relative(facing.getOpposite()).relative(facing.getClockWise());
+                case RIGHT_FRONT -> now.relative(facing.getOpposite()).relative(facing.getCounterClockWise());
+                case LEFT -> now.relative(facing.getClockWise());
+                case RIGHT -> now.relative(facing.getCounterClockWise());
+                case LEFT_BACK -> now.relative(facing).relative(facing.getClockWise());
+                case RIGHT_BACK -> now.relative(facing).relative(facing.getCounterClockWise());
+                case BACK -> now.relative(facing);
+                default -> now;
+            };
+        }
+
+        /**
+         * 获取除了ign之外的所有方块的相对位属性和世界坐标
+         */
+        public static Map<HorizontalNinePart, BlockPos> getAllExcept(Direction facing, BlockPos center, @Nullable StateProperties.HorizontalNinePart ign) {
+            Map<HorizontalNinePart, BlockPos> allEx = new HashMap<>();
+            for (HorizontalNinePart part : HorizontalNinePart.values()) {
+                if (part == ign) continue;
+                allEx.put(part, part.toCenter(center, facing, true));
+            }
+            return allEx;
+        }
+
+        /**
+         * 通过世界位置推断当前方块的相对位属性
+         */
+        public static @Nullable StateProperties.HorizontalNinePart infer(BlockPos center, BlockPos current, Direction facing) {
+            for (Map.Entry<HorizontalNinePart, BlockPos> entry : getAllExcept(facing, center ,null).entrySet()) {
+                if (entry.getValue().equals(current)) return entry.getKey();
+            }
+            return null;
+        }
+    }
+
+    public enum HorizontalTenPart implements StringRepresentable {
+        UP("up"),
+        CENTER("center"),
+        FRONT("front"),
+        LEFT("left"),
+        RIGHT("right"),
+        BACK("back"),
+        LEFT_FRONT("left_front"),
+        RIGHT_FRONT("right_front"),
+        LEFT_BACK("left_back"),
+        RIGHT_BACK("right_back");
+        private final String name;
+        HorizontalTenPart(String name) {
+            this.name = name;
+        }
+        @Contract(pure = true)
+        @Override
+        public @NotNull String getSerializedName() {
+            return name;
+        }
+        public BlockPos toBase(BlockPos now, Direction facing, boolean reverseRelative) {
+            if (reverseRelative) facing = facing.getOpposite();
+            int verticalReverse = reverseRelative? -1 : 1;
+            return switch (this){
+                case UP -> now;
+                case CENTER -> now.above(verticalReverse);
+                case FRONT ->  now.relative(facing.getOpposite()).above(verticalReverse);
+                case LEFT_FRONT -> now.relative(facing.getOpposite()).relative(facing.getClockWise()).above(verticalReverse);
+                case RIGHT_FRONT -> now.relative(facing.getOpposite()).relative(facing.getCounterClockWise()).above(verticalReverse);
+                case LEFT -> now.relative(facing.getClockWise()).above(verticalReverse);
+                case RIGHT -> now.relative(facing.getCounterClockWise()).above(verticalReverse);
+                case LEFT_BACK -> now.relative(facing).relative(facing.getClockWise()).above(verticalReverse);
+                case RIGHT_BACK -> now.relative(facing).relative(facing.getCounterClockWise()).above(verticalReverse);
+                case BACK -> now.relative(facing).above(verticalReverse);
+            };
+        }
+
+        public static @NotNull Map<HorizontalTenPart, BlockPos> getAllExcept(Direction facing, BlockPos center, @Nullable StateProperties.HorizontalTenPart ign) {
+            Map<HorizontalTenPart, BlockPos> allEx = new HashMap<>();
+            for (HorizontalTenPart part : HorizontalTenPart.values()) {
+                if (part == ign) continue;
+                allEx.put(part, part.toBase(center, facing, true));
+            }
+            return allEx;
+        }
+
+        public static @Nullable StateProperties.HorizontalTenPart infer(BlockPos center, BlockPos current, Direction facing) {
+            for (Map.Entry<HorizontalTenPart, BlockPos> entry : getAllExcept(facing, center ,null).entrySet()) {
+                if (entry.getValue().equals(current)) return entry.getKey();
+            }
+            return null;
         }
     }
 }
