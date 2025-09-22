@@ -32,7 +32,7 @@ import java.util.function.BiFunction;
 
 public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Recipe<T> {
     public static final MapCodec<NonNullList<Ingredient>> INGREDIENTS_CODEC = Ingredient.CODEC_NONEMPTY.listOf().fieldOf("ingredients").flatXmap(list -> {
-        Ingredient[] ingredients = list.toArray(Ingredient[]::new);
+        Ingredient[] ingredients = list.toArray(new Ingredient[0]);
         if (ingredients.length == 0) {
             return DataResult.error(() -> "No ingredients for recipe");
         } else {
