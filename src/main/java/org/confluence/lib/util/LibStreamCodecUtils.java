@@ -18,6 +18,8 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.phys.Vec2;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import org.confluence.lib.common.recipe.AmountIngredient;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -28,6 +30,7 @@ import java.util.function.Supplier;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
+@SuppressWarnings("unused")
 public final class LibStreamCodecUtils {
     public static final StreamCodec<ByteBuf, Vec2> VEC_2 = StreamCodec.composite(
             ByteBufCodecs.FLOAT, vec2 -> vec2.x,
@@ -80,6 +83,10 @@ public final class LibStreamCodecUtils {
 
     public static <B extends ByteBuf, TA, TB> StreamCodec<B, Tuple<TA, TB>> tuple(StreamCodec<? super B, TA> aCodec, StreamCodec<? super B, TB> bCodec) {
         return StreamCodec.composite(aCodec, Tuple::getA, bCodec, Tuple::getB, Tuple::new);
+    }
+
+    public static <B extends ByteBuf, L, M, R> StreamCodec<B, Triple<L, M, R>> triple(StreamCodec<? super B, L> lCodec, StreamCodec<? super B, M> mCodec, StreamCodec<? super B, R> rCodec) {
+        return StreamCodec.composite(lCodec, Triple::getLeft, mCodec, Triple::getMiddle, rCodec, Triple::getRight, ImmutableTriple::new);
     }
 
     public static <B extends ByteBuf, K, V> StreamCodec<B, Map<K, V>> map(IntFunction<Map<K, V>> factory, StreamCodec<? super B, K> keyCodec, StreamCodec<? super B, V> valueCodec) {
