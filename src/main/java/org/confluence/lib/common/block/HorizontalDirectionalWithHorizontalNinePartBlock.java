@@ -69,6 +69,7 @@ public class HorizontalDirectionalWithHorizontalNinePartBlock extends Horizontal
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         super.onRemove(state, level, pos, newState, movedByPiston);
+        if (newState.getBlock() instanceof HorizontalDirectionalWithHorizontalNinePartBlock) return;
         StateProperties.HorizontalNinePart partBase = state.getValue(PART);
         Direction facing = state.getValue(FACING);
         StateProperties.HorizontalNinePart.getAllExcept(facing, partBase.toCenter(pos, facing, false), partBase).forEach((part, posO) -> level.destroyBlock(posO, false));
