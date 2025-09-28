@@ -168,9 +168,9 @@ public final class VectorUtils {
      * @return 投影结果
      */
     public static Vec3 vectorProjection(Vec3 vector, Vec3 toProjectOnto) {
-        // toProjectOnto.lengthSqr = toProjectOnto.dot(toProjectOnto)
-        double factor = toProjectOnto.dot(vector) / toProjectOnto.lengthSqr();
-        return toProjectOnto.multiply(factor, factor, factor);
+        double sqr = toProjectOnto.lengthSqr();
+        if (sqr == 0.0) throw new IllegalArgumentException("Length of toProjectOnto could not be zero");
+        return toProjectOnto.scale(toProjectOnto.dot(vector) / sqr);
     }
 
     /**
