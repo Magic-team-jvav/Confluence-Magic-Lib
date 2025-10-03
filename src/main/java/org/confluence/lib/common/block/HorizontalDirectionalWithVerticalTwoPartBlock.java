@@ -38,7 +38,7 @@ public class HorizontalDirectionalWithVerticalTwoPartBlock extends HorizontalDir
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         if (!level.isClientSide) {
             BlockPos relativePos = pos.relative(StateProperties.VerticalTwoPart.getConnectedDirection(state));
-            level.setBlockAndUpdate(relativePos, state.setValue(PART, StateProperties.VerticalTwoPart.UP));
+            level.setBlockAndUpdate(relativePos, state.setValue(PART, StateProperties.VerticalTwoPart.getAnotherPart(state.getValue(PART))));
         }
     }
 
