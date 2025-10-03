@@ -2,7 +2,11 @@ package org.confluence.lib.util;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
+import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -310,5 +314,24 @@ public final class FeatureUtils {
             }
         }
         return bl;
+    }
+
+    public static boolean ensureCanWrite(WorldGenLevel level, BlockPos pos) {
+        if (level instanceof WorldGenRegion region) {
+            int i = SectionPos.blockToSectionCoord(pos.getX());
+            int j = SectionPos.blockToSectionCoord(pos.getZ());
+            ChunkPos chunkpos = region.getCenter();
+            int k = Math.abs(chunkpos.x - i);
+            int l = Math.abs(chunkpos.z - j);
+            if (k <= region.generatingStep.blockStateWriteRadius() && l <= region.generatingStep.blockStateWriteRadius()) {
+                if (region.center.isUpgrading()) {
+                    LevelHeightAccessor levelheightaccessor = region.center.getHeightAccessorForGeneration();
+                    return pos.getY() >= levelheightaccessor.getMinBuildHeight() && pos.getY() < levelheightaccessor.getMaxBuildHeight();
+                }
+                return true;
+            }
+            return false;
+        }
+        return true;
     }
 }
