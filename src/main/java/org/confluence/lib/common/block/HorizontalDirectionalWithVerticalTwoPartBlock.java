@@ -1,5 +1,6 @@
 package org.confluence.lib.common.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.LivingEntity;
@@ -14,12 +15,18 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.PushReaction;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class HorizontalDirectionalWithVerticalTwoPartBlock extends HorizontalDirectionalBlock {
+public class HorizontalDirectionalWithVerticalTwoPartBlock extends HorizontalDirectionalBlock {
+    public static final MapCodec<HorizontalDirectionalWithVerticalTwoPartBlock> CODEC = simpleCodec(HorizontalDirectionalWithVerticalTwoPartBlock::new);
     public static final EnumProperty<StateProperties.VerticalTwoPart> PART = StateProperties.VERTICAL_TWO_PART;
 
     public HorizontalDirectionalWithVerticalTwoPartBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(PART, StateProperties.VerticalTwoPart.BASE));
+    }
+
+    @Override
+    protected MapCodec<? extends HorizontalDirectionalWithVerticalTwoPartBlock> codec() {
+        return CODEC;
     }
 
     @Override
@@ -31,7 +38,7 @@ public abstract class HorizontalDirectionalWithVerticalTwoPartBlock extends Hori
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         if (!level.isClientSide) {
             BlockPos relativePos = pos.relative(StateProperties.VerticalTwoPart.getConnectedDirection(state));
-            level.setBlockAndUpdate(relativePos, state.setValue(PART, StateProperties.VerticalTwoPart.UP));
+            level.setBlockAndUpdate(relativePos, state.setValue(PART, StateProperties.VerticalTwoPart.getAnotherPart(state.getValue(PART))));
         }
     }
 

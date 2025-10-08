@@ -7,8 +7,6 @@ import java.util.Objects;
 
 public record FloatRGB(float red, float green, float blue) {
     public static final FloatRGB ZERO = new FloatRGB(0.0F, 0.0F, 0.0F);
-    public static final FloatRGB DEMON_A = new FloatRGB(0.5F, 0.3F, 1.0F);
-    public static final FloatRGB DEMON_B = new FloatRGB(1.0F, 0.3F, 0.0F);
 
     public static FloatRGB fromVector(Vector3f vector3f) {
         return new FloatRGB(vector3f.x, vector3f.y, vector3f.z);

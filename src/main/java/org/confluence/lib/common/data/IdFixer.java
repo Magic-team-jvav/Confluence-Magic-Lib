@@ -19,12 +19,13 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.state.StateHolder;
 import net.neoforged.fml.ModLoader;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.confluence.lib.ConfluenceMagicLib;
-import org.confluence.lib.api.NameFixRegisterEvent;
+import org.confluence.lib.event.NameFixRegisterEvent;
+import org.confluence.lib.util.LibCodecUtils;
 import org.confluence.lib.util.LibUtils;
-import org.jetbrains.annotations.ApiStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,11 +33,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-@Deprecated(since = "1.1.3")
-@ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
 public class IdFixer {
     public static final Codec<List<Tuple<Integer, IntArrayList>>> FIXED_BLOCK_MAP_CODEC = Codec.lazyInitialized(() -> {
-        Codec<List<Tuple<Integer, LongArrayList>>> codec = LibUtils.tupleCodec(Codec.INT, Codec.LONG.listOf().xmap(LongArrayList::new, Function.identity())).listOf();
+        Codec<List<Tuple<Integer, LongArrayList>>> codec = LibCodecUtils.tuple(Codec.INT, Codec.LONG.listOf().xmap(LongArrayList::new, Function.identity())).listOf();
         return new Codec<>() {
             @Override
             public <T> DataResult<Pair<List<Tuple<Integer, IntArrayList>>, T>> decode(DynamicOps<T> ops, T input) {
@@ -100,10 +99,11 @@ public class IdFixer {
                 if (a.isSuccess()) return a;
                 MutableObject<DataResult<Pair<A, T>>> mutableObject = new MutableObject<>(a);
                 ops.getMap(input).ifSuccess(map -> {
-                    T t = map.get("Name");
+                    T t = map.get(StateHolder.NAME_TAG);
                     if (t != null) ops.getStringValue(t).ifSuccess(s -> {
-                        String s1 = BLOCK_NAME_FIX_MAP.get(s);
-                        if (s1 != null) ops.mergeToMap(input, ops.createString("Name"), ops.createString(s1))
+                        String s1 = s;
+                        while ((s = BLOCK_NAME_FIX_MAP.get(s1)) != null) s1 = s;
+                        ops.mergeToMap(input, ops.createString(StateHolder.NAME_TAG), ops.createString(s1))
                                 .ifSuccess(t1 -> mutableObject.setValue(codec.decode(ops, t1)));
                     });
                 });
@@ -148,8 +148,9 @@ public class IdFixer {
             public <T> DataResult<Pair<Holder<Item>, T>> apply(DynamicOps<T> ops, T input, DataResult<Pair<Holder<Item>, T>> a) {
                 if (a.isSuccess()) return a;
                 return ops.getStringValue(input).result().map(s -> {
-                    String s1 = ITEM_NAME_FIX_MAP.get(s);
-                    return s1 == null ? a : codec.decode(ops, ops.createString(s1));
+                    String s1 = s;
+                    while ((s = ITEM_NAME_FIX_MAP.get(s1)) != null) s1 = s;
+                    return codec.decode(ops, ops.createString(s1));
                 }).orElse(a);
             }
 
@@ -166,8 +167,9 @@ public class IdFixer {
             public <T> DataResult<Pair<Holder<Biome>, T>> apply(DynamicOps<T> ops, T input, DataResult<Pair<Holder<Biome>, T>> a) {
                 if (a.isSuccess()) return a;
                 return ops.getStringValue(input).result().map(s -> {
-                    String s1 = BIOME_NAME_FIX_MAP.get(s);
-                    return s1 == null ? a : codec.decode(ops, ops.createString(s1));
+                    String s1 = s;
+                    while ((s = BIOME_NAME_FIX_MAP.get(s1)) != null) s1 = s;
+                    return codec.decode(ops, ops.createString(s1));
                 }).orElse(a);
             }
 
@@ -180,21 +182,21 @@ public class IdFixer {
 
     public static void postRegisterEvents() {
         ImmutableMap.Builder<String, String> blockWithItem = ImmutableMap.builder();
-        ModLoader.postEventWrapContainerInModOrder(new NameFixRegisterEvent.BlockWithItem(blockWithItem));
+        ModLoader.postEvent(new NameFixRegisterEvent.BlockWithItem(blockWithItem));
         ImmutableMap<String, String> map = blockWithItem.build();
 
         ImmutableMap.Builder<String, String> block = ImmutableMap.builder();
-        ModLoader.postEventWrapContainerInModOrder(new NameFixRegisterEvent.Block(block));
+        ModLoader.postEvent(new NameFixRegisterEvent.Block(block));
         block.putAll(map);
         BLOCK_NAME_FIX_MAP = block.build();
 
         ImmutableMap.Builder<String, String> item = ImmutableMap.builder();
-        ModLoader.postEventWrapContainerInModOrder(new NameFixRegisterEvent.Item(item));
+        ModLoader.postEvent(new NameFixRegisterEvent.Item(item));
         item.putAll(map);
         ITEM_NAME_FIX_MAP = item.build();
 
         ImmutableMap.Builder<String, String> biome = ImmutableMap.builder();
-        ModLoader.postEventWrapContainerInModOrder(new NameFixRegisterEvent.Biome(biome));
+        ModLoader.postEvent(new NameFixRegisterEvent.Biome(biome));
         BIOME_NAME_FIX_MAP = biome.build();
     }
 }

@@ -25,4 +25,14 @@ public record ToolMode(int mode) implements DataComponentType<ToolMode> {
     public StreamCodec<? super RegistryFriendlyByteBuf, ToolMode> streamCodec() {
         return STREAM_CODEC;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return o == this || (o instanceof ToolMode(int mode1) && mode == mode1);
+    }
+
+    @Override
+    public int hashCode() {
+        return mode;
+    }
 }

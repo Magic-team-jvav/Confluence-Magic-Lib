@@ -3,7 +3,6 @@ package org.confluence.lib.util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.ExplosionDamageCalculator;
 
 /**
  * 忽略对使用者和玩家伤害

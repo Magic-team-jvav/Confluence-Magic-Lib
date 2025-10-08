@@ -1,5 +1,6 @@
 package org.confluence.lib.common.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -14,12 +15,18 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
-public abstract class HorizontalDirectionalWaterloggedBlock extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock {
+public class HorizontalDirectionalWaterloggedBlock extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock {
+    public static final MapCodec<HorizontalDirectionalWaterloggedBlock> CODEC = simpleCodec(HorizontalDirectionalWaterloggedBlock::new);
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
     public HorizontalDirectionalWaterloggedBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false));
+    }
+
+    @Override
+    protected MapCodec<? extends HorizontalDirectionalWaterloggedBlock> codec() {
+        return CODEC;
     }
 
     @Override

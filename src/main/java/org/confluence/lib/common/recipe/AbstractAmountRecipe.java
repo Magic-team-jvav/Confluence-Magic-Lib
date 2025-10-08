@@ -22,7 +22,7 @@ import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.crafting.ICustomIngredient;
-import org.confluence.lib.network.ExtraByteBufCodecs;
+import org.confluence.lib.util.LibStreamCodecUtils;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
 
@@ -32,7 +32,7 @@ import java.util.function.BiFunction;
 
 public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Recipe<T> {
     public static final MapCodec<NonNullList<Ingredient>> INGREDIENTS_CODEC = Ingredient.CODEC_NONEMPTY.listOf().fieldOf("ingredients").flatXmap(list -> {
-        Ingredient[] ingredients = list.toArray(Ingredient[]::new);
+        Ingredient[] ingredients = list.toArray(new Ingredient[0]);
         if (ingredients.length == 0) {
             return DataResult.error(() -> "No ingredients for recipe");
         } else {
@@ -228,17 +228,10 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
     }
 
     public static <R extends AbstractAmountRecipe<?>> StreamCodec<RegistryFriendlyByteBuf, R> shapelessSerializerSteamCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
-        return new StreamCodec<>() {
-            @Override
-            public R decode(RegistryFriendlyByteBuf buffer) {
-                return factory.apply(ItemStack.STREAM_CODEC.decode(buffer), ExtraByteBufCodecs.INGREDIENTS.decode(buffer));
-            }
-
-            @Override
-            public void encode(RegistryFriendlyByteBuf buffer, R recipe) {
-                ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
-                ExtraByteBufCodecs.INGREDIENTS.encode(buffer, recipe.ingredients);
-            }
-        };
+        return StreamCodec.composite(
+                ItemStack.STREAM_CODEC, r -> r.result,
+                LibStreamCodecUtils.INGREDIENTS, r -> r.getIngredients(),
+                factory
+        );
     }
 }

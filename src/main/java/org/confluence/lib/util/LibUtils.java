@@ -1,21 +1,24 @@
 package org.confluence.lib.util;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.WaterAnimal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -33,13 +36,15 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.EffectCure;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.component.NbtComponent;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -50,15 +55,12 @@ public final class LibUtils {
     public static final int MAX_STACK_SIZE = 9999;
     public static final String NO_DROPS_TAG = "confluence:no_drops";
     public static final EffectCure DENY_HEAL = EffectCure.get("confluence:deny_heal");
-    public static final Codec<Vec2> VEC_2_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.FLOAT.fieldOf("x").forGetter(vec2 -> vec2.x),
-            Codec.FLOAT.fieldOf("y").forGetter(vec2 -> vec2.y)
-    ).apply(instance, Vec2::new));
-    public static final StreamCodec<ByteBuf, Vec2> VEC_2_STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.FLOAT, vec2 -> vec2.x,
-            ByteBufCodecs.FLOAT, vec2 -> vec2.y,
-            Vec2::new
-    );
+    @Deprecated(since = "1.2.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
+    public static final Codec<Vec2> VEC_2_CODEC = LibCodecUtils.VEC_2;
+    @Deprecated(since = "1.2.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
+    public static final StreamCodec<ByteBuf, Vec2> VEC_2_STREAM_CODEC = LibStreamCodecUtils.VEC_2;
 
     @ApiStatus.Internal
     public static void forMixin$Inject() {}
@@ -179,19 +181,16 @@ public final class LibUtils {
         }
     }
 
+    @Deprecated(since = "1.2.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
     public static <A, B> Codec<Tuple<A, B>> tupleCodec(Codec<A> aCodec, Codec<B> bCodec) {
-        return RecordCodecBuilder.create(instance -> instance.group(
-                aCodec.fieldOf("a").forGetter(Tuple::getA),
-                bCodec.fieldOf("b").forGetter(Tuple::getB)
-        ).apply(instance, Tuple::new));
+        return LibCodecUtils.tuple(aCodec, bCodec);
     }
 
-    public static <L, M, R> Codec<ImmutableTriple<L, M, R>> tripleCodec(Codec<L> lCodec, Codec<M> mCodec, Codec<R> rCodec) {
-        return RecordCodecBuilder.create(instance -> instance.group(
-                lCodec.fieldOf("l").forGetter(ImmutableTriple::getLeft),
-                mCodec.fieldOf("m").forGetter(ImmutableTriple::getMiddle),
-                rCodec.fieldOf("r").forGetter(ImmutableTriple::getRight)
-        ).apply(instance, ImmutableTriple::new));
+    @Deprecated(since = "1.2.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
+    public static <L, M, R> Codec<Triple<L, M, R>> tripleCodec(Codec<L> lCodec, Codec<M> mCodec, Codec<R> rCodec) {
+        return LibCodecUtils.triple(lCodec, mCodec, rCodec);
     }
 
     public static void setItemAndDropChance(Mob mob, DifficultyInstance difficulty, EquipmentSlot slot, Item item, float chance) {
@@ -205,13 +204,17 @@ public final class LibUtils {
     }
 
     public static CompoundTag getItemStackNbt(ItemStack itemStack) {
+        return getItemStackNbtNoCopy(itemStack).copy();
+    }
+
+    public static CompoundTag getItemStackNbtNoCopy(ItemStack itemStack) {
         NbtComponent nbtComponent = itemStack.get(ConfluenceMagicLib.NBT);
         if (nbtComponent == null) {
             CompoundTag nbt = new CompoundTag();
             itemStack.set(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
             return nbt;
         }
-        return nbtComponent.nbt().copy();
+        return nbtComponent.nbt();
     }
 
     public static @Nullable CompoundTag getItemStackNbtIfPresent(ItemStack itemStack) {
@@ -222,12 +225,7 @@ public final class LibUtils {
 
     public static void updateItemStackNbt(ItemStack itemStack, Consumer<CompoundTag> consumer) {
         NbtComponent nbtComponent = itemStack.get(ConfluenceMagicLib.NBT);
-        CompoundTag nbt;
-        if (nbtComponent == null) {
-            nbt = new CompoundTag();
-        } else {
-            nbt = nbtComponent.nbt().copy();
-        }
+        CompoundTag nbt = nbtComponent == null ? new CompoundTag() : nbtComponent.nbt().copy();
         consumer.accept(nbt);
         itemStack.set(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
     }
@@ -309,5 +307,29 @@ public final class LibUtils {
         } else {
             itemStack.set(type, value);
         }
+    }
+
+    public static boolean checkChance(double value, RandomSource random) {
+        return value >= 1.0 || (value > 0.0 && random.nextDouble() < value);
+    }
+
+    public static <K, V> Map<K, V> convertTupleListToMap(List<Tuple<K, V>> list) {
+        ImmutableMap.Builder<K, V> map = ImmutableMap.builder();
+        for (Tuple<K, V> tuple : list) {
+            map.put(tuple.getA(), tuple.getB());
+        }
+        return map.build();
+    }
+
+    public static <K, V> List<Tuple<K, V>> convertMapToTupleList(Map<K, V> map) {
+        ImmutableList.Builder<Tuple<K, V>> list = ImmutableList.builder();
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            list.add(new Tuple<>(entry.getKey(), entry.getValue()));
+        }
+        return list.build();
+    }
+
+    public static boolean isAnimal(LivingEntity living) {
+        return living instanceof Animal || living instanceof WaterAnimal;
     }
 }

@@ -42,7 +42,7 @@ public abstract class AbstractRecipeProvider extends RecipeProvider {
                     futures.add(DataProvider.saveStable(output, entry.getValue(), entry.getKey()));
                 }
             }
-            return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
+            return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         }, Util.backgroundExecutor()).thenCompose(completableFuture -> completableFuture);
     }
 

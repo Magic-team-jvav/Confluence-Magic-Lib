@@ -14,13 +14,13 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.Level;
 import org.confluence.lib.mixed.LibShapedRecipePattern;
-import org.confluence.lib.network.ExtraByteBufCodecs;
+import org.confluence.lib.util.LibStreamCodecUtils;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public abstract class EitherAmountRecipe4x<T extends MenuRecipeInput> extends AbstractAmountRecipe<T> {
-    public static final StreamCodec<RegistryFriendlyByteBuf, Either<ShapedRecipePattern, NonNullList<Ingredient>>> EITHER_CODEC = ByteBufCodecs.either(ShapedRecipePattern.STREAM_CODEC, ExtraByteBufCodecs.INGREDIENTS);
+public abstract class EitherAmountRecipe4x<I extends MenuRecipeInput> extends AbstractAmountRecipe<I> {
+    public static final StreamCodec<RegistryFriendlyByteBuf, Either<ShapedRecipePattern, NonNullList<Ingredient>>> EITHER_CODEC = ByteBufCodecs.either(ShapedRecipePattern.STREAM_CODEC, LibStreamCodecUtils.INGREDIENTS);
     public final Either<ShapedRecipePattern, NonNullList<Ingredient>> either;
 
     public EitherAmountRecipe4x(ItemStack result, ShapedRecipePattern pattern) {
@@ -49,7 +49,7 @@ public abstract class EitherAmountRecipe4x<T extends MenuRecipeInput> extends Ab
     }
 
     @Override
-    public boolean matches(T input, Level level) {
+    public boolean matches(I input, Level level) {
         return either.map(
                 shaped -> shaped.matches(input.asCraftingInput(false)),
                 shapeless -> matches(input.size(), input::getItem, shapeless)
@@ -57,7 +57,7 @@ public abstract class EitherAmountRecipe4x<T extends MenuRecipeInput> extends Ab
     }
 
     @Override
-    public ItemStack assembleAndExtract(T input, HolderLookup.Provider registries) {
+    public ItemStack assembleAndExtract(I input, HolderLookup.Provider registries) {
         either
                 .ifLeft(shaped -> consumeShaped(input, 4, 4, shaped))
                 .ifRight(shapeless -> consumeShapeless(input, shapeless));
@@ -85,20 +85,11 @@ public abstract class EitherAmountRecipe4x<T extends MenuRecipeInput> extends Ab
     }
 
     public static <R extends EitherAmountRecipe4x<?>> StreamCodec<RegistryFriendlyByteBuf, R> shapedSerializerSteamCodec(BiFunction<ItemStack, ShapedRecipePattern, R> factory) {
-        return new StreamCodec<>() {
-            @Override
-            public R decode(RegistryFriendlyByteBuf buffer) {
-                ItemStack itemstack = ItemStack.STREAM_CODEC.decode(buffer);
-                ShapedRecipePattern shapedrecipepattern = ShapedRecipePattern.STREAM_CODEC.decode(buffer);
-                return factory.apply(itemstack, shapedrecipepattern);
-            }
-
-            @Override
-            public void encode(RegistryFriendlyByteBuf buffer, R recipe) {
-                ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
-                ShapedRecipePattern.STREAM_CODEC.encode(buffer, recipe.either.left().orElseThrow());
-            }
-        };
+        return StreamCodec.composite(
+                ItemStack.STREAM_CODEC, r -> r.result,
+                ShapedRecipePattern.STREAM_CODEC, r -> r.either.left().orElseThrow(),
+                factory
+        );
     }
 
     public static <R extends EitherAmountRecipe4x<?>> MapCodec<R> eitherSerializerMapCodec(BiFunction<ItemStack, Either<ShapedRecipePattern, NonNullList<Ingredient>>, R> factory) {
@@ -109,17 +100,10 @@ public abstract class EitherAmountRecipe4x<T extends MenuRecipeInput> extends Ab
     }
 
     public static <R extends EitherAmountRecipe4x<?>> StreamCodec<RegistryFriendlyByteBuf, R> eitherSerializerStreamCodec(BiFunction<ItemStack, Either<ShapedRecipePattern, NonNullList<Ingredient>>, R> factory) {
-        return new StreamCodec<>() {
-            @Override
-            public R decode(RegistryFriendlyByteBuf buffer) {
-                return factory.apply(ItemStack.STREAM_CODEC.decode(buffer), EITHER_CODEC.decode(buffer));
-            }
-
-            @Override
-            public void encode(RegistryFriendlyByteBuf buffer, R recipe) {
-                ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
-                EITHER_CODEC.encode(buffer, recipe.either);
-            }
-        };
+        return StreamCodec.composite(
+                ItemStack.STREAM_CODEC, r -> r.result,
+                EITHER_CODEC, r -> r.either,
+                factory
+        );
     }
 }

@@ -25,5 +25,13 @@ public interface IAxisZRotate {
         public boolean different() {
             return neo != old;
         }
+
+        @Override
+        public String toString() {
+            return "Rotate{" +
+                    "neo=" + neo +
+                    ", old=" + old +
+                    '}';
+        }
     }
 }

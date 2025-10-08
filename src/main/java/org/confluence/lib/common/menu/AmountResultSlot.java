@@ -12,8 +12,8 @@ public class AmountResultSlot<R extends AbstractAmountRecipe<?>> extends Slot {
     protected final MenuRecipeInput input;
     protected @Nullable R recipe;
 
-    public AmountResultSlot(MenuRecipeInput input, Container result, int pSlot, int pX, int pY) {
-        super(result, pSlot, pX, pY);
+    public AmountResultSlot(MenuRecipeInput input, Container result, int slot, int x, int y) {
+        super(result, slot, x, y);
         this.input = input;
     }
 
