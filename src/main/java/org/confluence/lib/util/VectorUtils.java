@@ -227,6 +227,29 @@ public final class VectorUtils {
         }
     }
 
+    /**
+     * 给予实体一个击退动量，方向为vector
+     *
+     * @param attacker 击退者
+     * @param victim   被击退者
+     * @param vector   向量
+     */
+    public static void knockBack(LivingEntity attacker, Entity victim, Vec3 vector) {
+        double scale = 1.0;
+        if (victim instanceof LivingEntity living) {
+            AttributeInstance instance = living.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
+            if (instance != null) scale *= (1.0 - instance.getValue());
+        }
+        if (scale > 0.0) {
+            LivingEntity living;
+            if (attacker instanceof TraceableEntity traceable && traceable.getOwner() instanceof LivingEntity living1) living = living1;
+            else living = attacker;
+            AttributeInstance instance = living.getAttribute(Attributes.ATTACK_KNOCKBACK);
+            if (instance != null) scale *= (1.0 + instance.getValue());
+            victim.addDeltaMovement(vector.scale(scale));
+        }
+    }
+
     public static Direction[] directionsInAxis(Direction.Axis axis) {
         return switch (axis) {
             case X -> new Direction[]{Direction.EAST, Direction.WEST};
