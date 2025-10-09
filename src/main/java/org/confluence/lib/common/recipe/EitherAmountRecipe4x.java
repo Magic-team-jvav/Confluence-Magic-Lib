@@ -42,10 +42,7 @@ public abstract class EitherAmountRecipe4x<I extends MenuRecipeInput> extends Ab
 
     @Override
     public boolean canCraftInDimensions(int width, int height) {
-        if (either.left().isPresent()) {
-            return width >= either.left().get().width() && height >= either.left().get().height();
-        }
-        return either.right().isPresent();
+        return either.map(shaped -> width >= shaped.width() && height >= shaped.height(), shapeless -> true);
     }
 
     @Override
