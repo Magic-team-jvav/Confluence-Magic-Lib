@@ -109,9 +109,12 @@ public final class LibStreamCodecUtils {
         };
     }
 
-    @SuppressWarnings("unchecked")
-    public static <B extends ByteBuf, V> StreamCodec<B, V> registry(Registry<V> registry) {
-        return (StreamCodec<B, V>) ResourceLocation.STREAM_CODEC.map(registry::get, registry::getKey);
+    /**
+     * Use {@link ByteBufCodecs#registry(ResourceKey)} directly
+     */
+    @Deprecated
+    public static <V> StreamCodec<RegistryFriendlyByteBuf, V> registry(Registry<V> registry) {
+        return ByteBufCodecs.registry(registry.key());
     }
 
     public static <B extends ByteBuf, V> StreamCodec<B, V> lazyInitialized(Supplier<StreamCodec<B, V>> delegate) {
