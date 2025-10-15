@@ -7,7 +7,7 @@ import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.client.particle.CrossDustParticle;
 
-@EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID, value = Dist.CLIENT)
 public final class LibModEvents {
     @SubscribeEvent
     public static void registerParticles(RegisterParticleProvidersEvent event) {

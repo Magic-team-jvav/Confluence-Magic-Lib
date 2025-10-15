@@ -28,7 +28,7 @@ import org.confluence.lib.mixed.IExtraSyncedData;
 import org.confluence.lib.network.SetEntityDataPacketS2C;
 import org.confluence.lib.util.LibUtils;
 
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = ConfluenceMagicLib.LIB_ID)
+@EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID)
 public final class GameEvents {
     @SubscribeEvent
     public static void livingDrops(LivingDropsEvent event) {

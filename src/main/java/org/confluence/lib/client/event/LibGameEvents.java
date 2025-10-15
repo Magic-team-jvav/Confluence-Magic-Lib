@@ -21,7 +21,7 @@ import org.confluence.lib.common.component.ModRarity;
 import java.util.List;
 import java.util.Optional;
 
-@EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
+@EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID, value = Dist.CLIENT)
 public final class LibGameEvents {
     @SubscribeEvent
     public static void clientTick$Post(ClientTickEvent.Pre event) {
