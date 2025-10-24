@@ -171,9 +171,11 @@ public final class LibClientUtils {
         return blueWhite;
     }
 
-    public static NativeImage getGuiItem(Item item) {
-        int size = 128;
-        ItemStack itemStack = item.getDefaultInstance();
+    public static NativeImage getGuiItem(Item item, int size) {
+        return getGuiItem(item.getDefaultInstance(), size);
+    }
+
+    public static NativeImage getGuiItem(ItemStack stack, int size) {
         TextureTarget target = new TextureTarget(size, size, true, Minecraft.ON_OSX);
         target.setClearColor(0, 0, 0, 0);
         Minecraft minecraft = Minecraft.getInstance();
@@ -191,9 +193,9 @@ public final class LibClientUtils {
         GuiGraphics guiGraphics = new GuiGraphics(minecraft, bufferSource);
         PoseStack pose = guiGraphics.pose();
         pose.pushPose();
-        float scale = 128 / 16F;
+        float scale = size / 16F;
         pose.scale(scale, scale, 1);
-        guiGraphics.renderItem(itemStack, 0, 0, 251017);
+        guiGraphics.renderItem(stack, 0, 0, 251017);
         pose.popPose();
 
         target.bindRead();
