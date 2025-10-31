@@ -313,6 +313,10 @@ public final class LibUtils {
         return value >= 1.0F || (value > 0.0F && random.nextFloat() < value);
     }
 
+    public static boolean checkChance(double value, RandomSource random) {
+        return value >= 1.0 || (value > 0.0 && random.nextDouble() < value);
+    }
+
     public static <K, V> Map<K, V> convertTupleListToMap(List<Tuple<K, V>> list) {
         ImmutableMap.Builder<K, V> map = ImmutableMap.builder();
         for (Tuple<K, V> tuple : list) {
