@@ -10,6 +10,7 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
@@ -45,6 +46,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -335,5 +337,10 @@ public final class LibUtils {
 
     public static boolean isAnimal(LivingEntity living) {
         return living instanceof Animal || living instanceof WaterAnimal;
+    }
+
+    public static ResourceLocation withUniqueSuffix(ResourceLocation id) {
+        UUID uuid = UUID.randomUUID();
+        return id.withSuffix("_" + uuid.toString().replace("-", ""));
     }
 }
