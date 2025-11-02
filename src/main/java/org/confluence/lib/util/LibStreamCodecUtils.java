@@ -3,11 +3,14 @@ package org.confluence.lib.util;
 import com.mojang.datafixers.util.Function7;
 import com.mojang.datafixers.util.Function8;
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.booleans.BooleanObjectMutablePair;
+import it.unimi.dsi.fastutil.booleans.BooleanObjectPair;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -17,6 +20,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
@@ -62,6 +67,22 @@ public final class LibStreamCodecUtils {
             for (Ingredient ingredient : value) {
                 Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, ingredient);
             }
+        }
+    };
+    public static final StreamCodec<RegistryFriendlyByteBuf, BlockState> BLOCK_STATE = new StreamCodec<>() {
+        private final StreamCodec<RegistryFriendlyByteBuf, Block> blockCodec = ByteBufCodecs.registry(Registries.BLOCK);
+
+        @Override
+        public BlockState decode(RegistryFriendlyByteBuf buffer) {
+            Block block = blockCodec.decode(buffer);
+            return block.getStateDefinition().getPossibleStates().get(buffer.readVarInt());
+        }
+
+        @Override
+        public void encode(RegistryFriendlyByteBuf buffer, BlockState value) {
+            Block block = value.getBlock();
+            blockCodec.encode(buffer, block);
+            buffer.writeVarInt(block.getStateDefinition().getPossibleStates().indexOf(value));
         }
     };
 
@@ -170,6 +191,21 @@ public final class LibStreamCodecUtils {
 
                     buffer.writeByte(b);
                 }
+            }
+        };
+    }
+
+    public static <B extends ByteBuf, O> StreamCodec<B, BooleanObjectPair<O>> booleanObjectPair(StreamCodec<? super B, O> objCodec) {
+        return new StreamCodec<>() {
+            @Override
+            public BooleanObjectPair<O> decode(B buffer) {
+                return new BooleanObjectMutablePair<>(buffer.readBoolean(), objCodec.decode(buffer));
+            }
+
+            @Override
+            public void encode(B buffer, BooleanObjectPair<O> value) {
+                buffer.writeBoolean(value.leftBoolean());
+                objCodec.encode(buffer, value.right());
             }
         };
     }
