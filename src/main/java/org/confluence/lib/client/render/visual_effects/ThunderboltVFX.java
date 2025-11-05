@@ -20,7 +20,7 @@ import java.util.Map;
 
 import static org.confluence.lib.util.VectorUtils.lightningPathList;
 
-public class ThunderboltVFX implements VisualEffects {
+public class ThunderboltVFX extends VisualEffects {
     private final Map<Vector2d, Vector2d> POINTS_MAP = new HashMap<>();
     private final Map<Vector3d, Integer> LIGHTNING = new HashMap<>();
     private final List<Double> POINTS_SIDE = new ArrayList<>();
@@ -35,9 +35,8 @@ public class ThunderboltVFX implements VisualEffects {
         ROTATE1 += 0.03;
 
         int maxCount = 5;
-
         double moveDis = 0.5;
-        ClientLevel level = Minecraft.getInstance().level;
+        ClientLevel level = getMinecraft().level;
         final long timeVariable = (System.currentTimeMillis() / 35) % 10000;
         boolean updata = (TIME_BEFORE != timeVariable);
         TIME_BEFORE = timeVariable;
@@ -233,7 +232,7 @@ public class ThunderboltVFX implements VisualEffects {
 
         PoseStack.Pose pose = poseStack.last();
         poseStack.pushPose();
-        Vector3d cameraPos = toVector3d(Minecraft.getInstance().gameRenderer.getMainCamera().getPosition());
+        Vector3d cameraPos = toVector3d(getCamera().getPosition());
         cameraPos = new Vector3d(cameraPos.x - entityPos.x, cameraPos.y - entityPos.y, cameraPos.z - entityPos.z);
 
         for (int i = 0; i < points0.size() - 1; i++) {
@@ -362,7 +361,7 @@ public class ThunderboltVFX implements VisualEffects {
                 point3_y.x * sinZ + point3_y.y * cosZ,
                 point3_y.z
         );
-        Vector3d cameraPos = toVector3d(Minecraft.getInstance().gameRenderer.getMainCamera().getPosition());
+        Vector3d cameraPos = toVector3d(getCamera().getPosition());
         cameraPos = new Vector3d(cameraPos.x - entityPos.x, cameraPos.y - entityPos.y, cameraPos.z - entityPos.z);
 
         poseStack.pushPose();

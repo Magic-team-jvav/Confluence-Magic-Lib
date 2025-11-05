@@ -13,8 +13,8 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 
-public interface VisualEffects {
-    void render(
+public abstract class VisualEffects {
+    public abstract void render(
             final Vec3 vec3,
             final RandomSource randomSource,
             final PoseStack poseStack,
@@ -24,56 +24,56 @@ public interface VisualEffects {
     /**
      * 获取客户端Minecraft
      */
-    static Minecraft getMinecraft() {
+    public static Minecraft getMinecraft() {
         return Minecraft.getInstance();
     }
 
     /**
      * 获取客户端世界
      */
-    static ClientLevel getLevel() {
+    public static ClientLevel getLevel() {
         return getMinecraft().level;
     }
 
     /**
      * 获取客户端玩家
      */
-    static LocalPlayer getPlayer() {
+    public static LocalPlayer getPlayer() {
         return getMinecraft().player;
     }
 
     /**
      * 获取游戏渲染器
      */
-    static GameRenderer getGameRenderer() {
+    public static GameRenderer getGameRenderer() {
         return getMinecraft().gameRenderer;
     }
 
     /**
      * 获取世界渲染器
      */
-    static LevelRenderer getLevelRenderer() {
+    public static LevelRenderer getLevelRenderer() {
         return getMinecraft().levelRenderer;
     }
 
     /**
      * 获取游戏相机
      */
-    static Camera getCamera() {
+    public static Camera getCamera() {
         return getGameRenderer().getMainCamera();
     }
 
     /**
      * 获取游戏字体
      */
-    static Font getFont() {
+    public static Font getFont() {
         return getMinecraft().font;
     }
 
     /**
      * 获取游戏窗口
      */
-    static Window getWindow() {
+    public static Window getWindow() {
         return getMinecraft().getWindow();
     }
 }

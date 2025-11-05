@@ -19,8 +19,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
@@ -32,7 +30,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-@OnlyIn(Dist.CLIENT)
 public final class LibClientUtils {
     public static final float HALF_SQRT_3 = (float) (Math.sqrt(3) / 2.0);
     public static final Quaternionf ANGLE_45 = Axis.YP.rotation(Mth.PI * 0.25F);
