@@ -12,6 +12,10 @@ public class ListRecipeInput implements RecipeInput {
         this.items = items;
     }
 
+    public ListRecipeInput(List<ItemStack> items, int start, int end) {
+        this(items.subList(start, end));
+    }
+
     @Override
     public ItemStack getItem(int index) {
         return items.get(index);
