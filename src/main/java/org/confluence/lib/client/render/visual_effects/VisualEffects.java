@@ -3,6 +3,7 @@ package org.confluence.lib.client.render.visual_effects;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -75,5 +76,19 @@ public abstract class VisualEffects {
      */
     public static Window getWindow() {
         return getMinecraft().getWindow();
+    }
+
+    /**
+     * 获取游戏计时器
+     */
+    public static DeltaTracker getDeltaTracker() {
+        return getMinecraft().getTimer();
+    }
+
+    /**
+     * 获取游戏时间差
+     */
+    public static float getPartialTicks() {
+        return getDeltaTracker().getGameTimeDeltaPartialTick(true);
     }
 }
