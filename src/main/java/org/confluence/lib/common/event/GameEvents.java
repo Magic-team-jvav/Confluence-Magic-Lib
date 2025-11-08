@@ -12,6 +12,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.ItemStackedOnOtherEvent;
+import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
@@ -30,6 +31,12 @@ import org.confluence.lib.util.LibUtils;
 
 @EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID)
 public final class GameEvents {
+
+    @SubscribeEvent
+    public static void finalizeSpawnEvent(FinalizeSpawnEvent event) {
+
+    }
+
     @SubscribeEvent
     public static void livingDrops(LivingDropsEvent event) {
         if (event.getEntity().getTags().contains(LibUtils.NO_DROPS_TAG)) {
