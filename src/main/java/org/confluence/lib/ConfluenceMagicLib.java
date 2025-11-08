@@ -41,55 +41,43 @@ public class ConfluenceMagicLib {
     public static final Logger LOGGER = LoggerFactory.getLogger("Confluence Magic Lib");
     public static final Supplier<Boolean> IS_CONFLUENCE_LOADED = Suppliers.memoize(() -> ModList.get().isLoaded(CONFLUENCE_ID));
 
-    // 属性
+    // region 属性
     private static final DeferredRegister<Attribute> ATTRIBUTES = DeferredRegister.create(Registries.ATTRIBUTE, LIB_ID);
-    /** 玩家怪物生成速度系数 */
-    public static final DeferredHolder<Attribute, PercentageAttribute> PLAYER_MONSTER_SPAWN_SPEED_FACTOR = registerPercentage(
-            "player.monster_spawn_speed_factor", 100, 0, 10240, 1);
-    /** 玩家怪物生成数量系数 */
-    public static final DeferredHolder<Attribute, PercentageAttribute> PLAYER_MONSTER_SPAWN_COUNT_FACTOR = registerPercentage(
-            "player.monster_spawn_count_factor", 100, 0, 10240, 1);
+    /**
+     * 玩家怪物生成速度系数
+     */
+    public static final DeferredHolder<Attribute, PercentageAttribute> PLAYER_MONSTER_SPAWN_SPEED_FACTOR = registerPercentage("player.monster_spawn_speed_factor", 100, 0, 10240, 1);
+    /**
+     * 玩家怪物生成数量系数
+     */
+    public static final DeferredHolder<Attribute, PercentageAttribute> PLAYER_MONSTER_SPAWN_COUNT_FACTOR = registerPercentage("player.monster_spawn_count_factor", 100, 0, 10240, 1);
 
-    private static DeferredHolder<Attribute, PercentageAttribute> registerPercentage(String id, double pDefaultValue, double pMin, double pMax, double scaleFactor) {
-        return ATTRIBUTES.register(id, () -> new PercentageAttribute(id, pDefaultValue, pMin, pMax, scaleFactor));
+    private static DeferredHolder<Attribute, PercentageAttribute> registerPercentage(String id, double defaultValue, double min, double max, double scaleFactor) {
+        return ATTRIBUTES.register(id, () -> new PercentageAttribute(id, defaultValue, min, max, scaleFactor));
     }
+    // endregion
 
-    // 材料类型
+    // region 材料类型
     private static final DeferredRegister<IngredientType<?>> INGREDIENT_TYPES = DeferredRegister.create(NeoForgeRegistries.Keys.INGREDIENT_TYPES, LIB_ID);
-    public static final Supplier<IngredientType<AmountIngredient>> AMOUNT_INGREDIENT_TYPE = INGREDIENT_TYPES.register(
-            "amount_ingredient",
-            () -> new IngredientType<>(AmountIngredient.CODEC, AmountIngredient.STREAM_CODEC));
+    public static final Supplier<IngredientType<AmountIngredient>> AMOUNT_INGREDIENT_TYPE = INGREDIENT_TYPES.register("amount_ingredient", () -> new IngredientType<>(AmountIngredient.CODEC, AmountIngredient.STREAM_CODEC));
+    // endregion
 
+    // region 结构
     private static final DeferredRegister<StructurePieceType> PIECE_TYPES = DeferredRegister.create(BuiltInRegistries.STRUCTURE_PIECE, LIB_ID);
-    public static final Supplier<StructurePieceType.StructureTemplateType> SIMPLE_TEMPLATE_PIECE = PIECE_TYPES.register(
-            "simple_template_piece",
-            () -> SimpleTemplatePiece::new);
-    public static final Supplier<StructurePieceType.ContextlessType> GRID_PIECE = PIECE_TYPES.register(
-            "grid_piece",
-            () -> GridPiece::new);
+    public static final Supplier<StructurePieceType.StructureTemplateType> SIMPLE_TEMPLATE_PIECE = PIECE_TYPES.register("simple_template_piece", () -> SimpleTemplatePiece::new);
+    public static final Supplier<StructurePieceType.ContextlessType> GRID_PIECE = PIECE_TYPES.register("grid_piece", () -> GridPiece::new);
+    // endregion
 
-    // 数据组件
+    // region 数据组件
     private static final DeferredRegister.DataComponents DATA_COMPONENT_TYPES = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, LIB_ID);
-    public static final Supplier<DataComponentType<ModRarity>> MOD_RARITY = DATA_COMPONENT_TYPES.registerComponentType(
-            "mod_rarity",
-            builder -> builder
-                    .persistent(ModRarity.CODEC)
-                    .networkSynchronized(ModRarity.STREAM_CODEC));
-    public static final Supplier<DataComponentType<ToolMode>> TOOL_MODE = DATA_COMPONENT_TYPES.registerComponentType(
-            "tool_mode",
-            builder -> builder
-                    .persistent(ToolMode.CODEC)
-                    .networkSynchronized(ToolMode.STREAM_CODEC));
-    public static final Supplier<DataComponentType<NbtComponent>> NBT = DATA_COMPONENT_TYPES.registerComponentType(
-            "nbt",
-            builder -> builder
-                    .persistent(NbtComponent.CODEC)
-                    .networkSynchronized(NbtComponent.STREAM_CODEC));
+    public static final Supplier<DataComponentType<ModRarity>> MOD_RARITY = DATA_COMPONENT_TYPES.registerComponentType("mod_rarity", builder -> builder.persistent(ModRarity.CODEC).networkSynchronized(ModRarity.STREAM_CODEC));
+    public static final Supplier<DataComponentType<ToolMode>> TOOL_MODE = DATA_COMPONENT_TYPES.registerComponentType("tool_mode", builder -> builder.persistent(ToolMode.CODEC).networkSynchronized(ToolMode.STREAM_CODEC));
+    public static final Supplier<DataComponentType<NbtComponent>> NBT = DATA_COMPONENT_TYPES.registerComponentType("nbt", builder -> builder.persistent(NbtComponent.CODEC).networkSynchronized(NbtComponent.STREAM_CODEC));
+    // endregion
 
-    // 粒子
+    // region 粒子
     private static final DeferredRegister<ParticleType<?>> PARTICLES = DeferredRegister.create(BuiltInRegistries.PARTICLE_TYPE, LIB_ID);
-    public static final Supplier<ParticleType<CrossDustParticleOptions>> CROSS_DUST_PARTICLE = PARTICLES.register(
-            "cross_dust", () -> new ParticleType<>(false) {
+    public static final Supplier<ParticleType<CrossDustParticleOptions>> CROSS_DUST_PARTICLE = PARTICLES.register("cross_dust", () -> new ParticleType<>(false) {
         @Override
         @NotNull
         public MapCodec<CrossDustParticleOptions> codec() {
@@ -102,6 +90,7 @@ public class ConfluenceMagicLib {
             return CrossDustParticleOptions.STREAM_CODEC;
         }
     });
+    // endregion
 
     public ConfluenceMagicLib(IEventBus modEventBus, ModContainer modContainer) {
         ATTRIBUTES.register(modEventBus);
