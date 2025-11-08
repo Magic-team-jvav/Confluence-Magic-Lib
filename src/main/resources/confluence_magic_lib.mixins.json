@@ -6,7 +6,7 @@
     "refmap": "confluence_magic_lib.refmap.json",
     "mixins": [
         "LivingEntityMixin",
-        "NaturalSpawnerMixin",
+        "NaturalSpawner1Mixin",
         "PlayerMixin",
         "PrimaryLevelDataMixin",
         "ShapedRecipePatternMixin",
@@ -26,5 +26,8 @@
     ],
     "injectors": {
         "defaultRequire": 1
+    },
+    "mixinextras": {
+        "minVersion": "0.5.0"
     }
 }

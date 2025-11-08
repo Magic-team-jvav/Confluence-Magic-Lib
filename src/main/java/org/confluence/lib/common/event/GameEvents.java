@@ -4,6 +4,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
@@ -49,13 +50,13 @@ public final class GameEvents {
         double x = position.x;
         double y = position.y;
         double z = position.z;
-        var player = level.getNearestPlayer(x, y, z, -1, true);
+        var player = level.getNearestPlayer(x, y, z, -1, false);
         if (player == null ||
                 !player.getAttributes().hasAttribute(ConfluenceMagicLib.ENEMY_SPAWN_COUNT_MULTIPLIER) ||
                 player.distanceToSqr(x, y, z) <= 576.0) {
             return;
         }
-        event.setSize((int) (event.getSize() * player.getAttributeValue(ConfluenceMagicLib.ENEMY_SPAWN_COUNT_MULTIPLIER)));
+        event.setSize(Mth.ceil(event.getSize() * player.getAttributeValue(ConfluenceMagicLib.ENEMY_SPAWN_COUNT_MULTIPLIER)));
     }
 
     @SubscribeEvent
