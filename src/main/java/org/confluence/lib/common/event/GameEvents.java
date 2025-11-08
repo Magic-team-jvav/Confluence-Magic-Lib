@@ -35,7 +35,6 @@ import org.confluence.lib.util.LibUtils;
 
 @EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID)
 public final class GameEvents {
-
     @SubscribeEvent
     public static void addAttribute(EntityAttributeModificationEvent event) {
         event.add(EntityType.PLAYER, ConfluenceMagicLib.PLAYER_MONSTER_SPAWN_SPEED_FACTOR);

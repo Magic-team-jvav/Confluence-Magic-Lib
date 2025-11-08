@@ -15,9 +15,8 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.WaterAnimal;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -36,6 +35,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.EffectCure;
+import net.neoforged.neoforge.entity.PartEntity;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.apache.commons.lang3.tuple.Triple;
 import org.confluence.lib.ConfluenceMagicLib;
@@ -342,5 +342,17 @@ public final class LibUtils {
     public static ResourceLocation withUniqueSuffix(ResourceLocation id) {
         UUID uuid = UUID.randomUUID();
         return id.withSuffix("_" + uuid.toString().replace("-", ""));
+    }
+
+    public static @Nullable Entity getOwner(DamageSource damageSource) {
+        Entity attacker = damageSource.getEntity();
+        if (attacker instanceof PartEntity<?> partEntity) {
+            attacker = partEntity.getParent();
+        } else if (attacker instanceof OwnableEntity ownableEntity) {
+            attacker = ownableEntity.getOwner();
+        } else if (attacker instanceof TraceableEntity traceableEntity) {
+            attacker = traceableEntity.getOwner();
+        }
+        return attacker == null ? damageSource.getEntity() : attacker;
     }
 }
