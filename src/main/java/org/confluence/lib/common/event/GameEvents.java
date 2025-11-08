@@ -4,18 +4,22 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.ItemStackedOnOtherEvent;
-import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
+import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
+import net.neoforged.neoforge.event.entity.living.SpawnClusterSizeEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -33,8 +37,26 @@ import org.confluence.lib.util.LibUtils;
 public final class GameEvents {
 
     @SubscribeEvent
-    public static void finalizeSpawnEvent(FinalizeSpawnEvent event) {
+    public static void addAttribute(EntityAttributeModificationEvent event) {
+        event.add(EntityType.PLAYER, ConfluenceMagicLib.PLAYER_MONSTER_SPAWN_SPEED_FACTOR);
+        event.add(EntityType.PLAYER, ConfluenceMagicLib.PLAYER_MONSTER_SPAWN_COUNT_FACTOR);
+    }
 
+    @SubscribeEvent
+    public static void onSpawnClusterSize(SpawnClusterSizeEvent event) {
+        var entity = event.getEntity();
+        Level level = entity.level();
+        Vec3 position = entity.position();
+        double x = position.x;
+        double y = position.y;
+        double z = position.z;
+        var player = level.getNearestPlayer(x, y, z, -1, true);
+        if (player == null ||
+                !player.getAttributes().hasAttribute(ConfluenceMagicLib.PLAYER_MONSTER_SPAWN_COUNT_FACTOR) ||
+                player.distanceToSqr(x, y, z) <= 576.0) {
+            return;
+        }
+        event.setSize((int) (event.getSize() * player.getAttributeValue(ConfluenceMagicLib.PLAYER_MONSTER_SPAWN_COUNT_FACTOR)));
     }
 
     @SubscribeEvent

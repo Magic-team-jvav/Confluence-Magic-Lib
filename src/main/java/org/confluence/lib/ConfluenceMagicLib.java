@@ -10,12 +10,12 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.common.PercentageAttribute;
 import net.neoforged.neoforge.common.crafting.IngredientType;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -46,14 +46,14 @@ public class ConfluenceMagicLib {
     /**
      * 玩家怪物生成速度系数
      */
-    public static final DeferredHolder<Attribute, PercentageAttribute> PLAYER_MONSTER_SPAWN_SPEED_FACTOR = registerPercentage("player.monster_spawn_speed_factor", 100, 0, 10240, 1);
+    public static final DeferredHolder<Attribute, RangedAttribute> PLAYER_MONSTER_SPAWN_SPEED_FACTOR = registerPercentage("player.monster_spawn_speed_factor", 1, 0, 1024);
     /**
      * 玩家怪物生成数量系数
      */
-    public static final DeferredHolder<Attribute, PercentageAttribute> PLAYER_MONSTER_SPAWN_COUNT_FACTOR = registerPercentage("player.monster_spawn_count_factor", 100, 0, 10240, 1);
+    public static final DeferredHolder<Attribute, RangedAttribute> PLAYER_MONSTER_SPAWN_COUNT_FACTOR = registerPercentage("player.monster_spawn_count_factor", 1, 0, 1024);
 
-    private static DeferredHolder<Attribute, PercentageAttribute> registerPercentage(String id, double defaultValue, double min, double max, double scaleFactor) {
-        return ATTRIBUTES.register(id, () -> new PercentageAttribute(id, defaultValue, min, max, scaleFactor));
+    private static DeferredHolder<Attribute, RangedAttribute> registerPercentage(String id, double defaultValue, double min, double max) {
+        return ATTRIBUTES.register(id, () -> new RangedAttribute(id, defaultValue, min, max));
     }
     // endregion
 
