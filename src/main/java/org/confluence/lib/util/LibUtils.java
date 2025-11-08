@@ -345,14 +345,21 @@ public final class LibUtils {
     }
 
     public static @Nullable Entity getOwner(DamageSource damageSource) {
-        Entity attacker = damageSource.getEntity();
-        if (attacker instanceof PartEntity<?> partEntity) {
-            attacker = partEntity.getParent();
-        } else if (attacker instanceof OwnableEntity ownableEntity) {
-            attacker = ownableEntity.getOwner();
-        } else if (attacker instanceof TraceableEntity traceableEntity) {
-            attacker = traceableEntity.getOwner();
-        }
-        return attacker == null ? damageSource.getEntity() : attacker;
+        Entity entity = damageSource.getEntity();
+        if (entity == null) return null;
+        return getOwner(entity);
+    }
+
+    /**
+     * 尝试寻找该实体的所有者，如果找不到则返回该实体
+     */
+    public static Entity getOwner(Entity entity) {
+        Entity owner = switch (entity) {
+            case PartEntity<?> partEntity -> partEntity.getParent();
+            case OwnableEntity ownableEntity -> ownableEntity.getOwner();
+            case TraceableEntity traceableEntity -> traceableEntity.getOwner();
+            default -> entity;
+        };
+        return owner == null ? entity : owner;
     }
 }
