@@ -46,14 +46,18 @@ public class ConfluenceMagicLib {
     /**
      * 玩家怪物生成速度系数
      */
-    public static final DeferredHolder<Attribute, RangedAttribute> PLAYER_MONSTER_SPAWN_SPEED_FACTOR = registerPercentage("player.monster_spawn_speed_factor", 1, 0, 1024);
+    public static final DeferredHolder<Attribute, RangedAttribute> ENEMY_SPAWN_SPEED_MULTIPLIER = registerRangedAttribute("player.enemy_spawn_speed_multiplier", 1, 0, 1024, false, Attribute.Sentiment.NEUTRAL);
     /**
      * 玩家怪物生成数量系数
      */
-    public static final DeferredHolder<Attribute, RangedAttribute> PLAYER_MONSTER_SPAWN_COUNT_FACTOR = registerPercentage("player.monster_spawn_count_factor", 1, 0, 1024);
+    public static final DeferredHolder<Attribute, RangedAttribute> ENEMY_SPAWN_COUNT_MULTIPLIER = registerRangedAttribute("player.enemy_spawn_count_multiplier", 1, 0, 1024, false, Attribute.Sentiment.NEUTRAL);
 
-    private static DeferredHolder<Attribute, RangedAttribute> registerPercentage(String id, double defaultValue, double min, double max) {
-        return ATTRIBUTES.register(id, () -> new RangedAttribute(id, defaultValue, min, max));
+    private static DeferredHolder<Attribute, RangedAttribute> registerRangedAttribute(String name, double defaultValue, double min, double max, boolean syncable, Attribute.Sentiment sentiment) {
+        return ATTRIBUTES.register(name, () -> {
+            RangedAttribute attribute = new RangedAttribute("attribute.name." + name, defaultValue, min, max);
+            attribute.setSyncable(syncable).setSentiment(sentiment);
+            return attribute;
+        });
     }
     // endregion
 

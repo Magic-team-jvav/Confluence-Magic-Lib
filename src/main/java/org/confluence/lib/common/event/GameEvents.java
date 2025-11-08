@@ -37,8 +37,8 @@ import org.confluence.lib.util.LibUtils;
 public final class GameEvents {
     @SubscribeEvent
     public static void addAttribute(EntityAttributeModificationEvent event) {
-        event.add(EntityType.PLAYER, ConfluenceMagicLib.PLAYER_MONSTER_SPAWN_SPEED_FACTOR);
-        event.add(EntityType.PLAYER, ConfluenceMagicLib.PLAYER_MONSTER_SPAWN_COUNT_FACTOR);
+        event.add(EntityType.PLAYER, ConfluenceMagicLib.ENEMY_SPAWN_SPEED_MULTIPLIER);
+        event.add(EntityType.PLAYER, ConfluenceMagicLib.ENEMY_SPAWN_COUNT_MULTIPLIER);
     }
 
     @SubscribeEvent
@@ -51,11 +51,11 @@ public final class GameEvents {
         double z = position.z;
         var player = level.getNearestPlayer(x, y, z, -1, true);
         if (player == null ||
-                !player.getAttributes().hasAttribute(ConfluenceMagicLib.PLAYER_MONSTER_SPAWN_COUNT_FACTOR) ||
+                !player.getAttributes().hasAttribute(ConfluenceMagicLib.ENEMY_SPAWN_COUNT_MULTIPLIER) ||
                 player.distanceToSqr(x, y, z) <= 576.0) {
             return;
         }
-        event.setSize((int) (event.getSize() * player.getAttributeValue(ConfluenceMagicLib.PLAYER_MONSTER_SPAWN_COUNT_FACTOR)));
+        event.setSize((int) (event.getSize() * player.getAttributeValue(ConfluenceMagicLib.ENEMY_SPAWN_COUNT_MULTIPLIER)));
     }
 
     @SubscribeEvent

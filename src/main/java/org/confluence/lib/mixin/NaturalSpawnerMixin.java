@@ -15,7 +15,6 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 @Mixin(NaturalSpawner.class)
 public abstract class NaturalSpawnerMixin {
-
     @Shadow
     private static boolean isRightDistanceToPlayerAndSpawnPoint(ServerLevel level, ChunkAccess chunk, BlockPos.MutableBlockPos pos, double distance) {
         return false;
@@ -39,15 +38,22 @@ public abstract class NaturalSpawnerMixin {
         var z = pos.getZ();
         Player player = level.getNearestPlayer(x, y, z, -1.0, true);
         if (player == null ||
-                !player.getAttributes().hasAttribute(ConfluenceMagicLib.PLAYER_MONSTER_SPAWN_COUNT_FACTOR) ||
+                !player.getAttributes().hasAttribute(ConfluenceMagicLib.ENEMY_SPAWN_COUNT_MULTIPLIER) ||
                 !isRightDistanceToPlayerAndSpawnPoint(level, chunk, blockpos$mutableblockpos, player.distanceToSqr(x, y, z))) {
             return original;
         }
-        return (int) (original * player.getAttributeValue(ConfluenceMagicLib.PLAYER_MONSTER_SPAWN_COUNT_FACTOR));
+        return (int) (original * player.getAttributeValue(ConfluenceMagicLib.ENEMY_SPAWN_COUNT_MULTIPLIER));
     }
 
 //    @ModifyVariable(method = "spawnCategoryForPosition(Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/NaturalSpawner$SpawnPredicate;Lnet/minecraft/world/level/NaturalSpawner$AfterSpawnCallback;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/BlockPos;getX()I"), ordinal = 2)
 //    private static int modifyK(int value) {
+//
+//    }
+
+//    @Definition(id = "k", local = @Local(type = int.class, ordinal = 2))
+//    @Expression("k < 3")
+//    @ModifyExpressionValue(method = "spawnCategoryForPosition(Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/NaturalSpawner$SpawnPredicate;Lnet/minecraft/world/level/NaturalSpawner$AfterSpawnCallback;)V", at = @At("MIXINEXTRAS:EXPRESSION"))
+//    private static boolean wrap(boolean original) {
 //
 //    }
 }
