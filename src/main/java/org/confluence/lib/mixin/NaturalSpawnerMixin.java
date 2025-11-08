@@ -45,4 +45,9 @@ public abstract class NaturalSpawnerMixin {
         }
         return (int) (original * player.getAttributeValue(ConfluenceMagicLib.PLAYER_MONSTER_SPAWN_COUNT_FACTOR));
     }
+
+//    @ModifyVariable(method = "spawnCategoryForPosition(Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/NaturalSpawner$SpawnPredicate;Lnet/minecraft/world/level/NaturalSpawner$AfterSpawnCallback;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/BlockPos;getX()I"), ordinal = 2)
+//    private static int modifyK(int value) {
+//
+//    }
 }
