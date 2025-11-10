@@ -26,6 +26,7 @@ import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.confluence.lib.ConfluenceMagicLib;
+import org.confluence.lib.StartupConfig;
 import org.confluence.lib.common.data.IdFixer;
 import org.confluence.lib.common.data.saved.IGlobalData;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
@@ -94,6 +95,7 @@ public final class GameEvents {
     @SubscribeEvent
     public static void playerLogged(PlayerEvent.PlayerLoggedInEvent event) {
         IdFixer.fixPersistentData(event.getEntity());
+        StartupConfig.checkIfSomeoneHasViolatedEULA(event.getEntity());
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST, receiveCanceled = true)

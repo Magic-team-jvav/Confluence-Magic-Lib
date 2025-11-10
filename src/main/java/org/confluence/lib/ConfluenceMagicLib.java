@@ -97,6 +97,7 @@ public class ConfluenceMagicLib {
     // endregion
 
     public ConfluenceMagicLib(IEventBus modEventBus, ModContainer modContainer) {
+        StartupConfig.register(modContainer);
         ATTRIBUTES.register(modEventBus);
         INGREDIENT_TYPES.register(modEventBus);
         PIECE_TYPES.register(modEventBus);

@@ -17,6 +17,7 @@
         "fixer.PiecesContainerFixer"
     ],
     "client": [
+        "accessor.KeyMappingAccessor",
         "client.BlockModelShaperMixin",
         "client.GuiGraphicsMixin",
         "client.LocalPlayerMixin",

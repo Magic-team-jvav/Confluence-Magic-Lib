@@ -8,5 +8,6 @@
     "jei.tooltip.environment.block.predicates": "Block States:",
     "jei.tooltip.environment.block.predicates.property": "Property: %s",
     "jei.tooltip.environment.block.fluids": "Fluids:",
-    "jei.tooltip.environment.graveyard": "Requires graveyard"
+    "jei.tooltip.environment.graveyard": "Requires graveyard",
+    "alarm.confluence_magic_lib.this_is_free_mod": "Confluence: Otherworld is a §afree mod§f; please §cdo not distribute it§f. If you paid for it, please cut your losses promptly."
 }
