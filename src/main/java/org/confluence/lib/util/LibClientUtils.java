@@ -1,19 +1,27 @@
 package org.confluence.lib.util;
 
+import com.mojang.blaze3d.pipeline.TextureTarget;
+import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexSorting;
 import com.mojang.datafixers.util.Function4;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.item.ClampedItemPropertyFunction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 import org.joml.Quaternionf;
 
 import javax.imageio.ImageIO;
@@ -22,7 +30,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-@OnlyIn(Dist.CLIENT)
 public final class LibClientUtils {
     public static final float HALF_SQRT_3 = (float) (Math.sqrt(3) / 2.0);
     public static final Quaternionf ANGLE_45 = Axis.YP.rotation(Mth.PI * 0.25F);
@@ -159,5 +166,44 @@ public final class LibClientUtils {
             }
         }
         return blueWhite;
+    }
+
+    public static NativeImage getGuiItem(Item item, int size) {
+        return getGuiItem(item.getDefaultInstance(), size);
+    }
+
+    public static NativeImage getGuiItem(ItemStack stack, int size) {
+        TextureTarget target = new TextureTarget(size, size, true, Minecraft.ON_OSX);
+        target.setClearColor(0, 0, 0, 0);
+        Minecraft minecraft = Minecraft.getInstance();
+        MultiBufferSource.BufferSource bufferSource = minecraft.renderBuffers().bufferSource();
+        target.clear(Minecraft.ON_OSX);
+        target.bindWrite(true);
+        RenderSystem.setProjectionMatrix(new Matrix4f().setOrtho(0, size, size, 0, -1000F, 1000F), VertexSorting.ORTHOGRAPHIC_Z);
+
+        Matrix4fStack view = RenderSystem.getModelViewStack();
+        view.pushMatrix();
+        view.translation(0F, 0F, 0F);
+        RenderSystem.applyModelViewMatrix();
+
+        Lighting.setupNetherLevel();
+        GuiGraphics guiGraphics = new GuiGraphics(minecraft, bufferSource);
+        PoseStack pose = guiGraphics.pose();
+        pose.pushPose();
+        float scale = size / 16F;
+        pose.scale(scale, scale, 1);
+        guiGraphics.renderItem(stack, 0, 0, 251017);
+        pose.popPose();
+
+        target.bindRead();
+        RenderSystem.bindTexture(target.getColorTextureId());
+        NativeImage image = new NativeImage(size, size, false);
+        image.downloadTexture(0, false);
+        image.flipY();
+        target.unbindRead();
+        target.unbindWrite();
+        view.popMatrix();
+        RenderSystem.applyModelViewMatrix();
+        return image;
     }
 }

@@ -5,6 +5,8 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.booleans.BooleanObjectMutablePair;
+import it.unimi.dsi.fastutil.booleans.BooleanObjectPair;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.phys.Vec2;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
@@ -52,7 +54,12 @@ public final class LibCodecUtils {
         );
     }
 
+    @Deprecated(forRemoval = true)
     public static <K, V> Codec<ImmutableListMultimap<K, V>> multimapCodec(Codec<K> keyCodec, Codec<V> valueCodec) {
+        return multimap(keyCodec, valueCodec);
+    }
+
+    public static <K, V> Codec<ImmutableListMultimap<K, V>> multimap(Codec<K> keyCodec, Codec<V> valueCodec) {
         return Codec.unboundedMap(keyCodec, LibCodecUtils.homogenousList(valueCodec, false)).xmap(map -> {
             ImmutableListMultimap.Builder<K, V> builder = ImmutableListMultimap.builder();
             for (Map.Entry<K, List<V>> entry : map.entrySet()) {
@@ -73,5 +80,16 @@ public final class LibCodecUtils {
                 ? DataResult.success(value)
                 : DataResult.error(() -> "Value must be within range [" + min + ";" + max + "]: " + value)
         );
+    }
+
+    public static <O> Codec<BooleanObjectPair<O>> booleanObjectPair(String boolKey, String objKey, Codec<O> objCodec) {
+        return RecordCodecBuilder.create(instance -> instance.group(
+                Codec.BOOL.fieldOf(boolKey).forGetter(BooleanObjectPair::leftBoolean),
+                objCodec.fieldOf(objKey).forGetter(BooleanObjectPair::right)
+        ).apply(instance, BooleanObjectMutablePair::new));
+    }
+
+    public static <K, V> Codec<Map<K, V>> notStringKeyMap(String kName, Codec<K> kCodec, String vName, Codec<V> vCodec) {
+        return tuple(kName, kCodec, vName, vCodec).listOf().xmap(LibUtils::convertTupleListToMap, LibUtils::convertMapToTupleList);
     }
 }

@@ -5,7 +5,6 @@
     "compatibilityLevel": "JAVA_21",
     "refmap": "confluence_magic_lib.refmap.json",
     "mixins": [
-        "LivingEntityMixin",
         "PlayerMixin",
         "PrimaryLevelDataMixin",
         "ShapedRecipePatternMixin",
@@ -14,9 +13,14 @@
         "fixer.ChunkSerializerFixer",
         "fixer.DataComponentPatch$PatchKeyFixer",
         "fixer.ItemStackFixer",
-        "fixer.PiecesContainerFixer"
+        "fixer.PiecesContainerFixer",
+        "naturalspawner.LocalMobCapCalculator$MobCountsMixin",
+        "naturalspawner.LocalMobCapCalculatorMixin",
+        "naturalspawner.NaturalSpawner$SpawnStateMixin",
+        "naturalspawner.NaturalSpawner1Mixin"
     ],
     "client": [
+        "accessor.KeyMappingAccessor",
         "client.BlockModelShaperMixin",
         "client.GuiGraphicsMixin",
         "client.LocalPlayerMixin",
@@ -25,5 +29,8 @@
     ],
     "injectors": {
         "defaultRequire": 1
+    },
+    "mixinextras": {
+        "minVersion": "0.5.0"
     }
 }

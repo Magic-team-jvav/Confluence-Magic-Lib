@@ -11,6 +11,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
 
@@ -227,6 +228,29 @@ public final class VectorUtils {
         }
     }
 
+    /**
+     * 给予实体一个击退动量，方向为vector
+     *
+     * @param attacker 击退者
+     * @param victim   被击退者
+     * @param vector   向量
+     */
+    public static void knockBack(LivingEntity attacker, Entity victim, Vec3 vector) {
+        double scale = 1.0;
+        if (victim instanceof LivingEntity living) {
+            AttributeInstance instance = living.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
+            if (instance != null) scale *= (1.0 - instance.getValue());
+        }
+        if (scale > 0.0) {
+            LivingEntity living;
+            if (attacker instanceof TraceableEntity traceable && traceable.getOwner() instanceof LivingEntity living1) living = living1;
+            else living = attacker;
+            AttributeInstance instance = living.getAttribute(Attributes.ATTACK_KNOCKBACK);
+            if (instance != null) scale *= (1.0 + instance.getValue());
+            victim.addDeltaMovement(vector.scale(scale));
+        }
+    }
+
     public static Direction[] directionsInAxis(Direction.Axis axis) {
         return switch (axis) {
             case X -> new Direction[]{Direction.EAST, Direction.WEST};
@@ -259,7 +283,7 @@ public final class VectorUtils {
         return new BlockPos(Mth.floor(vector3d.x), Mth.floor(vector3d.y), Mth.floor(vector3d.z));
     }
 
-    public static void lightningPathList(List<Vector3d> locationList, double dist, int move, RandomSource random) {
+    public static void lightningPathList(List<Vector3d> locationList, double dist, float move, RandomSource random) {
         double distSqr = dist * dist;
         boolean refined;
         do {
@@ -271,7 +295,7 @@ public final class VectorUtils {
                 if (distanceSqr > distSqr) {
                     Vector3d midpoint = new Vector3d();
                     point1.add(point2, midpoint).mul(0.5);
-                    double offset = Math.sqrt(distanceSqr) / move;
+                    double offset = Math.sqrt(distanceSqr) * move;
                     double twoOffset = offset * 2;
                     midpoint.x = midpoint.x + (random.nextDouble() - 0.5) * twoOffset;
                     midpoint.y = midpoint.y + (random.nextDouble() - 0.5) * twoOffset;
@@ -282,6 +306,55 @@ public final class VectorUtils {
             }
         } while (refined);
     }
+
+    public static List<List<Vector3d>> lightningPathList(List<Vector3d> initialLocationList, double dist, float move, RandomSource random, int layer, float branchPercent) {
+        List<List<Vector3d>> listOfLightning = new ArrayList<>();
+
+        List<List<Vector3d>> currentLayerPaths = new ArrayList<>();
+        currentLayerPaths.add(new ArrayList<>(initialLocationList));
+
+        for (int i = 0; i < layer; i++) {
+            List<List<Vector3d>> nextLayerPaths = new ArrayList<>();
+
+            for (List<Vector3d> path : currentLayerPaths) {
+                List<Vector3d> refinedPath = new ArrayList<>(path);
+                lightningPathList(refinedPath, dist, move, random);
+                listOfLightning.add(refinedPath);
+
+                if (refinedPath.size() < 2) continue;
+
+                Vector3d vctBefore = refinedPath.getFirst();
+                Vector3d lastVct = refinedPath.getLast();
+
+                for (int j = 1; j < refinedPath.size(); j++) {
+                    Vector3d vct = refinedPath.get(j);
+
+                    double percent = 0.02 * (1 - ((double) j / refinedPath.size()));
+                    if (random.nextDouble() < percent) {
+                        Vector3d branchDirection = new Vector3d(vct).sub(vctBefore).normalize().mul(vctBefore.distance(lastVct) * (branchPercent + random.nextDouble() * 0.1));
+
+                        Vector3d randomOffset = new Vector3d(random.nextDouble() - 0.5, random.nextDouble() - 0.5, random.nextDouble() - 0.5)
+                                .normalize().mul(branchDirection.length() * 0.5);
+
+                        Vector3d branchEnd = new Vector3d(vctBefore).add(branchDirection).add(randomOffset);
+
+                        List<Vector3d> newBranch = new ArrayList<>();
+                        newBranch.add(new Vector3d(vctBefore));
+                        newBranch.add(branchEnd);
+                        nextLayerPaths.add(newBranch);
+                    }
+                    vctBefore = vct;
+                }
+            }
+            currentLayerPaths = nextLayerPaths;
+            if (currentLayerPaths.isEmpty()) {
+                break;
+            }
+        }
+
+        return listOfLightning;
+    }
+
 
     public static Map<Vector3d, BooleanStorage4> mazePos(Vector3d centerPos, double distance, int layer, WorldgenRandom random, float difficulty) {
         Map<Vector3i, BooleanStorage4> nowMap = new HashMap<>();
@@ -576,5 +649,45 @@ public final class VectorUtils {
             }
         }
         return list;
+    }
+
+    public static void findVerticalPlane(Vector3d point, Vector3d before, Vector3d after, double side, List<Vector3d> returnList) {
+
+        double l0 = point.distance(before);
+        double l1 = point.distance(after);
+
+        double hSide = side / 2;
+
+        double x0 = ((point.x - before.x) * l1 / l0 + (after.x - point.x)) / 2;
+        double y0 = ((point.y - before.y) * l1 / l0 + (after.y - point.y)) / 2;
+        double z0 = ((point.z - before.z) * l1 / l0 + (after.z - point.z)) / 2;
+
+        Vector3d nX = new Vector3d(0, 0, 0);
+        Vector3d nY = new Vector3d(x0, y0, z0);
+        Vector3d nZ = new Vector3d(0, 0, 0);
+        Vector2d nY2 = new Vector2d(x0, y0);
+
+        double l2 = nY.length();
+        double lToY2 = nY2.length();
+
+        if (x0 != 0) {
+            nX = new Vector3d(y0 / lToY2, -x0 / lToY2, 0);
+            double lX = nX.length();
+            nX = new Vector3d(nX.x / lX, nX.y / lX, nX.z / lX);
+        }
+        if (z0 != 0) {
+            nZ = new Vector3d((-z0 * x0) / (l2 * lToY2), (-z0 * y0) / (l2 * lToY2), lToY2 / l2);
+            double lZ = nZ.length();
+            nZ = new Vector3d(nZ.x / lZ, nZ.y / lZ, nZ.z / lZ);
+        }
+
+        Vector3d point0 = new Vector3d((nX.x + nZ.x) * hSide + point.x, (nX.y + nZ.y) * hSide + point.y, (nX.z + nZ.z) * hSide + point.z);
+        Vector3d point1 = new Vector3d((nX.x - nZ.x) * hSide + point.x, (nX.y - nZ.y) * hSide + point.y, (nX.z - nZ.z) * hSide + point.z);
+        Vector3d point2 = new Vector3d((-nX.x - nZ.x) * hSide + point.x, (-nX.y - nZ.y) * hSide + point.y, (-nX.z - nZ.z) * hSide + point.z);
+        Vector3d point3 = new Vector3d((-nX.x + nZ.x) * hSide + point.x, (-nX.y + nZ.y) * hSide + point.y, (-nX.z + nZ.z) * hSide + point.z);
+        returnList.add(point0);
+        returnList.add(point1);
+        returnList.add(point2);
+        returnList.add(point3);
     }
 }

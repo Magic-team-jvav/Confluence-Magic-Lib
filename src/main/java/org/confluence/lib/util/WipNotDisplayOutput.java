@@ -2,14 +2,13 @@ package org.confluence.lib.util;
 
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.fml.loading.FMLEnvironment;
 import org.confluence.lib.common.LibTags;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public class WipNotDisplayOutput implements CreativeModeTab.Output {
-    private static boolean forceAllow = !FMLEnvironment.production;
+    private static boolean forceAllow = LibUtils.isDev();
     private final CreativeModeTab.Output delegate;
 
     public WipNotDisplayOutput(CreativeModeTab.Output delegate) {

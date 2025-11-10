@@ -11,7 +11,7 @@ import org.confluence.lib.common.data.IdFixer;
 import org.confluence.lib.common.fluid.FluidBuilder;
 import org.confluence.lib.network.SetEntityDataPacketS2C;
 
-@EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID)
 public final class ModEvents {
     @SubscribeEvent
     public static void register(RegisterEvent event) {

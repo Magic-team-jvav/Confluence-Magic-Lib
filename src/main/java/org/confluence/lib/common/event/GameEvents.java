@@ -4,22 +4,30 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.ItemStackedOnOtherEvent;
+import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
+import net.neoforged.neoforge.event.entity.living.SpawnClusterSizeEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.confluence.lib.ConfluenceMagicLib;
+import org.confluence.lib.StartupConfig;
 import org.confluence.lib.common.data.IdFixer;
 import org.confluence.lib.common.data.saved.IGlobalData;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
@@ -27,9 +35,30 @@ import org.confluence.lib.event.SwitchItemFunctionEvent;
 import org.confluence.lib.mixed.IExtraSyncedData;
 import org.confluence.lib.network.SetEntityDataPacketS2C;
 import org.confluence.lib.util.LibUtils;
+import org.confluence.lib.util.NaturalSpawnerUtil;
 
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME, modid = ConfluenceMagicLib.LIB_ID)
+@EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID)
 public final class GameEvents {
+    @SubscribeEvent
+    public static void addAttribute(EntityAttributeModificationEvent event) {
+        event.add(EntityType.PLAYER, ConfluenceMagicLib.MOB_SPAWN_SPEED_MULTIPLIER);
+        event.add(EntityType.PLAYER, ConfluenceMagicLib.MOB_SPAWN_COUNT_MULTIPLIER);
+    }
+
+    @SubscribeEvent
+    public static void onSpawnClusterSize(SpawnClusterSizeEvent event) {
+        var entity = event.getEntity();
+        Vec3 position = entity.position();
+        Player player = entity.level().getNearestPlayer(position.x, position.y, position.z, -1, false);
+        NaturalSpawnerUtil.PlayerEnemySpawnData data;
+        if (player == null ||
+                (data = NaturalSpawnerUtil.getEnemySpawnData(player)) == null ||
+                data.distanceToSqr(position) <= 576.0) {
+            return;
+        }
+        event.setSize(Mth.ceil(event.getSize() * data.getCountMultiplier()));
+    }
+
     @SubscribeEvent
     public static void livingDrops(LivingDropsEvent event) {
         if (event.getEntity().getTags().contains(LibUtils.NO_DROPS_TAG)) {
@@ -56,15 +85,25 @@ public final class GameEvents {
     }
 
     @SubscribeEvent
+    public static void serverStarting(ServerStartingEvent event) {
+        NaturalSpawnerUtil.init(event.getServer());
+    }
+
+    @SubscribeEvent
+    public static void serverTick$Post(ServerTickEvent.Post event) {
+        NaturalSpawnerUtil.update(event.getServer());
+    }
+
+    @SubscribeEvent
     public static void serverStop(ServerStoppedEvent event) {
-        for (IGlobalData data : IGlobalData.DAT) {
-            data.clear();
-        }
+        NaturalSpawnerUtil.clear();
+        IGlobalData.clearAll();
     }
 
     @SubscribeEvent
     public static void playerLogged(PlayerEvent.PlayerLoggedInEvent event) {
         IdFixer.fixPersistentData(event.getEntity());
+        StartupConfig.checkIfSomeoneHasViolatedEULA(event.getEntity());
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST, receiveCanceled = true)

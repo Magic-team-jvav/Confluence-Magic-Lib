@@ -6,17 +6,21 @@ import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ChunkResult;
+import net.minecraft.server.level.GenerationChunkHolder;
+import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.WaterAnimal;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -31,10 +35,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.EffectCure;
+import net.neoforged.neoforge.entity.PartEntity;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.apache.commons.lang3.tuple.Triple;
 import org.confluence.lib.ConfluenceMagicLib;
@@ -45,6 +52,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -175,8 +184,12 @@ public final class LibUtils {
         return living.getMainHandItem().is(item) || living.getOffhandItem().is(item);
     }
 
+    public static boolean isDev() {
+        return !FMLEnvironment.production;
+    }
+
     public static void devRun(Runnable runnable) {
-        if (!FMLEnvironment.production) {
+        if (isDev()) {
             runnable.run();
         }
     }
@@ -309,6 +322,10 @@ public final class LibUtils {
         }
     }
 
+    public static boolean checkChance(float value, RandomSource random) {
+        return value >= 1.0F || (value > 0.0F && random.nextFloat() < value);
+    }
+
     public static boolean checkChance(double value, RandomSource random) {
         return value >= 1.0 || (value > 0.0 && random.nextDouble() < value);
     }
@@ -331,5 +348,48 @@ public final class LibUtils {
 
     public static boolean isAnimal(LivingEntity living) {
         return living instanceof Animal || living instanceof WaterAnimal;
+    }
+
+    public static ResourceLocation withUniqueSuffix(ResourceLocation id) {
+        UUID uuid = UUID.randomUUID();
+        return id.withSuffix("_" + uuid.toString().replace("-", ""));
+    }
+
+    public static @Nullable Entity getOwner(DamageSource damageSource) {
+        Entity entity = damageSource.getEntity();
+        if (entity == null) return null;
+        return getOwner(entity);
+    }
+
+    /**
+     * 尝试寻找该实体的所有者，如果找不到则返回该实体
+     */
+    public static Entity getOwner(Entity entity) {
+        Entity owner = switch (entity) {
+            case PartEntity<?> partEntity -> partEntity.getParent();
+            case OwnableEntity ownableEntity -> ownableEntity.getOwner();
+            case TraceableEntity traceableEntity -> traceableEntity.getOwner();
+            default -> entity;
+        };
+        return owner == null ? entity : owner;
+    }
+
+    public static @Nullable ChunkAccess getChunkIfLoaded(ServerChunkCache chunkSource, BlockPos blockPos) {
+        return getChunkIfLoaded(chunkSource, SectionPos.blockToSectionCoord(blockPos.getX()), SectionPos.blockToSectionCoord(blockPos.getZ()));
+    }
+
+    public static @Nullable ChunkAccess getChunkIfLoaded(ServerChunkCache chunkSource, ChunkPos chunkPos) {
+        return getChunkIfLoaded(chunkSource, chunkPos.x, chunkPos.z);
+    }
+
+    /**
+     * 较大程度地减小开销，切记要在服务器线程调用！
+     */
+    public static @Nullable ChunkAccess getChunkIfLoaded(ServerChunkCache chunkSource, int cx, int cz) {
+        CompletableFuture<ChunkResult<ChunkAccess>> future = chunkSource.getChunkFutureMainThread(cx, cz, ChunkStatus.FULL, false);
+        if (future != GenerationChunkHolder.UNLOADED_CHUNK_FUTURE && future.isDone()) {
+            return future.join().orElse(null);
+        }
+        return null;
     }
 }
