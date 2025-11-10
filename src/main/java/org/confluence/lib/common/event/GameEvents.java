@@ -43,6 +43,8 @@ public final class GameEvents {
         event.add(EntityType.PLAYER, ConfluenceMagicLib.ENEMY_SPAWN_COUNT_MULTIPLIER);
     }
 
+    // TODO 缓存玩家信息
+    // TODO 限制刷新BlockBehaviour为 isPersistent false
     @SubscribeEvent
     public static void onSpawnClusterSize(SpawnClusterSizeEvent event) {
         var entity = event.getEntity();
