@@ -22,7 +22,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(NaturalSpawner.class)
 public abstract class NaturalSpawner1Mixin {
-
     @Definition(id = "k", local = @Local(type = int.class, ordinal = 2))
     @Expression("k < 3")
     @ModifyExpressionValue(method = "spawnCategoryForPosition(Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/NaturalSpawner$SpawnPredicate;Lnet/minecraft/world/level/NaturalSpawner$AfterSpawnCallback;)V", at = @At("MIXINEXTRAS:EXPRESSION"))
@@ -32,20 +31,14 @@ public abstract class NaturalSpawner1Mixin {
                                               @Local(argsOnly = true) BlockPos pos,
                                               @Local(argsOnly = true) ChunkAccess chunk,
                                               @Local(ordinal = 2) int k,
-                                              @Local(ordinal = 0) BlockPos.MutableBlockPos blockpos$mutableblockpos,
+                                              @Local(ordinal = 0) BlockPos.MutableBlockPos mutablePos,
                                               @Share("frequency") LocalIntRef frequency,
                                               @Share("isObtain") LocalBooleanRef isObtain) {
-        return NaturalSpawnerUtil.confluenceLib$wrap(original, category, level, pos, chunk, k, blockpos$mutableblockpos, frequency, isObtain);
+        return NaturalSpawnerUtil.confluenceLib$wrap(original, category, level, pos, chunk, k, mutablePos, frequency, isObtain);
     }
 
     @Inject(method = "spawnForChunk", at = @At("HEAD"))
-    private static void confluenceLib$spawnForChunk(final ServerLevel level,
-                                                    final LevelChunk chunk,
-                                                    final NaturalSpawner.SpawnState spawnState,
-                                                    final boolean spawnFriendlies,
-                                                    final boolean spawnMonsters,
-                                                    final boolean forcedDespawn,
-                                                    final CallbackInfo ci) {
+    private static void confluenceLib$spawnForChunk(ServerLevel level, LevelChunk chunk, NaturalSpawner.SpawnState spawnState, boolean spawnFriendlies, boolean spawnMonsters, boolean forcedDespawn, CallbackInfo ci) {
         NaturalSpawnerData.spawnForChunkServerLevel.set(level);
     }
 }

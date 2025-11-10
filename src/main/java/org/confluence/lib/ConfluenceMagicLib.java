@@ -27,6 +27,7 @@ import org.confluence.lib.common.particle.CrossDustParticleOptions;
 import org.confluence.lib.common.recipe.AmountIngredient;
 import org.confluence.lib.common.worldgen.structure.GridPiece;
 import org.confluence.lib.common.worldgen.structure.SimpleTemplatePiece;
+import org.confluence.lib.util.NaturalSpawnerUtil;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -46,11 +47,11 @@ public class ConfluenceMagicLib {
     /**
      * 玩家怪物生成速度系数
      */
-    public static final DeferredHolder<Attribute, RangedAttribute> ENEMY_SPAWN_SPEED_MULTIPLIER = registerRangedAttribute("player.enemy_spawn_speed_multiplier", 1, 0, 1024, false, Attribute.Sentiment.NEUTRAL);
+    public static final DeferredHolder<Attribute, RangedAttribute> MOB_SPAWN_SPEED_MULTIPLIER = registerRangedAttribute("player.mob_spawn_speed_multiplier", NaturalSpawnerUtil.DEFAULT_MULTIPLIER, 0, 1024, false, Attribute.Sentiment.NEUTRAL);
     /**
      * 玩家怪物生成数量系数
      */
-    public static final DeferredHolder<Attribute, RangedAttribute> ENEMY_SPAWN_COUNT_MULTIPLIER = registerRangedAttribute("player.enemy_spawn_count_multiplier", 1, 0, 1024, false, Attribute.Sentiment.NEUTRAL);
+    public static final DeferredHolder<Attribute, RangedAttribute> MOB_SPAWN_COUNT_MULTIPLIER = registerRangedAttribute("player.mob_spawn_count_multiplier", NaturalSpawnerUtil.DEFAULT_MULTIPLIER, 0, 1024, false, Attribute.Sentiment.NEUTRAL);
 
     private static DeferredHolder<Attribute, RangedAttribute> registerRangedAttribute(String name, double defaultValue, double min, double max, boolean syncable, Attribute.Sentiment sentiment) {
         return ATTRIBUTES.register(name, () -> {

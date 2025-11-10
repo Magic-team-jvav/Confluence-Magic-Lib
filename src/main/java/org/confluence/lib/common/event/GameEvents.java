@@ -21,7 +21,9 @@ import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
 import net.neoforged.neoforge.event.entity.living.SpawnClusterSizeEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.confluence.lib.ConfluenceMagicLib;
@@ -39,8 +41,8 @@ import org.confluence.lib.util.NaturalSpawnerUtil;
 public final class GameEvents {
     @SubscribeEvent
     public static void addAttribute(EntityAttributeModificationEvent event) {
-        event.add(EntityType.PLAYER, ConfluenceMagicLib.ENEMY_SPAWN_SPEED_MULTIPLIER);
-        event.add(EntityType.PLAYER, ConfluenceMagicLib.ENEMY_SPAWN_COUNT_MULTIPLIER);
+        event.add(EntityType.PLAYER, ConfluenceMagicLib.MOB_SPAWN_SPEED_MULTIPLIER);
+        event.add(EntityType.PLAYER, ConfluenceMagicLib.MOB_SPAWN_COUNT_MULTIPLIER);
     }
 
     @SubscribeEvent
@@ -83,10 +85,19 @@ public final class GameEvents {
     }
 
     @SubscribeEvent
+    public static void serverStarting(ServerStartingEvent event) {
+        NaturalSpawnerUtil.init(event.getServer());
+    }
+
+    @SubscribeEvent
+    public static void serverTick$Post(ServerTickEvent.Post event) {
+        NaturalSpawnerUtil.update(event.getServer());
+    }
+
+    @SubscribeEvent
     public static void serverStop(ServerStoppedEvent event) {
-        for (IGlobalData data : IGlobalData.DAT) {
-            data.clear();
-        }
+        NaturalSpawnerUtil.clear();
+        IGlobalData.clearAll();
     }
 
     @SubscribeEvent

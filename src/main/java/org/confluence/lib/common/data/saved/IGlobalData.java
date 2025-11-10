@@ -28,4 +28,10 @@ public interface IGlobalData {
     static void registerGlobalData(IGlobalData... data) {
         DAT.addAll(Arrays.asList(data));
     }
+
+    static void clearAll() {
+        for (IGlobalData data : DAT) {
+            data.clear();
+        }
+    }
 }
