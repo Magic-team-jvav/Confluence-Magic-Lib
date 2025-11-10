@@ -9,7 +9,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -34,6 +33,7 @@ import org.confluence.lib.event.SwitchItemFunctionEvent;
 import org.confluence.lib.mixed.IExtraSyncedData;
 import org.confluence.lib.network.SetEntityDataPacketS2C;
 import org.confluence.lib.util.LibUtils;
+import org.confluence.lib.util.NaturalSpawnerUtil;
 
 @EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID)
 public final class GameEvents {
@@ -43,23 +43,18 @@ public final class GameEvents {
         event.add(EntityType.PLAYER, ConfluenceMagicLib.ENEMY_SPAWN_COUNT_MULTIPLIER);
     }
 
-    // TODO 缓存玩家信息
-    // TODO 限制刷新BlockBehaviour为 isPersistent false
     @SubscribeEvent
     public static void onSpawnClusterSize(SpawnClusterSizeEvent event) {
         var entity = event.getEntity();
-        Level level = entity.level();
         Vec3 position = entity.position();
-        double x = position.x;
-        double y = position.y;
-        double z = position.z;
-        var player = level.getNearestPlayer(x, y, z, -1, false);
+        Player player = entity.level().getNearestPlayer(position.x, position.y, position.z, -1, false);
+        NaturalSpawnerUtil.PlayerEnemySpawnData data;
         if (player == null ||
-                !player.getAttributes().hasAttribute(ConfluenceMagicLib.ENEMY_SPAWN_COUNT_MULTIPLIER) ||
-                player.distanceToSqr(x, y, z) <= 576.0) {
+                (data = NaturalSpawnerUtil.getEnemySpawnData(player)) == null ||
+                data.distanceToSqr(position) <= 576.0) {
             return;
         }
-        event.setSize(Mth.ceil(event.getSize() * player.getAttributeValue(ConfluenceMagicLib.ENEMY_SPAWN_COUNT_MULTIPLIER)));
+        event.setSize(Mth.ceil(event.getSize() * data.getCountMultiplier()));
     }
 
     @SubscribeEvent

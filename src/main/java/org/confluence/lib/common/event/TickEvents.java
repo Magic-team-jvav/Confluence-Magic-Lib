@@ -11,8 +11,7 @@ import org.confluence.lib.util.NaturalSpawnerUtil;
 public final class TickEvents {
     @SubscribeEvent
     public static void levelTick$Post(LevelTickEvent.Pre event) {
-        // TODO 临时值
-        if (!(event.getLevel() instanceof ServerLevel serverLevel)/* || serverLevel.getGameTime() % (1 * 20) != 0*/) {
+        if (!(event.getLevel() instanceof ServerLevel serverLevel) || serverLevel.getGameTime() % (5 * 20) != 0) {
             return;
         }
         NaturalSpawnerUtil.initOrUpdate(serverLevel);

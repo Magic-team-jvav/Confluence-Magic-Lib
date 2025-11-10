@@ -33,23 +33,24 @@ public final class NaturalSpawnerUtil {
     }
 
     public static int confluenceLib$canSpawn(final int original, final MobCategory category, final ServerPlayer serverPlayer) {
-        if (category.isFriendly() || serverPlayer == null) {
+        PlayerEnemySpawnData data;
+        if (category.isFriendly() || serverPlayer == null || (data = NaturalSpawnerUtil.getEnemySpawnData(serverPlayer)) == null) {
             return original;
         }
-        var data = NaturalSpawnerUtil.getEnemySpawnData(serverPlayer);
-        return data == null ? original : original * Mth.ceil(data.getCountMultiplier());
+
+        return original * Mth.ceil(data.getCountMultiplier());
     }
 
     public static int confluenceLib$canSpawnForCategory(final int o, final MobCategory category, final ChunkPos pos, final ServerLevel serverLevel) {
-        if (category.isFriendly() || serverLevel == null) {
+        Player player;
+        NaturalSpawnerUtil.PlayerEnemySpawnData data;
+        if (category.isFriendly() ||
+                serverLevel == null ||
+                (player = serverLevel.getNearestPlayer(pos.x, 0, pos.z, -1, false)) == null ||
+                (data = NaturalSpawnerUtil.getEnemySpawnData(player)) == null) {
             return o;
         }
-        Player player = serverLevel.getNearestPlayer(pos.x, 0, pos.z, -1, false);
-        if (player == null) {
-            return o;
-        }
-        NaturalSpawnerUtil.PlayerEnemySpawnData data = NaturalSpawnerUtil.getEnemySpawnData(player);
-        return data == null ? o : Mth.ceil(o * data.getCountMultiplier());
+        return Mth.ceil(o * data.getCountMultiplier());
     }
 
     public static void initOrUpdate(ServerLevel level) {
@@ -68,11 +69,12 @@ public final class NaturalSpawnerUtil {
                                              final BlockPos.MutableBlockPos blockpos$mutableblockpos,
                                              final LocalIntRef frequency,
                                              final LocalBooleanRef isObtain) {
-        if (category.isFriendly()) {
+        boolean obtain = isObtain.get();
+        if (category.isFriendly() || obtain && frequency == null) {
             return original;
         }
-        if (isObtain.get()) {
-            return frequency != null ? k < frequency.get() : original;
+        if (obtain) {
+            return k < frequency.get();
         }
 
         Player player = level.getNearestPlayer(pos.getX(), pos.getY(), pos.getZ(), -1.0, false);
@@ -82,8 +84,10 @@ public final class NaturalSpawnerUtil {
                 !NaturalSpawner.isRightDistanceToPlayerAndSpawnPoint(level, chunk, blockpos$mutableblockpos, data.distanceToSqr(pos))) {
             return original;
         }
+
         frequency.set(Mth.ceil(3 * data.getSpeedMultiplier()));
         isObtain.set(true);
+
         return k < frequency.get();
     }
 
