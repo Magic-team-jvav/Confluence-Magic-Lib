@@ -184,8 +184,12 @@ public final class LibUtils {
         return living.getMainHandItem().is(item) || living.getOffhandItem().is(item);
     }
 
+    public static boolean isDev() {
+        return !FMLEnvironment.production;
+    }
+
     public static void devRun(Runnable runnable) {
-        if (!FMLEnvironment.production) {
+        if (isDev()) {
             runnable.run();
         }
     }

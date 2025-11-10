@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.util.GsonHelper;
-import net.neoforged.fml.loading.FMLEnvironment;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -20,7 +19,7 @@ public class LangMerger {
     private static final String[] locals = new String[]{"en_us.json", "zh_cn.json"};
 
     public static void main(String[] args) {
-        if (FMLEnvironment.production || args.length == 0) return;
+        if (!LibUtils.isDev() || args.length == 0) return;
         Path startPath = Paths.get(args[0]);
         for (String local : locals) {
             String s1 = startPath.toString();

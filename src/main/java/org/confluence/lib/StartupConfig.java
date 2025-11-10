@@ -5,10 +5,10 @@ import net.minecraft.world.entity.player.Player;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforgespi.language.IModFileInfo;
 import org.apache.commons.codec.digest.Md5Crypt;
+import org.confluence.lib.util.LibUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -34,7 +34,7 @@ public final class StartupConfig {
     private static boolean shouldAlarmInThisJVM = true;
 
     public static void checkIfSomeoneHasViolatedEULA(Player player) {
-        if (!shouldAlarmInThisJVM || !FMLEnvironment.production) return;
+        if (!shouldAlarmInThisJVM || LibUtils.isDev() || LibUtils.isPhysicalServer()) return;
         IModFileInfo modFileInfo = ModList.get().getModFileById(ConfluenceMagicLib.CONFLUENCE_ID);
         if (modFileInfo == null) return;
         boolean shouldSave = false;
