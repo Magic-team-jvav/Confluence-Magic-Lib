@@ -34,8 +34,8 @@ public class ThunderboltVFX extends VisualEffects {
 
         ROTATE0 += 0.03;
         ROTATE1 += 0.03;
-        if (ROTATE0 > 360) ROTATE0 -= 360;
-        if (ROTATE1 > 360) ROTATE1 -= 360;
+        if (ROTATE0 > (Math.PI * 2)) ROTATE0 -= (Math.PI * 2);
+        if (ROTATE1 > (Math.PI * 2)) ROTATE1 -= (Math.PI * 2);
 
         int maxCount = 5;
         double moveDis = 0.5;
