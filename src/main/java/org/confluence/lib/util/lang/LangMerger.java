@@ -1,10 +1,11 @@
-package org.confluence.lib.util;
+package org.confluence.lib.util.lang;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.util.GsonHelper;
+import org.confluence.lib.util.LibUtils;
 
 import java.io.FileReader;
 import java.io.IOException;
