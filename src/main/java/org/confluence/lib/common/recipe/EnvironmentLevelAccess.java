@@ -41,6 +41,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class EnvironmentLevelAccess implements ContainerLevelAccess {
+    protected @Nullable Player player;
     protected @Nullable Level level;
     protected @Nullable BlockPos pos;
 
@@ -49,12 +50,15 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
         this.pos = pos;
     }
 
+    @Deprecated(since = "1.2.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
     public void initializeIfNeeded(Level level, BlockPos pos) {
         if (this.level == null) this.level = level;
         if (this.pos == null) this.pos = pos;
     }
 
     public void initializeIfNeeded(Player player) {
+        if (this.player == null) this.player = player;
         if (level == null) this.level = player.level();
         if (pos == null) {
             Vec3 start = player.getEyePosition(0.5F);
@@ -67,6 +71,10 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
                 this.pos = blockResult.getBlockPos();
             }
         }
+    }
+
+    public @Nullable Player getPlayer() {
+        return player;
     }
 
     public @Nullable Level getLevel() {
@@ -118,7 +126,11 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
         return new Matcher(Optional.ofNullable(biome), Optional.ofNullable(block), ectoMist);
     }
 
-    public record Matcher(Optional<HolderSet<Biome>> biome, Optional<SearchContext> block, boolean graveyard) {
+    public record Matcher(
+            Optional<HolderSet<Biome>> biome,
+            Optional<SearchContext> block,
+            boolean graveyard
+    ) {
         public static final Matcher EMPTY = new Matcher(Optional.empty(), Optional.empty(), false);
         public static final Codec<Matcher> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 RegistryCodecs.homogeneousList(Registries.BIOME).lenientOptionalFieldOf("biome").forGetter(Matcher::biome),
@@ -134,34 +146,54 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
         );
 
         public boolean matches(EnvironmentLevelAccess access) {
+            Player player = access.getPlayer();
             Level level = access.getLevel();
             BlockPos pos = access.getPos();
-            if (level == null || pos == null) return false;
-            if (!matchesBiome(level, pos)) return false;
-            if (!matchesBlock(level, pos)) return false;
-            if (!matchesGraveyard(level, pos)) return false;
+            if (player == null || level == null || pos == null) return false;
+            if (!matchesBiome(player, level, pos)) return false;
+            if (!matchesBlock(player, level, pos)) return false;
+            if (!matchesGraveyard(player, level, pos)) return false;
             return true;
         }
 
+        public boolean matchesBiome(Player player, Level level, BlockPos pos) {
+            return biome.isEmpty() || biome.get().contains(level.getBiome(pos));
+        }
+
+        @Deprecated(since = "1.2.0")
+        @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
         public boolean matchesBiome(Level level, BlockPos pos) {
             return biome.isEmpty() || biome.get().contains(level.getBiome(pos));
         }
 
+        public boolean matchesBlock(Player player, Level level, BlockPos pos) {
+            return block.isEmpty() || block.get().matches(level, pos);
+        }
+
+        @Deprecated(since = "1.2.0")
+        @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
         public boolean matchesBlock(Level level, BlockPos pos) {
             return block.isEmpty() || block.get().matches(level, pos);
         }
 
-        /**
-         * 灵雾环境
-         */
+        /// 灵雾环境
+        public boolean matchesGraveyard(Player player, Level level, BlockPos pos) {
+            return !graveyard || isGraveyard(player, level, pos);
+        }
+
+        @Deprecated(since = "1.2.0")
+        @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
         public boolean matchesGraveyard(Level level, BlockPos pos) {
-            return !graveyard || isGraveyard(level, pos);
+            return !graveyard;
         }
 
         @Override
         public boolean equals(Object o) {
-            return o == this || (o instanceof Matcher(Optional<HolderSet<Biome>> biome1, Optional<SearchContext> block1, boolean ectoMist1) &&
-                    graveyard == ectoMist1 && Objects.equals(block, block1) && Objects.equals(biome, biome1));
+            return o == this || (o instanceof Matcher(
+                    Optional<HolderSet<Biome>> biome1,
+                    Optional<SearchContext> block1,
+                    boolean ectoMist1
+            ) && graveyard == ectoMist1 && Objects.equals(block, block1) && Objects.equals(biome, biome1));
         }
 
         @Override
@@ -172,7 +204,7 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
             return result;
         }
 
-        private static boolean isGraveyard(Level level, BlockPos pos) {
+        private static boolean isGraveyard(Player player, Level level, BlockPos pos) {
             return true; // confluence mixin here
         }
 
@@ -195,7 +227,11 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
         }
     }
 
-    public record SearchContext(int inflate, Optional<HolderSet<Block>> blocks, List<StatePropertiesPredicate> statePredicates, Optional<HolderSet<Fluid>> fluids) {
+    public record SearchContext(int inflate,
+                                Optional<HolderSet<Block>> blocks,
+                                List<StatePropertiesPredicate> statePredicates,
+                                Optional<HolderSet<Fluid>> fluids
+    ) {
         public static final Codec<SearchContext> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 ExtraCodecs.POSITIVE_INT.fieldOf("inflate").forGetter(SearchContext::inflate),
                 RegistryCodecs.homogeneousList(Registries.BLOCK).lenientOptionalFieldOf("blocks").forGetter(SearchContext::blocks),
@@ -215,8 +251,10 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
                 for (BlockPos blockPos : BlockPos.betweenClosed(pos.offset(-inflate, -inflate, -inflate), pos.offset(inflate, inflate, inflate))) {
                     BlockState blockState = level.getBlockState(blockPos);
                     if (blocks.isPresent() && blockState.is(blocks.get())) return true;
-                    if (statePredicates.stream().anyMatch(predicates -> predicates.matches(blockState))) return true;
-                    if (fluids.isPresent() && blockState.getFluidState().is(fluids.get())) return true;
+                    if (statePredicates.stream().anyMatch(predicates -> predicates.matches(blockState)))
+                        return true;
+                    if (fluids.isPresent() && blockState.getFluidState().is(fluids.get()))
+                        return true;
                 }
                 return false;
             }
@@ -234,9 +272,13 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
                 list.add(Component.translatable("jei.tooltip.environment.block.predicates").withStyle(ChatFormatting.GRAY));
                 for (StatePropertiesPredicate.PropertyMatcher property : predicate.properties()) {
                     String s = property.name() + '=';
-                    if (property.valueMatcher() instanceof StatePropertiesPredicate.ExactMatcher(String value)) {
+                    if (property.valueMatcher() instanceof StatePropertiesPredicate.ExactMatcher(
+                            String value
+                    )) {
                         s += value;
-                    } else if (property.valueMatcher() instanceof StatePropertiesPredicate.RangedMatcher(Optional<String> minValue, Optional<String> maxValue)) {
+                    } else if (property.valueMatcher() instanceof StatePropertiesPredicate.RangedMatcher(
+                            Optional<String> minValue, Optional<String> maxValue
+                    )) {
                         if (minValue.isPresent()) {
                             if (maxValue.isPresent()) {
                                 s += '[' + minValue.get() + ", " + maxValue.get() + ']';
