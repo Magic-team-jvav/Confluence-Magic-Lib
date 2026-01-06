@@ -101,39 +101,31 @@ public final class LibUtils {
         createItemEntity(item, count, pos.x, pos.y, pos.z, level, pickUpDelay);
     }
 
-    /**
-     * @param a 形参的方块实体类型
-     * @param b 注册的方块实体类型
-     */
+    /// @param a 形参的方块实体类型
+    /// @param b 注册的方块实体类型
     @SuppressWarnings("unchecked")
     public static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> getTicker(BlockEntityType<A> a, BlockEntityType<E> b, BlockEntityTicker<? super E> ticker) {
         return a == b ? (BlockEntityTicker<A>) ticker : null;
     }
 
-    /**
-     * 为专家?在处理if...else if时应先使用:
-     *
-     * @see LibUtils#isMaster(Level, BlockPos)
-     */
+    /// 为专家?在处理if...else if时应先使用:
+    ///
+    /// @see LibUtils#isMaster(Level, BlockPos)
     public static boolean isAtLeastExpert(Level level, BlockPos pos) {
         return level.getCurrentDifficultyAt(pos).getEffectiveDifficulty() >= 1.5F;
     }
 
-    /**
-     * 为大师?在处理if...else if时应先使用此方法
-     */
+    /// 为大师?在处理if...else if时应先使用此方法
     public static boolean isMaster(Level level, BlockPos pos) {
         return level.getCurrentDifficultyAt(pos).getEffectiveDifficulty() >= 2.25F;
     }
 
-    /**
-     * 根据游戏难度选择值
-     *
-     * @param classic 经典难度的值
-     * @param expert  专家难度的值
-     * @param master  大师难度的值
-     * @return 选择到的值
-     */
+    /// 根据游戏难度选择值
+    ///
+    /// @param classic 经典难度的值
+    /// @param expert  专家难度的值
+    /// @param master  大师难度的值
+    /// @return 选择到的值
     public static <T> T switchByDifficulty(Level level, BlockPos blockPos, T classic, T expert, T master) {
         float difficulty = level.getCurrentDifficultyAt(blockPos).getEffectiveDifficulty();
         if (difficulty >= 2.25F) return master;
@@ -141,15 +133,13 @@ public final class LibUtils {
         return classic; // 0.75F
     }
 
-    /**
-     * 根据游戏难度选择值
-     *
-     * @param classic   经典难度的值
-     * @param expert    专家难度的值
-     * @param master    大师难度的值
-     * @param legendary 传奇难度的值
-     * @return 选择到的值
-     */
+    /// 根据游戏难度选择值
+    ///
+    /// @param classic   经典难度的值
+    /// @param expert    专家难度的值
+    /// @param master    大师难度的值
+    /// @param legendary 传奇难度的值
+    /// @return 选择到的值
     public static <T> T switchByDifficulty(Level level, BlockPos blockPos, T classic, T expert, T master, T legendary) {
         float difficulty = level.getCurrentDifficultyAt(blockPos).getEffectiveDifficulty();
         if (difficulty >= 3) return legendary;
@@ -249,16 +239,12 @@ public final class LibUtils {
                 .collect(Collectors.joining(" "));
     }
 
-    /**
-     * 将绝对坐标压缩为相对坐标
-     */
+    /// 将绝对坐标压缩为相对坐标
     public static int compressRelativePos(BlockPos pos) {
         return ((pos.getX() & 0xF) << 16) | ((pos.getY() + 2048) << 4) | (pos.getZ() & 0xF);
     }
 
-    /**
-     * 将相对坐标解压为绝对坐标
-     */
+    /// 将相对坐标解压为绝对坐标
     public static BlockPos decompressRelativePos(ChunkPos chunkPos, int compressed) {
         int x = (compressed >>> 16) & 0xF;
         int y = ((compressed >>> 4) & 0xFFF) - 2048;
@@ -280,10 +266,8 @@ public final class LibUtils {
         return FMLEnvironment.dist.isClient();
     }
 
-    /**
-     * @return 单人模式中为false；客户端连接服务端时，客户端为true，服务端为false
-     * @apiNote 你应该在逻辑服务端启动后调用这个方法，且仅适用于在逻辑服务端调用
-     */
+    /// @return 单人模式中为false；客户端连接服务端时，客户端为true，服务端为false
+    /// @apiNote 你应该在逻辑服务端启动后调用这个方法，且仅适用于在逻辑服务端调用
     public static boolean isLogicalClient() {
         return isPhysicalClient() && ServerLifecycleHooks.getCurrentServer() == null;
     }
@@ -292,18 +276,14 @@ public final class LibUtils {
         return FMLEnvironment.dist.isDedicatedServer();
     }
 
-    /**
-     * @return 逻辑客户端为false, 逻辑服务端为true
-     * @apiNote 你应该在逻辑服务端启动后调用这个方法
-     */
+    /// @return 逻辑客户端为false, 逻辑服务端为true
+    /// @apiNote 你应该在逻辑服务端启动后调用这个方法
     public static boolean isLogicalServer() {
         if (isPhysicalServer()) return true;
         return ServerLifecycleHooks.getCurrentServer() != null && ServerLifecycleHooks.getCurrentServer().isSameThread();
     }
 
-    /**
-     * @author ChatGPT
-     */
+    /// @author ChatGPT
     public static float cubicBezier(float t, float p0, float p1, float p2, float p3) {
         float u = 1 - t;
         float tt = t * t;
@@ -361,9 +341,7 @@ public final class LibUtils {
         return getOwner(entity);
     }
 
-    /**
-     * 尝试寻找该实体的所有者，如果找不到则返回该实体
-     */
+    /// 尝试寻找该实体的所有者，如果找不到则返回该实体
     public static Entity getOwner(Entity entity) {
         Entity owner = switch (entity) {
             case PartEntity<?> partEntity -> partEntity.getParent();
@@ -382,9 +360,7 @@ public final class LibUtils {
         return getChunkIfLoaded(chunkSource, chunkPos.x, chunkPos.z);
     }
 
-    /**
-     * 较大程度地减小开销，切记要在服务器线程调用！
-     */
+    /// 较大程度地减小开销，切记要在服务器线程调用！
     public static @Nullable ChunkAccess getChunkIfLoaded(ServerChunkCache chunkSource, int cx, int cz) {
         CompletableFuture<ChunkResult<ChunkAccess>> future = chunkSource.getChunkFutureMainThread(cx, cz, ChunkStatus.FULL, false);
         if (future != GenerationChunkHolder.UNLOADED_CHUNK_FUTURE && future.isDone()) {
