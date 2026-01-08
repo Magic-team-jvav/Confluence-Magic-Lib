@@ -1,5 +1,9 @@
 package org.confluence.lib.common.item;
 
+import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ClickAction;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.component.ModRarity;
@@ -10,6 +14,14 @@ import org.jetbrains.annotations.ApiStatus;
 public class ColoredItem extends CustomRarityItem {
     public ColoredItem(Properties properties, ModRarity rarity) {
         super(properties, rarity);
+    }
+
+    @Override
+    public boolean overrideOtherStackedOnMe(ItemStack stack, ItemStack other, Slot slot, ClickAction action, Player player, SlotAccess access) {
+        if (ItemStack.isSameItem(stack, other)) {
+            setRGBA(other, getRGBA(stack));
+        }
+        return false;
     }
 
     @Deprecated(since = "1.2.0", forRemoval = true)
