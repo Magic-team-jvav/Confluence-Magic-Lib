@@ -17,9 +17,9 @@ import java.util.Map;
 /**
  * 延迟任务
  * <p>
- * 更倾向与玩家或实体的自身任务的类以{@link AttachmentType}的形式存储
+ * 更倾向与玩家或实体的自身任务的类，以{@link AttachmentType}的形式存储
  * <p>
- * 目前仅有{@link LivingEntity}能正常运行
+ * 目前仅有在{@link LivingEntity}中能正常运行
  * <p>
  * 像有前摇的攻击就时候使用该类
  * <p>
