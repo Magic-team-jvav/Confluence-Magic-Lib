@@ -146,8 +146,8 @@ public final class GameEvents {
         }
     }
 
-    @SubscribeEvent
-    public static void entityTick(EntityTickEvent event) {
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void entityTickPre(EntityTickEvent.Pre event) {
         Entity entity = event.getEntity();
         if (entity instanceof LivingEntity livingEntity) {
             if (livingEntity.isAlive()) {
@@ -159,11 +159,11 @@ public final class GameEvents {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void livingEquipmentChangeEvent(LivingEquipmentChangeEvent event) {
         LivingEntity livingEntity = event.getEntity();
+        EquipmentSlot slot = event.getSlot();
         if (livingEntity.isAlive()) {
-            EquipmentSlot slot = event.getSlot();
             LivingEntityDelayRun livingEntityDelayRun = livingEntity.getExistingDataOrNull(ConfluenceMagicLib.LIVING_ENTITY_DELAY_RUN);
             if (livingEntityDelayRun != null && livingEntityDelayRun.getRunList().isEmpty()) {
                 livingEntityDelayRun.removeTimingRun(slot);
@@ -171,18 +171,14 @@ public final class GameEvents {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void livingSwapItemsEvent(LivingSwapItemsEvent.Hands event) {
         LivingEntity livingEntity = event.getEntity();
         if (livingEntity.isAlive()) {
             LivingEntityDelayRun livingEntityDelayRun = livingEntity.getExistingDataOrNull(ConfluenceMagicLib.LIVING_ENTITY_DELAY_RUN);
             if (livingEntityDelayRun != null && livingEntityDelayRun.getRunList().isEmpty()) {
-                if (!livingEntity.getMainHandItem().isEmpty()) {
-                    livingEntityDelayRun.removeTimingRun(InteractionHand.MAIN_HAND);
-                }
-                if (!livingEntity.getOffhandItem().isEmpty()) {
-                    livingEntityDelayRun.removeTimingRun(InteractionHand.OFF_HAND);
-                }
+                livingEntityDelayRun.removeTimingRun(InteractionHand.MAIN_HAND);
+                livingEntityDelayRun.removeTimingRun(InteractionHand.OFF_HAND);
             }
         }
     }

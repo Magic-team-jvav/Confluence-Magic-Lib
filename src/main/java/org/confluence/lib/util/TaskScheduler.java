@@ -11,6 +11,8 @@ import java.util.function.Consumer;
  * 主线程任务调度器
  * <p>
  * 该调度器设计用于在主线程中运行，通过tick方法推进时间并执行任务
+ * <p>
+ * 该类适合如：肉山生成的时候要破坏一大堆方块。之类的任务，如果是生物自己的任务请使用{@link LivingEntityDelayRun}类更合适
  */
 public class TaskScheduler {
     // 任务队列（按执行时间排序）
