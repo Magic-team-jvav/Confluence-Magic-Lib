@@ -9,7 +9,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
@@ -48,12 +47,8 @@ public class ConfluenceMagicLib {
     //region 数据附件
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPE = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, LIB_ID);
 
-    public static final DeferredHolder<AttachmentType<?>, AttachmentType<DelayTaskHolder>> LIVING_ENTITY_DELAY_RUN = ATTACHMENT_TYPE.register("living_entity_delay_run", () ->
-            AttachmentType.builder((holder) -> {
-                assert holder instanceof LivingEntity : "living_entity_delay_run can only be attached to a LivingEntity";
-                return new DelayTaskHolder((LivingEntity) holder);
-            }).build()
-    );
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<DelayTaskHolder>> DELAY_TASK_HOLDER = ATTACHMENT_TYPE.register("delay_task_holder", () ->
+            AttachmentType.builder(DelayTaskHolder::new).build());
     //endregion
 
     // region 属性

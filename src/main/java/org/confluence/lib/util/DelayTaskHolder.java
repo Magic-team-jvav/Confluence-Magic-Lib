@@ -6,6 +6,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.attachment.AttachmentHolder;
 import net.neoforged.neoforge.attachment.AttachmentType;
+import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,14 +28,14 @@ import java.util.Map;
  * 注：实体死亡时会移除所有任务
  */
 public class DelayTaskHolder {
-    private final AttachmentHolder attachmentHolder;
+    private final IAttachmentHolder attachmentHolder;
     private final Map<ResourceLocation, ITask> runList = new LinkedHashMap<>();
 
-    public DelayTaskHolder(AttachmentHolder attachmentHolder) {
+    public DelayTaskHolder(IAttachmentHolder attachmentHolder) {
         this.attachmentHolder = attachmentHolder;
     }
 
-    public AttachmentHolder getAttachmentHolder() {
+    public IAttachmentHolder getAttachmentHolder() {
         return attachmentHolder;
     }
 
@@ -91,7 +92,7 @@ public class DelayTaskHolder {
     }
 
     public static DelayTaskHolder getInstance(AttachmentHolder attachmentHolder) {
-        return attachmentHolder.getData(ConfluenceMagicLib.LIVING_ENTITY_DELAY_RUN);
+        return attachmentHolder.getData(ConfluenceMagicLib.DELAY_TASK_HOLDER);
     }
 
     public static ITask.Builder createTaskBilder() {
@@ -171,9 +172,7 @@ public class DelayTaskHolder {
          */
         @FunctionalInterface
         interface TickRun {
-            TickRun DEFAULT = (tick, maxTick, playerTimingRun) -> tick - 1;
-
-            int run(int tick, int maxTick, AttachmentHolder attachmentHolder);
+            int run(int tick, int maxTick, IAttachmentHolder attachmentHolder);
         }
 
         /**
@@ -181,7 +180,7 @@ public class DelayTaskHolder {
          */
         @FunctionalInterface
         interface ResultRun {
-            void run(AttachmentHolder attachmentHolder);
+            void run(IAttachmentHolder attachmentHolder);
         }
 
         class Builder {
