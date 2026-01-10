@@ -9,6 +9,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
@@ -16,6 +17,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.crafting.IngredientType;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -27,6 +29,7 @@ import org.confluence.lib.common.particle.CrossDustParticleOptions;
 import org.confluence.lib.common.recipe.AmountIngredient;
 import org.confluence.lib.common.worldgen.structure.GridPiece;
 import org.confluence.lib.common.worldgen.structure.SimpleTemplatePiece;
+import org.confluence.lib.util.LivingEntityDelayRun;
 import org.confluence.lib.util.NaturalSpawnerUtil;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -41,6 +44,17 @@ public class ConfluenceMagicLib {
     public static final String CONFLUENCE_ID = "confluence";
     public static final Logger LOGGER = LoggerFactory.getLogger("Confluence Magic Lib");
     public static final Supplier<Boolean> IS_CONFLUENCE_LOADED = Suppliers.memoize(() -> ModList.get().isLoaded(CONFLUENCE_ID));
+
+    //region 数据附件
+    public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPE = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, LIB_ID);
+
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<LivingEntityDelayRun>> LIVING_ENTITY_DELAY_RUN = ATTACHMENT_TYPE.register("living_entity_delay_run", () ->
+            AttachmentType.builder((holder) -> {
+                assert holder instanceof LivingEntity : "living_entity_delay_run can only be attached to a LivingEntity";
+                return new LivingEntityDelayRun((LivingEntity) holder);
+            }).build()
+    );
+    //endregion
 
     // region 属性
     private static final DeferredRegister<Attribute> ATTRIBUTES = DeferredRegister.create(Registries.ATTRIBUTE, LIB_ID);
@@ -99,6 +113,7 @@ public class ConfluenceMagicLib {
 
     public ConfluenceMagicLib(IEventBus modEventBus, ModContainer modContainer) {
         StartupConfig.register(modContainer);
+        ATTACHMENT_TYPE.register(modEventBus);
         ATTRIBUTES.register(modEventBus);
         INGREDIENT_TYPES.register(modEventBus);
         PIECE_TYPES.register(modEventBus);

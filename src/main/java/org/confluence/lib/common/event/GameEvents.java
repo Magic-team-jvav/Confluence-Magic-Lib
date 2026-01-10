@@ -5,7 +5,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.item.ItemStack;
@@ -16,13 +20,11 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.ItemStackedOnOtherEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
-import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
-import net.neoforged.neoforge.event.entity.living.SpawnClusterSizeEvent;
+import net.neoforged.neoforge.event.entity.living.*;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -35,6 +37,7 @@ import org.confluence.lib.event.SwitchItemFunctionEvent;
 import org.confluence.lib.mixed.IExtraSyncedData;
 import org.confluence.lib.network.SetEntityDataPacketS2C;
 import org.confluence.lib.util.LibUtils;
+import org.confluence.lib.util.LivingEntityDelayRun;
 import org.confluence.lib.util.NaturalSpawnerUtil;
 
 @EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID)
@@ -108,6 +111,11 @@ public final class GameEvents {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST, receiveCanceled = true)
     public static void checkForNull(LivingDeathEvent event) {
+        LivingEntity livingEntity = event.getEntity();
+        LivingEntityDelayRun livingEntityDelayRun = livingEntity.getExistingDataOrNull(ConfluenceMagicLib.LIVING_ENTITY_DELAY_RUN);
+        if (livingEntityDelayRun != null) {
+            livingEntity.removeData(ConfluenceMagicLib.LIVING_ENTITY_DELAY_RUN);
+        }
         if (event.getSource() == null) {
             event.setCanceled(true);
             MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
@@ -134,6 +142,47 @@ public final class GameEvents {
                 couldEnable.cycleEnable(onSlot);
                 NeoForge.EVENT_BUS.post(new SwitchItemFunctionEvent.Post(player, onSlot, couldEnable.isEnabled(onSlot)));
                 event.setCanceled(true);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void entityTick(EntityTickEvent event) {
+        Entity entity = event.getEntity();
+        if (entity instanceof LivingEntity livingEntity) {
+            if (livingEntity.isAlive()) {
+                LivingEntityDelayRun livingEntityDelayRun = livingEntity.getExistingDataOrNull(ConfluenceMagicLib.LIVING_ENTITY_DELAY_RUN);
+                if (livingEntityDelayRun != null) {
+                    livingEntityDelayRun.tick();
+                }
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void livingEquipmentChangeEvent(LivingEquipmentChangeEvent event) {
+        LivingEntity livingEntity = event.getEntity();
+        if (livingEntity.isAlive()) {
+            EquipmentSlot slot = event.getSlot();
+            LivingEntityDelayRun livingEntityDelayRun = livingEntity.getExistingDataOrNull(ConfluenceMagicLib.LIVING_ENTITY_DELAY_RUN);
+            if (livingEntityDelayRun != null && livingEntityDelayRun.getRunList().isEmpty()) {
+                livingEntityDelayRun.removeTimingRun(slot);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void livingSwapItemsEvent(LivingSwapItemsEvent.Hands event) {
+        LivingEntity livingEntity = event.getEntity();
+        if (livingEntity.isAlive()) {
+            LivingEntityDelayRun livingEntityDelayRun = livingEntity.getExistingDataOrNull(ConfluenceMagicLib.LIVING_ENTITY_DELAY_RUN);
+            if (livingEntityDelayRun != null && livingEntityDelayRun.getRunList().isEmpty()) {
+                if (!livingEntity.getMainHandItem().isEmpty()) {
+                    livingEntityDelayRun.removeTimingRun(InteractionHand.MAIN_HAND);
+                }
+                if (!livingEntity.getOffhandItem().isEmpty()) {
+                    livingEntityDelayRun.removeTimingRun(InteractionHand.OFF_HAND);
+                }
             }
         }
     }
