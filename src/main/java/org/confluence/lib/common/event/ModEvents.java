@@ -25,7 +25,7 @@ public final class ModEvents {
     }
 
     @SubscribeEvent
-    public static void loadComplete(FMLLoadCompleteEvent event) {
+    public static void fmlLoadComplete(FMLLoadCompleteEvent event) {
         event.enqueueWork(IdFixer::postRegisterEvents);
     }
 }

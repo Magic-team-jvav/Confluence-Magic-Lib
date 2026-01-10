@@ -14,19 +14,17 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * 延迟任务
- * <p>
- * 更倾向与玩家或实体的自身任务的类，以{@link AttachmentType}的形式存储
- * <p>
- * 目前仅有在{@link LivingEntity}中能正常运行
- * <p>
- * 像有前摇的攻击就时候使用该类
- * <p>
- * 像肉山生成的时候要破坏一大堆方块。之类的任务请使用{@link TaskScheduler}
- * <p>
- * 注：实体死亡时会移除所有任务
- */
+/// 延迟任务
+///
+/// 更倾向与玩家或实体的自身任务的类，以[AttachmentType]的形式存储
+///
+/// 目前仅有在[LivingEntity]中能正常运行
+///
+/// 像有前摇的攻击就时候使用该类
+///
+/// 像肉山生成的时候要破坏一大堆方块。之类的任务请使用[TaskScheduler]
+///
+/// 注：实体死亡时会移除所有任务
 public class DelayTaskHolder {
     private final IAttachmentHolder attachmentHolder;
     private final Map<ResourceLocation, ITask> runList = new LinkedHashMap<>();
@@ -61,16 +59,12 @@ public class DelayTaskHolder {
         runList.put(id, task);
     }
 
-    /**
-     * 通过该方法添加的任务会在对应槽位的物品更替时移除
-     */
+    /// 通过该方法添加的任务会在对应槽位的物品更替时移除
     public void addTimingRun(EquipmentSlot slot, ITask task) {
         addTimingRun(ConfluenceMagicLib.asResource(slot.getName()), task);
     }
 
-    /**
-     * 通过该方法添加的任务会在对应手的物品更替时移除
-     */
+    /// 通过该方法添加的任务会在对应手的物品更替时移除
     public void addTimingRun(InteractionHand handUsed, ITask task) {
         addTimingRun(handUsed == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND, task);
     }
@@ -91,7 +85,7 @@ public class DelayTaskHolder {
         runList.clear();
     }
 
-    public static DelayTaskHolder getInstance(AttachmentHolder attachmentHolder) {
+    public static DelayTaskHolder of(AttachmentHolder attachmentHolder) {
         return attachmentHolder.getData(ConfluenceMagicLib.DELAY_TASK_HOLDER);
     }
 
@@ -104,9 +98,7 @@ public class DelayTaskHolder {
 
         boolean isRemoved();
 
-        /**
-         * 运行任务类，isRemoved为true时将在下一刻移除该任务
-         */
+        /// 运行任务类，isRemoved为true时将在下一刻移除该任务
         class BaseTask implements ITask {
             protected final ResultRun resultRun;
             protected int tick = 0;
@@ -167,17 +159,13 @@ public class DelayTaskHolder {
             }
         }
 
-        /**
-         * 每一tick执行一次可通过修改返回值来自定义结束的时间之类的逻辑
-         */
+        /// 每一tick执行一次可通过修改返回值来自定义结束的时间之类的逻辑
         @FunctionalInterface
         interface TickRun {
             int run(int tick, int maxTick, IAttachmentHolder attachmentHolder);
         }
 
-        /**
-         * 当剩余时间为0时执行，通过修改返回值来修改剩余时间
-         */
+        /// 当剩余时间为0时执行，通过修改返回值来修改剩余时间
         @FunctionalInterface
         interface ResultRun {
             void run(IAttachmentHolder attachmentHolder);

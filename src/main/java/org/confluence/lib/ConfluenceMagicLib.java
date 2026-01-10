@@ -38,28 +38,23 @@ import org.slf4j.LoggerFactory;
 import java.util.function.Supplier;
 
 @Mod(ConfluenceMagicLib.LIB_ID)
-public class ConfluenceMagicLib {
+public final class ConfluenceMagicLib {
     public static final String LIB_ID = "confluence_magic_lib";
     public static final String CONFLUENCE_ID = "confluence";
     public static final Logger LOGGER = LoggerFactory.getLogger("Confluence Magic Lib");
     public static final Supplier<Boolean> IS_CONFLUENCE_LOADED = Suppliers.memoize(() -> ModList.get().isLoaded(CONFLUENCE_ID));
 
     //region 数据附件
-    public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPE = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, LIB_ID);
+    private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPE = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, LIB_ID);
 
-    public static final DeferredHolder<AttachmentType<?>, AttachmentType<DelayTaskHolder>> DELAY_TASK_HOLDER = ATTACHMENT_TYPE.register("delay_task_holder", () ->
-            AttachmentType.builder(DelayTaskHolder::new).build());
+    public static final Supplier<AttachmentType<DelayTaskHolder>> DELAY_TASK_HOLDER = ATTACHMENT_TYPE.register("delay_task_holder", () -> AttachmentType.builder(DelayTaskHolder::new).build());
     //endregion
 
     // region 属性
     private static final DeferredRegister<Attribute> ATTRIBUTES = DeferredRegister.create(Registries.ATTRIBUTE, LIB_ID);
-    /**
-     * 玩家怪物生成速度系数
-     */
+    /// 玩家怪物生成速度系数
     public static final DeferredHolder<Attribute, RangedAttribute> MOB_SPAWN_SPEED_MULTIPLIER = registerRangedAttribute("player.mob_spawn_speed_multiplier", NaturalSpawnerUtil.DEFAULT_MULTIPLIER, 0, 1024, false, Attribute.Sentiment.NEUTRAL);
-    /**
-     * 玩家怪物生成数量系数
-     */
+    /// 玩家怪物生成数量系数
     public static final DeferredHolder<Attribute, RangedAttribute> MOB_SPAWN_COUNT_MULTIPLIER = registerRangedAttribute("player.mob_spawn_count_multiplier", NaturalSpawnerUtil.DEFAULT_MULTIPLIER, 0, 1024, false, Attribute.Sentiment.NEUTRAL);
 
     private static DeferredHolder<Attribute, RangedAttribute> registerRangedAttribute(String name, double defaultValue, double min, double max, boolean syncable, Attribute.Sentiment sentiment) {

@@ -43,13 +43,13 @@ import org.confluence.lib.util.NaturalSpawnerUtil;
 @EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID)
 public final class GameEvents {
     @SubscribeEvent
-    public static void addAttribute(EntityAttributeModificationEvent event) {
+    public static void entityAttributeModification(EntityAttributeModificationEvent event) {
         event.add(EntityType.PLAYER, ConfluenceMagicLib.MOB_SPAWN_SPEED_MULTIPLIER);
         event.add(EntityType.PLAYER, ConfluenceMagicLib.MOB_SPAWN_COUNT_MULTIPLIER);
     }
 
     @SubscribeEvent
-    public static void onSpawnClusterSize(SpawnClusterSizeEvent event) {
+    public static void spawnClusterSize(SpawnClusterSizeEvent event) {
         var entity = event.getEntity();
         Vec3 position = entity.position();
         Player player = entity.level().getNearestPlayer(position.x, position.y, position.z, -1, false);
@@ -78,7 +78,7 @@ public final class GameEvents {
     }
 
     @SubscribeEvent
-    public static void startTracking(PlayerEvent.StartTracking event) {
+    public static void player$StartTracking(PlayerEvent.StartTracking event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer && event.getTarget() instanceof IExtraSyncedData<?> extraSyncedData) {
             PacketDistributor.sendToPlayer(serverPlayer, new SetEntityDataPacketS2C(
                     extraSyncedData.confluence$self().getId(),
@@ -98,25 +98,25 @@ public final class GameEvents {
     }
 
     @SubscribeEvent
-    public static void serverStop(ServerStoppedEvent event) {
+    public static void serverStopped(ServerStoppedEvent event) {
         NaturalSpawnerUtil.clear();
         IGlobalData.clearAll();
     }
 
     @SubscribeEvent
-    public static void playerLogged(PlayerEvent.PlayerLoggedInEvent event) {
+    public static void player$PlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         IdFixer.fixPersistentData(event.getEntity());
         StartupConfig.checkIfSomeoneHasViolatedEULA(event.getEntity());
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST, receiveCanceled = true)
-    public static void checkForNull(LivingDeathEvent event) {
+    public static void livingDeath(LivingDeathEvent event) {
         LivingEntity livingEntity = event.getEntity();
         DelayTaskHolder delayTaskHolder = livingEntity.getExistingDataOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
         if (delayTaskHolder != null) {
             livingEntity.removeData(ConfluenceMagicLib.DELAY_TASK_HOLDER);
         }
-        if (event.getSource() == null) {
+        if (event.getSource() == null) { // 检查是否有DamageSource为null
             event.setCanceled(true);
             MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
             if (server != null) {
@@ -147,7 +147,7 @@ public final class GameEvents {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void entityTickPre(EntityTickEvent.Pre event) {
+    public static void entityTick$Pre(EntityTickEvent.Pre event) {
         Entity entity = event.getEntity();
         if (entity instanceof LivingEntity livingEntity) {
             if (livingEntity.isAlive()) {
@@ -160,7 +160,7 @@ public final class GameEvents {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void livingEquipmentChangeEvent(LivingEquipmentChangeEvent event) {
+    public static void livingEquipmentChange(LivingEquipmentChangeEvent event) {
         LivingEntity livingEntity = event.getEntity();
         EquipmentSlot slot = event.getSlot();
         if (livingEntity.isAlive()) {
@@ -172,7 +172,7 @@ public final class GameEvents {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void livingSwapItemsEvent(LivingSwapItemsEvent.Hands event) {
+    public static void livingSwapItems$Hands(LivingSwapItemsEvent.Hands event) {
         LivingEntity livingEntity = event.getEntity();
         if (livingEntity.isAlive()) {
             DelayTaskHolder delayTaskHolder = livingEntity.getExistingDataOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
