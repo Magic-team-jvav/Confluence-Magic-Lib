@@ -29,7 +29,7 @@ import org.confluence.lib.common.particle.CrossDustParticleOptions;
 import org.confluence.lib.common.recipe.AmountIngredient;
 import org.confluence.lib.common.worldgen.structure.GridPiece;
 import org.confluence.lib.common.worldgen.structure.SimpleTemplatePiece;
-import org.confluence.lib.util.LivingEntityDelayRun;
+import org.confluence.lib.util.DelayTaskHolder;
 import org.confluence.lib.util.NaturalSpawnerUtil;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -48,10 +48,10 @@ public class ConfluenceMagicLib {
     //region 数据附件
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPE = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, LIB_ID);
 
-    public static final DeferredHolder<AttachmentType<?>, AttachmentType<LivingEntityDelayRun>> LIVING_ENTITY_DELAY_RUN = ATTACHMENT_TYPE.register("living_entity_delay_run", () ->
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<DelayTaskHolder>> LIVING_ENTITY_DELAY_RUN = ATTACHMENT_TYPE.register("living_entity_delay_run", () ->
             AttachmentType.builder((holder) -> {
                 assert holder instanceof LivingEntity : "living_entity_delay_run can only be attached to a LivingEntity";
-                return new LivingEntityDelayRun((LivingEntity) holder);
+                return new DelayTaskHolder((LivingEntity) holder);
             }).build()
     );
     //endregion
