@@ -166,7 +166,7 @@ public final class GameEvents {
         if (livingEntity.isAlive()) {
             DelayTaskHolder delayTaskHolder = livingEntity.getExistingDataOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
             if (delayTaskHolder != null && delayTaskHolder.getRunList().isEmpty()) {
-                delayTaskHolder.removeTimingRun(slot);
+                delayTaskHolder.removeTask(slot);
             }
         }
     }
@@ -177,8 +177,8 @@ public final class GameEvents {
         if (livingEntity.isAlive()) {
             DelayTaskHolder delayTaskHolder = livingEntity.getExistingDataOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
             if (delayTaskHolder != null && delayTaskHolder.getRunList().isEmpty()) {
-                delayTaskHolder.removeTimingRun(InteractionHand.MAIN_HAND);
-                delayTaskHolder.removeTimingRun(InteractionHand.OFF_HAND);
+                delayTaskHolder.removeTask(InteractionHand.MAIN_HAND);
+                delayTaskHolder.removeTask(InteractionHand.OFF_HAND);
             }
         }
     }

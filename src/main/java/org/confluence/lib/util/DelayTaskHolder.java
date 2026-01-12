@@ -55,33 +55,33 @@ public class DelayTaskHolder {
         }
     }
 
-    public void addTimingRun(ResourceLocation id, ITask task) {
+    public void addTask(ResourceLocation id, ITask task) {
         runList.put(id, task);
     }
 
     /// 通过该方法添加的任务会在对应槽位的物品更替时移除
-    public void addTimingRun(EquipmentSlot slot, ITask task) {
-        addTimingRun(ConfluenceMagicLib.asResource(slot.getName()), task);
+    public void addTask(EquipmentSlot slot, ITask task) {
+        addTask(ConfluenceMagicLib.asResource(slot.getName()), task);
     }
 
     /// 通过该方法添加的任务会在对应手的物品更替时移除
-    public void addTimingRun(InteractionHand handUsed, ITask task) {
-        addTimingRun(handUsed == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND, task);
+    public void addTask(InteractionHand handUsed, ITask task) {
+        addTask(handUsed == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND, task);
     }
 
-    public void removeTimingRun(ResourceLocation id) {
+    public void removeTask(ResourceLocation id) {
         runList.remove(id);
     }
 
-    public void removeTimingRun(EquipmentSlot slot) {
-        removeTimingRun(ConfluenceMagicLib.asResource(slot.getName()));
+    public void removeTask(EquipmentSlot slot) {
+        removeTask(ConfluenceMagicLib.asResource(slot.getName()));
     }
 
-    public void removeTimingRun(InteractionHand handUsed) {
-        removeTimingRun(handUsed == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
+    public void removeTask(InteractionHand handUsed) {
+        removeTask(handUsed == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
     }
 
-    public void removeAllTimingRun() {
+    public void removeAllTask() {
         runList.clear();
     }
 
@@ -165,7 +165,6 @@ public class DelayTaskHolder {
             int run(int tick, int maxTick, IAttachmentHolder attachmentHolder);
         }
 
-        /// 当剩余时间为0时执行，通过修改返回值来修改剩余时间
         @FunctionalInterface
         interface ResultRun {
             void run(IAttachmentHolder attachmentHolder);
