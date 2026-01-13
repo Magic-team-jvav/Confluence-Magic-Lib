@@ -11,7 +11,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /// 用于整个存档的数据，而非维度数据（SavedData）
 public interface IGlobalData {
-    <T> void decode(Dynamic<T> tag);
+    default <T> void decode(Dynamic<T> tag) {
+        decode(convert(tag));
+    }
+
+    default void decode(CompoundTag tag) {}
 
     default <T> CompoundTag convert(Dynamic<T> dynamic) {
         Tag tag = dynamic.convert(NbtOps.INSTANCE).getValue();
