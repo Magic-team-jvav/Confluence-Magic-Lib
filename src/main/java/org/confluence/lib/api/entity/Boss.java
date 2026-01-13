@@ -1,4 +1,4 @@
-package org.confluence.lib.mixed.entity;
+package org.confluence.lib.api.entity;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;

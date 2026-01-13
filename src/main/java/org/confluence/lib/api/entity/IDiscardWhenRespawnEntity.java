@@ -1,4 +1,4 @@
-package org.confluence.lib.mixed.entity;
+package org.confluence.lib.api.entity;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
