@@ -176,9 +176,15 @@ public final class GameEvents {
         LivingEntity livingEntity = event.getEntity();
         if (livingEntity.isAlive()) {
             DelayTaskHolder delayTaskHolder = livingEntity.getExistingDataOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
-            if (delayTaskHolder != null && !event.getItemSwappedToMainHand().getItem().shouldCauseBlockBreakReset(event.getItemSwappedToMainHand(), event.getItemSwappedToOffHand())) {
-                delayTaskHolder.removeTask(InteractionHand.MAIN_HAND);
-                delayTaskHolder.removeTask(InteractionHand.OFF_HAND);
+            if (delayTaskHolder != null) {
+                ItemStack itemSwappedToMainHand = event.getItemSwappedToMainHand();
+                ItemStack itemSwappedToOffHand = event.getItemSwappedToOffHand();
+                if (!itemSwappedToMainHand.getItem().shouldCauseBlockBreakReset(itemSwappedToMainHand, itemSwappedToOffHand)) {
+                    delayTaskHolder.removeTask(InteractionHand.MAIN_HAND);
+                }
+                if (!itemSwappedToOffHand.getItem().shouldCauseBlockBreakReset(itemSwappedToOffHand, itemSwappedToMainHand)) {
+                    delayTaskHolder.removeTask(InteractionHand.OFF_HAND);
+                }
             }
         }
     }
