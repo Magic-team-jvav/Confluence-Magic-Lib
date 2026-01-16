@@ -4,16 +4,11 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -50,16 +45,11 @@ public final class GameEvents {
 
     @SubscribeEvent
     public static void spawnClusterSize(SpawnClusterSizeEvent event) {
-        var entity = event.getEntity();
-        Vec3 position = entity.position();
-        Player player = entity.level().getNearestPlayer(position.x, position.y, position.z, -1, false);
-        NaturalSpawnerUtil.PlayerEnemySpawnData data;
-        if (player == null ||
-                (data = NaturalSpawnerUtil.getEnemySpawnData(player)) == null ||
-                data.distanceToSqr(position) <= 576.0) {
-            return;
+        Mob mob = event.getEntity();
+        NaturalSpawnerUtil.ChunkSpawnData data = NaturalSpawnerUtil.getChunkSpawnData(mob.level().dimension(), mob.chunkPosition());
+        if (data != NaturalSpawnerUtil.ChunkSpawnData.DEFAULT) {
+            event.setSize(data.getCount(event.getSize()));
         }
-        event.setSize(Mth.ceil(event.getSize() * data.getCountMultiplier()));
     }
 
     @SubscribeEvent

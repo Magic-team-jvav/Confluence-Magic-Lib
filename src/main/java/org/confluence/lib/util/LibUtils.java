@@ -18,6 +18,7 @@ import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
@@ -115,9 +116,26 @@ public final class LibUtils {
         return level.getCurrentDifficultyAt(pos).getEffectiveDifficulty() >= 1.5F;
     }
 
+    public static boolean isAtLeastExpert(Level level) {
+        return level.getDifficulty().getId() > Difficulty.EASY.getId();
+    }
+
     /// 为大师?在处理if...else if时应先使用此方法
     public static boolean isMaster(Level level, BlockPos pos) {
         return level.getCurrentDifficultyAt(pos).getEffectiveDifficulty() >= 2.25F;
+    }
+
+    public static boolean isMaster(Level level) {
+        return level.getDifficulty().getId() > Difficulty.NORMAL.getId();
+    }
+
+    /// 根据游戏难度选择值
+    ///
+    /// @param classic 经典难度的值
+    /// @param expert  专家难度的值
+    /// @return 选择到的值
+    public static <T> T switchByDifficulty(Level level, BlockPos blockPos, T classic, T expert) {
+        return switchByDifficulty(level, blockPos, classic, expert, expert, expert);
     }
 
     /// 根据游戏难度选择值
@@ -127,10 +145,7 @@ public final class LibUtils {
     /// @param master  大师难度的值
     /// @return 选择到的值
     public static <T> T switchByDifficulty(Level level, BlockPos blockPos, T classic, T expert, T master) {
-        float difficulty = level.getCurrentDifficultyAt(blockPos).getEffectiveDifficulty();
-        if (difficulty >= 2.25F) return master;
-        if (difficulty >= 1.5F) return expert;
-        return classic; // 0.75F
+        return switchByDifficulty(level, blockPos, classic, expert, master, master);
     }
 
     /// 根据游戏难度选择值
