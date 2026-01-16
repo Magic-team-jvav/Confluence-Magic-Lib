@@ -17,6 +17,7 @@ import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.dimension.LevelStem;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.mixed.IChunkSpawnDataAccess;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -29,6 +30,10 @@ public final class NaturalSpawnerUtil {
     public static NaturalSpawnerUtil.ChunkSpawnData getChunkSpawnData(ResourceKey<Level> dimension, ChunkPos pos) {
         Long2ObjectMap<ChunkSpawnData> map = CHUNK_DATA.get(dimension);
         return map == null ? ChunkSpawnData.DEFAULT : map.getOrDefault(pos.toLong(), ChunkSpawnData.DEFAULT);
+    }
+
+    public static @Nullable Long2ObjectMap<ChunkSpawnData> getDimensionChunkSpawnData(ResourceKey<Level> dimension) {
+        return CHUNK_DATA.get(dimension);
     }
 
     public static void init(MinecraftServer server) {
