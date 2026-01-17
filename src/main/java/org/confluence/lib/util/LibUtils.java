@@ -383,4 +383,18 @@ public final class LibUtils {
         }
         return null;
     }
+
+    /// 整数乘小数得到新整数
+    public static int multiplyInt(int original, float factor, RandomSource random) {
+        if (factor < 0) {
+            throw new IllegalArgumentException("Negative value is not allowed, currently is " + factor);
+        }
+        int i = (int) factor;
+        original *= i;
+        float c = factor - i;
+        if (checkChance(c, random)) {
+            ++original;
+        }
+        return original;
+    }
 }
