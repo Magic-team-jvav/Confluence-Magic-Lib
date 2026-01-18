@@ -16,6 +16,7 @@ import net.minecraft.server.level.ChunkResult;
 import net.minecraft.server.level.GenerationChunkHolder;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.Difficulty;
@@ -384,17 +385,33 @@ public final class LibUtils {
         return null;
     }
 
-    /// 整数乘小数得到新整数
+    /// 整数乘非负小数得到新整数
     public static int multiplyInt(int original, float factor, RandomSource random) {
-        if (factor < 0) {
-            throw new IllegalArgumentException("Negative value is not allowed, currently is " + factor);
+        int sign = Mth.sign(factor);
+        if (sign == 0) {
+            return 0;
         }
+        factor = Math.abs(factor);
         int i = (int) factor;
         original *= i;
-        float c = factor - i;
-        if (checkChance(c, random)) {
+        if (checkChance(factor - i, random)) {
             ++original;
         }
-        return original;
+        return original * sign;
+    }
+
+    /// 整数除正数小数得到新整数
+    public static int divideInt(int original, float factor, RandomSource random) {
+        int sign = Mth.sign(factor);
+        if (sign == 0) {
+            return 0;
+        }
+        factor = Math.abs(factor);
+        float f = original / factor;
+        original = (int) f;
+        if (checkChance(f - original, random)) {
+            ++original;
+        }
+        return original * sign;
     }
 }
