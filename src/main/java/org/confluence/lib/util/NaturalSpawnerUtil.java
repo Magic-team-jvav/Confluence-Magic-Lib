@@ -65,16 +65,18 @@ public final class NaturalSpawnerUtil {
                 double speed = player.getAttributeValue(ConfluenceMagicLib.MOB_SPAWN_SPEED_MULTIPLIER);
                 ChunkSpawnData spawnData = new ChunkSpawnData(count, speed);
                 ChunkPos pos = player.chunkPosition();
+                double lambda = 1.0F / maxDataDistance;
                 for (int i = pos.x - maxDataDistance; i <= pos.x + maxDataDistance; i++) {
                     for (int j = pos.z - maxDataDistance; j <= pos.z + maxDataDistance; j++) {
+                        double factor = Mth.clamp(1 - lambda * (Math.abs(i - pos.x) + Math.abs(j - pos.z)), 0, 1); // 随曼哈顿距离衰减的量
                         long p = ChunkPos.asLong(i, j);
                         ChunkSpawnData data = map.get(p);
                         if (data == null) {
                             map.put(p, spawnData);
                         } else {
                             map.put(p, new ChunkSpawnData(
-                                    data.countMultiplier() * count,
-                                    data.speedMultiplier() * speed
+                                    data.countMultiplier() + (count * factor - 1),
+                                    data.speedMultiplier() + (speed * factor - 1)
                             ));
                         }
                     }
@@ -120,6 +122,11 @@ public final class NaturalSpawnerUtil {
 
     public record ChunkSpawnData(double countMultiplier, double speedMultiplier) {
         public static final ChunkSpawnData DEFAULT = new ChunkSpawnData(1, 1);
+
+        public ChunkSpawnData {
+            countMultiplier = Math.max(countMultiplier, 0);
+            speedMultiplier = Math.max(speedMultiplier, 0);
+        }
 
         public int getCount(int original) {
             double m = countMultiplier();
