@@ -227,10 +227,11 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
         }
     }
 
-    public record SearchContext(int inflate,
-                                Optional<HolderSet<Block>> blocks,
-                                List<StatePropertiesPredicate> statePredicates,
-                                Optional<HolderSet<Fluid>> fluids
+    public record SearchContext(
+            int inflate,
+            Optional<HolderSet<Block>> blocks,
+            List<StatePropertiesPredicate> statePredicates,
+            Optional<HolderSet<Fluid>> fluids
     ) {
         public static final Codec<SearchContext> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 ExtraCodecs.POSITIVE_INT.fieldOf("inflate").forGetter(SearchContext::inflate),
