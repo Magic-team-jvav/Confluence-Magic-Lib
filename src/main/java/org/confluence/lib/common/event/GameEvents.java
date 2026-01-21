@@ -1,8 +1,5 @@
 package org.confluence.lib.common.event;
 
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.*;
@@ -22,7 +19,6 @@ import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.StartupConfig;
 import org.confluence.lib.common.data.IdFixer;
@@ -30,6 +26,7 @@ import org.confluence.lib.common.data.saved.IGlobalData;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
 import org.confluence.lib.event.SwitchItemFunctionEvent;
 import org.confluence.lib.mixed.IExtraSyncedData;
+import org.confluence.lib.network.AttackDamagePacketS2C;
 import org.confluence.lib.network.SetEntityDataPacketS2C;
 import org.confluence.lib.util.DelayTaskHolder;
 import org.confluence.lib.util.LibUtils;
@@ -99,24 +96,12 @@ public final class GameEvents {
         StartupConfig.checkIfSomeoneHasViolatedEULA(event.getEntity());
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST, receiveCanceled = true)
+    @SubscribeEvent
     public static void livingDeath(LivingDeathEvent event) {
         LivingEntity livingEntity = event.getEntity();
         DelayTaskHolder delayTaskHolder = livingEntity.getExistingDataOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
         if (delayTaskHolder != null) {
             livingEntity.removeData(ConfluenceMagicLib.DELAY_TASK_HOLDER);
-        }
-        if (event.getSource() == null) { // 检查是否有DamageSource为null
-            event.setCanceled(true);
-            MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-            if (server != null) {
-                StringBuilder builder = new StringBuilder();
-                for (StackTraceElement element : server.getRunningThread().getStackTrace()) {
-                    builder.append(element).append('\n');
-                }
-                ConfluenceMagicLib.LOGGER.error(builder.toString());
-                server.sendSystemMessage(Component.translatable("error.confluence.null").withStyle(ChatFormatting.RED));
-            }
         }
     }
 
@@ -176,6 +161,13 @@ public final class GameEvents {
                     delayTaskHolder.removeTask(InteractionHand.OFF_HAND);
                 }
             }
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void livingDamage$Post(LivingDamageEvent.Post event) {
+        if (event.getSource().getEntity() instanceof ServerPlayer player) {
+            AttackDamagePacketS2C.sendToClient(player, event.getNewDamage());
         }
     }
 }

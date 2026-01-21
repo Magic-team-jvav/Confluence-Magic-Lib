@@ -2,6 +2,8 @@ package org.confluence.lib.client.event;
 
 import com.mojang.datafixers.util.Either;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
@@ -13,6 +15,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderTooltipEvent;
 import org.confluence.lib.ConfluenceMagicLib;
+import org.confluence.lib.client.DPSMeter;
 import org.confluence.lib.client.animate.ExpertColorAnimation;
 import org.confluence.lib.client.animate.MasterColorAnimation;
 import org.confluence.lib.common.LibTags;
@@ -27,6 +30,10 @@ public final class LibGameEvents {
     public static void clientTick$Post(ClientTickEvent.Pre event) {
         ExpertColorAnimation.INSTANCE.updateColor();
         MasterColorAnimation.INSTANCE.updateColor();
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null) {
+            DPSMeter.checkDPSTime(player.level().getGameTime());
+        }
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)

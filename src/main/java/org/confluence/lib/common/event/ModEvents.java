@@ -9,6 +9,7 @@ import net.neoforged.neoforge.registries.RegisterEvent;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.data.IdFixer;
 import org.confluence.lib.common.fluid.FluidBuilder;
+import org.confluence.lib.network.AttackDamagePacketS2C;
 import org.confluence.lib.network.SetEntityDataPacketS2C;
 
 @EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID)
@@ -22,6 +23,7 @@ public final class ModEvents {
     public static void registerPayloadHandlers(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar("1");
         registrar.playToClient(SetEntityDataPacketS2C.TYPE, SetEntityDataPacketS2C.STREAM_CODEC, SetEntityDataPacketS2C::handle);
+        registrar.playToClient(AttackDamagePacketS2C.TYPE, AttackDamagePacketS2C.STREAM_CODEC, AttackDamagePacketS2C::handle);
     }
 
     @SubscribeEvent
