@@ -37,7 +37,7 @@ public interface Boss extends Enemy, IDiscardWhenRespawnEntity {
         Level level = entity.level();
         if (!level.isClientSide && entity instanceof Boss boss) {
             if (boss.shouldShowMessage()) {
-                Component mes = Component.translatable("message.terraentity.boss_spawn",
+                Component mes = Component.translatable("message.confluence.boss_spawn",
                         entity.getDisplayName()).withColor(GlobalColors.EVENT.get()).withStyle(ChatFormatting.BOLD);
 
                 for (Player player : level.players()) {
@@ -51,7 +51,7 @@ public interface Boss extends Enemy, IDiscardWhenRespawnEntity {
         Level level = entity.level();
         if (!level.isClientSide && entity instanceof Boss boss) {
             if (boss.shouldShowMessage()) {
-                Component mes = Component.translatable("message.terraentity.boss_leave",
+                Component mes = Component.translatable("message.confluence.boss_leave",
                         entity.getDisplayName()).withColor(GlobalColors.EVENT.get()).withStyle(ChatFormatting.BOLD);
 
                 for (Player player : level.players()) {
