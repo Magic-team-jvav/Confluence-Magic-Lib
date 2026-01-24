@@ -26,6 +26,7 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.WaterAnimal;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -343,7 +344,7 @@ public final class LibUtils {
     }
 
     public static boolean isAnimal(LivingEntity living) {
-        return living instanceof Animal || living instanceof WaterAnimal;
+        return !(living instanceof Enemy) && (living instanceof Animal || living instanceof WaterAnimal);
     }
 
     public static ResourceLocation withUniqueSuffix(ResourceLocation id) {
