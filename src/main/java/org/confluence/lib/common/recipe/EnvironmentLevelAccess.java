@@ -50,13 +50,6 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
         this.pos = pos;
     }
 
-    @Deprecated(since = "1.2.0")
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
-    public void initializeIfNeeded(Level level, BlockPos pos) {
-        if (this.level == null) this.level = level;
-        if (this.pos == null) this.pos = pos;
-    }
-
     public void initializeIfNeeded(Player player) {
         if (this.player == null) this.player = player;
         if (level == null) this.level = player.level();
@@ -160,31 +153,13 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
             return biome.isEmpty() || biome.get().contains(level.getBiome(pos));
         }
 
-        @Deprecated(since = "1.2.0")
-        @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
-        public boolean matchesBiome(Level level, BlockPos pos) {
-            return biome.isEmpty() || biome.get().contains(level.getBiome(pos));
-        }
-
         public boolean matchesBlock(Player player, Level level, BlockPos pos) {
-            return block.isEmpty() || block.get().matches(level, pos);
-        }
-
-        @Deprecated(since = "1.2.0")
-        @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
-        public boolean matchesBlock(Level level, BlockPos pos) {
             return block.isEmpty() || block.get().matches(level, pos);
         }
 
         /// 灵雾环境
         public boolean matchesGraveyard(Player player, Level level, BlockPos pos) {
             return !graveyard || isGraveyard(player, level, pos);
-        }
-
-        @Deprecated(since = "1.2.0")
-        @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
-        public boolean matchesGraveyard(Level level, BlockPos pos) {
-            return !graveyard;
         }
 
         @Override

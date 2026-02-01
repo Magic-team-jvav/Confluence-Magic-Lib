@@ -2,15 +2,12 @@ package org.confluence.lib.util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Codec;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ChunkResult;
 import net.minecraft.server.level.GenerationChunkHolder;
@@ -40,13 +37,11 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
-import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.EffectCure;
 import net.neoforged.neoforge.entity.PartEntity;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
-import org.apache.commons.lang3.tuple.Triple;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.component.NbtComponent;
 import org.jetbrains.annotations.ApiStatus;
@@ -67,12 +62,6 @@ public final class LibUtils {
     public static final int MAX_STACK_SIZE = 9999;
     public static final String NO_DROPS_TAG = "confluence:no_drops";
     public static final EffectCure DENY_HEAL = EffectCure.get("confluence:deny_heal");
-    @Deprecated(since = "1.2.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
-    public static final Codec<Vec2> VEC_2_CODEC = LibCodecUtils.VEC_2;
-    @Deprecated(since = "1.2.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
-    public static final StreamCodec<ByteBuf, Vec2> VEC_2_STREAM_CODEC = LibStreamCodecUtils.VEC_2;
 
     @ApiStatus.Internal
     public static void forMixin$Inject() {}
@@ -199,18 +188,6 @@ public final class LibUtils {
         if (isDev()) {
             runnable.run();
         }
-    }
-
-    @Deprecated(since = "1.2.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
-    public static <A, B> Codec<Tuple<A, B>> tupleCodec(Codec<A> aCodec, Codec<B> bCodec) {
-        return LibCodecUtils.tuple(aCodec, bCodec);
-    }
-
-    @Deprecated(since = "1.2.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
-    public static <L, M, R> Codec<Triple<L, M, R>> tripleCodec(Codec<L> lCodec, Codec<M> mCodec, Codec<R> rCodec) {
-        return LibCodecUtils.triple(lCodec, mCodec, rCodec);
     }
 
     public static void setItemAndDropChance(Mob mob, DifficultyInstance difficulty, EquipmentSlot slot, Item item, float chance) {
