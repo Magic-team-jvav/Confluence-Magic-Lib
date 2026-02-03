@@ -15,7 +15,7 @@ public interface IGlobalData {
         decode(convert(tag));
     }
 
-    default void decode(CompoundTag tag) {}
+    void decode(CompoundTag tag);
 
     default <T> CompoundTag convert(Dynamic<T> dynamic) {
         Tag tag = dynamic.convert(NbtOps.INSTANCE).getValue();
