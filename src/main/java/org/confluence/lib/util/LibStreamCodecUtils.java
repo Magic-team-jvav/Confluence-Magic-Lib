@@ -210,6 +210,20 @@ public final class LibStreamCodecUtils {
         };
     }
 
+    public static <E extends Enum<E>> StreamCodec<FriendlyByteBuf, E> fromEnum(Class<E> enumClass) {
+        return new StreamCodec<>() {
+            @Override
+            public E decode(FriendlyByteBuf buffer) {
+                return buffer.readEnum(enumClass);
+            }
+
+            @Override
+            public void encode(FriendlyByteBuf buffer, E value) {
+                buffer.writeEnum(value);
+            }
+        };
+    }
+
     public static <B, C, T1, T2, T3, T4, T5, T6, T7> StreamCodec<B, C> composite(
             final StreamCodec<? super B, T1> codec1,
             final Function<C, T1> getter1,

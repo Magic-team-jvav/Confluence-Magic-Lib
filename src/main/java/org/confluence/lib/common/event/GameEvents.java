@@ -24,6 +24,7 @@ import org.confluence.lib.StartupConfig;
 import org.confluence.lib.common.data.IdFixer;
 import org.confluence.lib.common.data.saved.IGlobalData;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
+import org.confluence.lib.event.PlayerNaturalHealEvent;
 import org.confluence.lib.event.SwitchItemFunctionEvent;
 import org.confluence.lib.mixed.IExtraSyncedData;
 import org.confluence.lib.network.AttackDamagePacketS2C;
@@ -56,9 +57,8 @@ public final class GameEvents {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void livingHeal(LivingHealEvent event) {
-        if (event.getEntity().level().isClientSide) return;
+    @SubscribeEvent
+    public static void playerNaturalHeal(PlayerNaturalHealEvent event) {
         if (event.getEntity().getActiveEffects().stream().anyMatch(instance -> instance.getCures().contains(LibUtils.DENY_HEAL))) {
             event.setCanceled(true);
         }

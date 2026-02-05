@@ -22,6 +22,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.WaterAnimal;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
@@ -391,5 +392,14 @@ public final class LibUtils {
             ++original;
         }
         return original * sign;
+    }
+
+    public static boolean canHitEntity(@Nullable Entity target, @Nullable Entity owner) {
+        if (target == null || target.isRemoved()) return false; // 有模组把target写成了null
+        target = getOwner(target);
+        if (owner == target || !target.isAttackable() || !target.canBeHitByProjectile() || target instanceof ArmorStand) {
+            return false;
+        }
+        return owner == null || (!owner.isPassengerOfSameVehicle(target)/* && !target.skipAttackInteraction(owner)*/);
     }
 }
