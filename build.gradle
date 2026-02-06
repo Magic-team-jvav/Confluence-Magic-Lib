@@ -177,9 +177,17 @@ idea {
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 
 tasks.register('runLangMerger', JavaExec) {
-    group = 'mod development'
+    group = 'mod development/internal'
     description = 'Language Merger'
     classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'org.confluence.lib.util.LangMerger'
+    mainClass = 'org.confluence.lib.util.lang.LangMerger'
+    args "../"
+}
+
+tasks.register('runLangDistinctor', JavaExec) {
+    group = 'mod development/internal'
+    description = 'Language Distinctor'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.confluence.lib.util.lang.LangDistinctor'
     args "../"
 }
