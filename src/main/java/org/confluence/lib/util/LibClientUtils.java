@@ -8,17 +8,21 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import com.mojang.datafixers.util.Function4;
 import com.mojang.math.Axis;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.item.ClampedItemPropertyFunction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Quaternionf;
@@ -204,5 +208,13 @@ public final class LibClientUtils {
         view.popMatrix();
         RenderSystem.applyModelViewMatrix();
         return image;
+    }
+
+    public static @Nullable Player getPlayer() {
+        return Minecraft.getInstance().player;
+    }
+
+    public static MutableComponent keyMappingComponent(KeyMapping keyMapping) {
+        return MutableComponent.create(keyMapping.getTranslatedKeyMessage().getContents()).withStyle(ChatFormatting.GRAY);
     }
 }
