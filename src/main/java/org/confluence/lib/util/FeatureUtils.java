@@ -6,15 +6,19 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -333,5 +337,101 @@ public final class FeatureUtils {
             return false;
         }
         return true;
+    }
+
+    public static void updateLeavesCustom(WorldGenLevel level, Set<BlockPos> trunkSet, Set<BlockPos> leavesSet, boolean cleanUncovered) {
+
+        Set<BlockPos> actualLeavesSet = new HashSet<>(leavesSet);
+        actualLeavesSet.removeAll(trunkSet);
+
+        Queue<BlockPos> queue = new LinkedList<>();
+        Map<BlockPos, Integer> distanceMap = new HashMap<>();
+
+        for (BlockPos log : trunkSet) {
+            queue.add(log);
+            distanceMap.put(log, 0);
+        }
+
+        while (!queue.isEmpty()) {
+            BlockPos current = queue.poll();
+            int currentDist = distanceMap.get(current);
+            for (Direction direction : Direction.values()) {
+                BlockPos neighbor = current.relative(direction);
+
+                if (distanceMap.containsKey(neighbor)) continue;
+
+                if (actualLeavesSet.contains(neighbor)) {
+                    int newDist = currentDist + 1;
+
+                    if (newDist >= 1 && newDist <= 7) {
+                        BlockState state = level.getBlockState(neighbor).trySetValue(BlockStateProperties.DISTANCE, newDist);
+                        level.setBlock(neighbor, state, 3);
+                    }
+
+                    distanceMap.put(neighbor, newDist);
+                    queue.add(neighbor);
+                }
+            }
+        }
+
+        if (cleanUncovered) {
+            for (BlockPos leafPos : actualLeavesSet) {
+                if (!distanceMap.containsKey(leafPos)) {
+                    level.setBlock(leafPos, Blocks.AIR.defaultBlockState(), 3);
+                }
+            }
+        }
+    }
+
+    public static void updateLeavesCustomCheck(WorldGenLevel level, Set<BlockPos> trunkSet, Set<BlockPos> leavesSet, boolean cleanUncovered) {
+
+        Set<BlockPos> actualLeavesSet = new HashSet<>(leavesSet);
+        actualLeavesSet.removeAll(trunkSet);
+
+        Queue<BlockPos> queue = new LinkedList<>();
+        Map<BlockPos, Integer> distanceMap = new HashMap<>();
+
+        BlockState[] colorConcrete = new BlockState[7];
+        colorConcrete[0] = Blocks.LIGHT_BLUE_CONCRETE.defaultBlockState();
+        colorConcrete[1] = Blocks.CYAN_CONCRETE.defaultBlockState();
+        colorConcrete[2] = Blocks.GREEN_CONCRETE.defaultBlockState();
+        colorConcrete[3] = Blocks.LIME_CONCRETE.defaultBlockState();
+        colorConcrete[4] = Blocks.YELLOW_CONCRETE.defaultBlockState();
+        colorConcrete[5] = Blocks.ORANGE_CONCRETE.defaultBlockState();
+        colorConcrete[6] = Blocks.RED_CONCRETE.defaultBlockState();
+
+        for (BlockPos log : trunkSet) {
+            queue.add(log);
+            distanceMap.put(log, 0);
+        }
+
+        while (!queue.isEmpty()) {
+            BlockPos current = queue.poll();
+            int currentDist = distanceMap.get(current);
+            for (Direction direction : Direction.values()) {
+                BlockPos neighbor = current.relative(direction);
+
+                if (distanceMap.containsKey(neighbor)) continue;
+
+                if (actualLeavesSet.contains(neighbor)) {
+                    int newDist = currentDist + 1;
+
+                    if (newDist >= 1 && newDist <= 7) {
+                        level.setBlock(neighbor, colorConcrete[newDist - 1], 3);
+                    }
+
+                    distanceMap.put(neighbor, newDist);
+                    queue.add(neighbor);
+                }
+            }
+        }
+
+        if (cleanUncovered) {
+            for (BlockPos leafPos : actualLeavesSet) {
+                if (!distanceMap.containsKey(leafPos)) {
+                    level.setBlock(leafPos, Blocks.WHITE_CONCRETE.defaultBlockState(), 3);
+                }
+            }
+        }
     }
 }
