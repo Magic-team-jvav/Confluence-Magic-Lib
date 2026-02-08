@@ -1,5 +1,8 @@
 package org.confluence.lib.util;
 
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -338,15 +341,17 @@ public final class FeatureUtils {
         return true;
     }
 
-    public static void updateLeavesOptimized(WorldGenLevel level, Set<BlockPos> trunkSet, Set<BlockPos> leavesSet, boolean cleanUncovered, boolean debugMode) {
+
+    public static void updateLeavesOptimized(WorldGenLevel level, LongOpenHashSet trunkSet, LongOpenHashSet leavesSet, boolean cleanUncovered, boolean debugMode) {
         if (leavesSet.isEmpty()) return;
 
-        Map<BlockPos, Integer> distanceMap = new HashMap<>(leavesSet.size());
-        Queue<BlockPos> queue = new ArrayDeque<>();
+        Long2IntOpenHashMap distanceMap = new Long2IntOpenHashMap(leavesSet.size());
+        distanceMap.defaultReturnValue(-1);
+        Queue<Long> queue = new ArrayDeque<>();
 
-        for (BlockPos log : trunkSet) {
-            queue.add(log);
-            distanceMap.put(log, 0);
+        for (long logPos : trunkSet) {
+            queue.add(logPos);
+            distanceMap.put(logPos, 0);
         }
 
         BlockState[] debugColors = debugMode ? new BlockState[]{
@@ -357,25 +362,27 @@ public final class FeatureUtils {
         } : null;
 
         while (!queue.isEmpty()) {
-            BlockPos current = queue.poll();
-            int currentDist = distanceMap.get(current);
+            long currentLong = queue.poll();
+            int currentDist = distanceMap.get(currentLong);
 
             if (currentDist >= 7) continue;
 
+            BlockPos currentPos = BlockPos.of(currentLong);
             for (Direction direction : Direction.values()) {
-                BlockPos neighbor = current.relative(direction);
+                long neighborLong = currentPos.relative(direction).asLong();
 
-                if (leavesSet.contains(neighbor) && !distanceMap.containsKey(neighbor)) {
+                if (leavesSet.contains(neighborLong) && distanceMap.get(neighborLong) == -1) {
                     int newDist = currentDist + 1;
-                    distanceMap.put(neighbor, newDist);
-                    queue.add(neighbor);
+                    distanceMap.put(neighborLong, newDist);
+                    queue.add(neighborLong);
 
+                    BlockPos neighborPos = BlockPos.of(neighborLong);
                     if (debugMode) {
-                        level.setBlock(neighbor, debugColors[newDist - 1], 3);
+                        level.setBlock(neighborPos, debugColors[newDist - 1], 3);
                     } else {
-                        BlockState state = level.getBlockState(neighbor);
+                        BlockState state = level.getBlockState(neighborPos);
                         if (state.hasProperty(BlockStateProperties.DISTANCE)) {
-                            level.setBlock(neighbor, state.setValue(BlockStateProperties.DISTANCE, newDist), 3);
+                            level.setBlock(neighborPos, state.setValue(BlockStateProperties.DISTANCE, newDist), 19);
                         }
                     }
                 }
@@ -383,9 +390,9 @@ public final class FeatureUtils {
         }
 
         if (cleanUncovered) {
-            for (BlockPos leafPos : leavesSet) {
-                if (!trunkSet.contains(leafPos) && !distanceMap.containsKey(leafPos)) {
-                    level.setBlock(leafPos, debugMode ? Blocks.WHITE_CONCRETE.defaultBlockState() : Blocks.AIR.defaultBlockState(), 3);
+            for (long leafLong : leavesSet) {
+                if (!trunkSet.contains(leafLong) && distanceMap.get(leafLong) == -1) {
+                    level.setBlock(BlockPos.of(leafLong), debugMode ? Blocks.WHITE_CONCRETE.defaultBlockState() : Blocks.AIR.defaultBlockState(), 19);
                 }
             }
         }
