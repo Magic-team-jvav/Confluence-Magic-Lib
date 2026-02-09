@@ -9,7 +9,7 @@ import java.util.List;
 /// 当玩家重生时，若附近没有存活的玩家，实现该接口的实体会消失，以实现出生保护
 public interface IDiscardWhenRespawnEntity {
     default boolean shouldDiscard(boolean hasNearbyPlayer) {
-        return true;
+        return !hasNearbyPlayer;
     }
 
     static void process(ServerPlayer player) {
