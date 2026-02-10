@@ -7,6 +7,9 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.booleans.BooleanObjectMutablePair;
 import it.unimi.dsi.fastutil.booleans.BooleanObjectPair;
+import it.unimi.dsi.fastutil.objects.Object2BooleanLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.phys.Vec2;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
@@ -54,11 +57,6 @@ public final class LibCodecUtils {
         );
     }
 
-    @Deprecated(forRemoval = true)
-    public static <K, V> Codec<ImmutableListMultimap<K, V>> multimapCodec(Codec<K> keyCodec, Codec<V> valueCodec) {
-        return multimap(keyCodec, valueCodec);
-    }
-
     public static <K, V> Codec<ImmutableListMultimap<K, V>> multimap(Codec<K> keyCodec, Codec<V> valueCodec) {
         return Codec.unboundedMap(keyCodec, LibCodecUtils.homogenousList(valueCodec, false)).xmap(map -> {
             ImmutableListMultimap.Builder<K, V> builder = ImmutableListMultimap.builder();
@@ -91,5 +89,9 @@ public final class LibCodecUtils {
 
     public static <K, V> Codec<Map<K, V>> notStringKeyMap(String kName, Codec<K> kCodec, String vName, Codec<V> vCodec) {
         return tuple(kName, kCodec, vName, vCodec).listOf().xmap(LibUtils::convertTupleListToMap, LibUtils::convertMapToTupleList);
+    }
+
+    public static <T> Codec<Object2BooleanMap<T>> object2BooleanLinkedMap(Codec<T> codec) {
+        return Codec.unboundedMap(codec, Codec.BOOL).xmap(Object2BooleanLinkedOpenHashMap::new, Object2ObjectLinkedOpenHashMap::new);
     }
 }
