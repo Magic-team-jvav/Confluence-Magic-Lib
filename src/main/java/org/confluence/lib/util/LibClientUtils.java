@@ -1,11 +1,13 @@
 package org.confluence.lib.util;
 
+import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexSorting;
+import com.mojang.datafixers.DataFixer;
 import com.mojang.datafixers.util.Function4;
 import com.mojang.math.Axis;
 import net.minecraft.ChatFormatting;
@@ -212,6 +214,14 @@ public final class LibClientUtils {
 
     public static @Nullable Player getPlayer() {
         return Minecraft.getInstance().player;
+    }
+
+    public static GameProfile getGameProfile() {
+        return Minecraft.getInstance().getGameProfile();
+    }
+
+    public static DataFixer getDataFixer() {
+        return Minecraft.getInstance().getFixerUpper();
     }
 
     public static MutableComponent keyMappingComponent(KeyMapping keyMapping) {
