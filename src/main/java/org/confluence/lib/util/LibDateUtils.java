@@ -19,6 +19,7 @@ public final class LibDateUtils {
     public static final int _00$00 = getDayTime(0, 0);
     public static final int _04$30 = getDayTime(4, 30);
     public static final int _06$00 = getDayTime(6, 0);
+    public static final int _18$00 = getDayTime(18, 0);
     public static final int _19$30 = getDayTime(19, 30);
 
     public static int getDayTime(Level level) {
@@ -29,21 +30,17 @@ public final class LibDateUtils {
         return (int) (dayTime % 24000L);
     }
 
-    /**
-     * 映射到游戏内的dayTime
-     */
+    /// 映射到游戏内的dayTime
     public static int getDayTime(int hour, int minute) {
         if (hour < 0 || hour > 23) throw new DateTimeParseException("hour bounds is [0, 23], currently is " + hour, "", 0);
         if (minute < 0 || minute > 59) throw new DateTimeParseException("minute bounds is [0, 59], currently is " + minute, "", 0);
         return TIMES[hour * 60 + minute];
     }
 
-    /**
-     * @param start   开始的dayTime
-     * @param end     结束的dayTime
-     * @param dayTime 判断的dayTime
-     * @return start <= dayTime <= end
-     */
+    /// @param start   开始的dayTime
+    /// @param end     结束的dayTime
+    /// @param dayTime 判断的dayTime
+    /// @return start <= dayTime <= end
     public static boolean isWithinDayTime(int start, int end, int dayTime) {
         if (start > end) {
             return dayTime >= start || dayTime <= end;

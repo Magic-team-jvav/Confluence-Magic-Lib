@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -50,7 +51,7 @@ public abstract class SingleJsonFileReloadListener extends ContextAwareReloadLis
                     map.put(loc, entry.getValue());
                 }
             } catch (RuntimeException | IOException ioexception) {
-                ConfluenceMagicLib.LOGGER.error("Couldn't read {} {} in data pack {}", identifier(), resourceLocation, resource.sourcePackId(), ioexception);
+                ConfluenceMagicLib.LOGGER.error("Couldn't read {} {} in {} pack {}", identifier(), resourceLocation, resource.sourcePackId(), packType().getDirectory(), ioexception);
             }
         }
         return map;
@@ -61,4 +62,8 @@ public abstract class SingleJsonFileReloadListener extends ContextAwareReloadLis
     protected abstract ResourceLocation resourcePath();
 
     protected abstract String identifier();
+
+    protected PackType packType() {
+        return PackType.SERVER_DATA;
+    }
 }

@@ -8,8 +8,6 @@ import org.confluence.lib.common.component.ModRarity;
 
 import java.util.function.Consumer;
 
-@javax.annotation.ParametersAreNonnullByDefault
-@net.minecraft.MethodsReturnNonnullByDefault
 public class CustomRarityItem extends Item {
     protected ItemAttributeModifiers modifiers;
 

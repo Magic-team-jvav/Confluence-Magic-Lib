@@ -1,25 +1,30 @@
 package org.confluence.lib.util;
 
+import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexSorting;
+import com.mojang.datafixers.DataFixer;
 import com.mojang.datafixers.util.Function4;
 import com.mojang.math.Axis;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.item.ClampedItemPropertyFunction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FastColor;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Quaternionf;
@@ -32,9 +37,9 @@ import java.nio.file.Path;
 
 public final class LibClientUtils {
     public static final float HALF_SQRT_3 = (float) (Math.sqrt(3) / 2.0);
-    public static final Quaternionf ANGLE_45 = Axis.YP.rotation(Mth.PI * 0.25F);
-    public static final Quaternionf ANGLE_180 = Axis.ZP.rotation(Mth.PI);
-    public static final Quaternionf ANGLE_N90 = Axis.YP.rotation(-Mth.HALF_PI);
+    public static final Quaternionf ANGLE_45 = Axis.YP.rotationDegrees(45);
+    public static final Quaternionf ANGLE_180 = Axis.ZP.rotationDegrees(180);
+    public static final Quaternionf ANGLE_N90 = Axis.YP.rotationDegrees(-90);
     public static final int[] FULL_BRIGHT = {0xF000F0, 0xF000F0, 0xF000F0, 0xF000F0};
     public static final float INV_255 = 1.0F / 255.0F;
     public static final ClampedItemPropertyFunction COULD_ENABLE_PROPERTY_FUNCTION = (stack, level, living, seed) -> {
@@ -205,5 +210,21 @@ public final class LibClientUtils {
         view.popMatrix();
         RenderSystem.applyModelViewMatrix();
         return image;
+    }
+
+    public static @Nullable Player getPlayer() {
+        return Minecraft.getInstance().player;
+    }
+
+    public static GameProfile getGameProfile() {
+        return Minecraft.getInstance().getGameProfile();
+    }
+
+    public static DataFixer getDataFixer() {
+        return Minecraft.getInstance().getFixerUpper();
+    }
+
+    public static MutableComponent keyMappingComponent(KeyMapping keyMapping) {
+        return MutableComponent.create(keyMapping.getTranslatedKeyMessage().getContents()).withStyle(ChatFormatting.GRAY);
     }
 }

@@ -25,6 +25,10 @@ public record IntegerRGB(int red, int green, int blue) {
         return new IntegerRGB((rgb & 0xFF0000) >> 16, (rgb & 0x00FF00) >> 8, rgb & 0x0000FF);
     }
 
+    public static IntegerRGB of(int red, int green, int blue) {
+        return new IntegerRGB(red, green, blue);
+    }
+
     public IntegerRGB mixture(IntegerRGB another, float anotherRatio) {
         int r = Math.round(red - (red - another.red) * anotherRatio);
         int g = Math.round(green - (green - another.green) * anotherRatio);
@@ -46,7 +50,9 @@ public record IntegerRGB(int red, int green, int blue) {
     @Override
     public boolean equals(Object o) {
         if (o == this) return true;
-        return o instanceof IntegerRGB(int red1, int green1, int blue1) && red == red1 && blue == blue1 && green == green1;
+        return o instanceof IntegerRGB(
+                int red1, int green1, int blue1
+        ) && red == red1 && blue == blue1 && green == green1;
     }
 
     @Override

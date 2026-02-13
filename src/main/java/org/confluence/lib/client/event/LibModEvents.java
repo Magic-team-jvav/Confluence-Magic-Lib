@@ -10,7 +10,7 @@ import org.confluence.lib.client.particle.CrossDustParticle;
 @EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID, value = Dist.CLIENT)
 public final class LibModEvents {
     @SubscribeEvent
-    public static void registerParticles(RegisterParticleProvidersEvent event) {
+    public static void registerParticleProviders(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(ConfluenceMagicLib.CROSS_DUST_PARTICLE.get(), CrossDustParticle.Provider::new);
     }
 }

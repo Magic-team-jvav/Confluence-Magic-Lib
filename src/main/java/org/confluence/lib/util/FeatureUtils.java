@@ -1,5 +1,8 @@
 package org.confluence.lib.util;
 
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -8,13 +11,16 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -333,5 +339,62 @@ public final class FeatureUtils {
             return false;
         }
         return true;
+    }
+
+
+    public static void updateLeavesOptimized(WorldGenLevel level, LongOpenHashSet trunkSet, LongOpenHashSet leavesSet, boolean cleanUncovered, boolean debugMode) {
+        if (leavesSet.isEmpty()) return;
+
+        Long2IntOpenHashMap distanceMap = new Long2IntOpenHashMap(leavesSet.size());
+        distanceMap.defaultReturnValue(-1);
+        Queue<Long> queue = new ArrayDeque<>();
+
+        for (long logPos : trunkSet) {
+            queue.add(logPos);
+            distanceMap.put(logPos, 0);
+        }
+
+        BlockState[] debugColors = debugMode ? new BlockState[]{
+                Blocks.LIGHT_BLUE_CONCRETE.defaultBlockState(), Blocks.CYAN_CONCRETE.defaultBlockState(),
+                Blocks.GREEN_CONCRETE.defaultBlockState(), Blocks.LIME_CONCRETE.defaultBlockState(),
+                Blocks.YELLOW_CONCRETE.defaultBlockState(), Blocks.ORANGE_CONCRETE.defaultBlockState(),
+                Blocks.RED_CONCRETE.defaultBlockState()
+        } : null;
+
+        while (!queue.isEmpty()) {
+            long currentLong = queue.poll();
+            int currentDist = distanceMap.get(currentLong);
+
+            if (currentDist >= 7) continue;
+
+            BlockPos currentPos = BlockPos.of(currentLong);
+            for (Direction direction : Direction.values()) {
+                long neighborLong = currentPos.relative(direction).asLong();
+
+                if (leavesSet.contains(neighborLong) && distanceMap.get(neighborLong) == -1) {
+                    int newDist = currentDist + 1;
+                    distanceMap.put(neighborLong, newDist);
+                    queue.add(neighborLong);
+
+                    BlockPos neighborPos = BlockPos.of(neighborLong);
+                    if (debugMode) {
+                        level.setBlock(neighborPos, debugColors[newDist - 1], 3);
+                    } else {
+                        BlockState state = level.getBlockState(neighborPos);
+                        if (state.hasProperty(BlockStateProperties.DISTANCE)) {
+                            level.setBlock(neighborPos, state.setValue(BlockStateProperties.DISTANCE, newDist), 19);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (cleanUncovered) {
+            for (long leafLong : leavesSet) {
+                if (!trunkSet.contains(leafLong) && distanceMap.get(leafLong) == -1) {
+                    level.setBlock(BlockPos.of(leafLong), debugMode ? Blocks.WHITE_CONCRETE.defaultBlockState() : Blocks.AIR.defaultBlockState(), 19);
+                }
+            }
+        }
     }
 }

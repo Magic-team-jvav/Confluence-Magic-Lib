@@ -2,28 +2,29 @@ package org.confluence.lib.util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.mojang.serialization.Codec;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ChunkResult;
 import net.minecraft.server.level.GenerationChunkHolder;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.WaterAnimal;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -37,13 +38,11 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
-import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.EffectCure;
 import net.neoforged.neoforge.entity.PartEntity;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
-import org.apache.commons.lang3.tuple.Triple;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.component.NbtComponent;
 import org.jetbrains.annotations.ApiStatus;
@@ -64,12 +63,6 @@ public final class LibUtils {
     public static final int MAX_STACK_SIZE = 9999;
     public static final String NO_DROPS_TAG = "confluence:no_drops";
     public static final EffectCure DENY_HEAL = EffectCure.get("confluence:deny_heal");
-    @Deprecated(since = "1.2.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
-    public static final Codec<Vec2> VEC_2_CODEC = LibCodecUtils.VEC_2;
-    @Deprecated(since = "1.2.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
-    public static final StreamCodec<ByteBuf, Vec2> VEC_2_STREAM_CODEC = LibStreamCodecUtils.VEC_2;
 
     @ApiStatus.Internal
     public static void forMixin$Inject() {}
@@ -101,55 +94,59 @@ public final class LibUtils {
         createItemEntity(item, count, pos.x, pos.y, pos.z, level, pickUpDelay);
     }
 
-    /**
-     * @param a 形参的方块实体类型
-     * @param b 注册的方块实体类型
-     */
+    /// @param a 形参的方块实体类型
+    /// @param b 注册的方块实体类型
     @SuppressWarnings("unchecked")
     public static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> getTicker(BlockEntityType<A> a, BlockEntityType<E> b, BlockEntityTicker<? super E> ticker) {
         return a == b ? (BlockEntityTicker<A>) ticker : null;
     }
 
-    /**
-     * 为专家?在处理if...else if时应先使用:
-     *
-     * @see LibUtils#isMaster(Level, BlockPos)
-     */
+    /// 为专家?在处理if...else if时应先使用:
+    ///
+    /// @see LibUtils#isMaster(Level, BlockPos)
     public static boolean isAtLeastExpert(Level level, BlockPos pos) {
         return level.getCurrentDifficultyAt(pos).getEffectiveDifficulty() >= 1.5F;
     }
 
-    /**
-     * 为大师?在处理if...else if时应先使用此方法
-     */
+    public static boolean isAtLeastExpert(Level level) {
+        return level.getDifficulty().getId() > Difficulty.EASY.getId();
+    }
+
+    /// 为大师?在处理if...else if时应先使用此方法
     public static boolean isMaster(Level level, BlockPos pos) {
         return level.getCurrentDifficultyAt(pos).getEffectiveDifficulty() >= 2.25F;
     }
 
-    /**
-     * 根据游戏难度选择值
-     *
-     * @param classic 经典难度的值
-     * @param expert  专家难度的值
-     * @param master  大师难度的值
-     * @return 选择到的值
-     */
-    public static <T> T switchByDifficulty(Level level, BlockPos blockPos, T classic, T expert, T master) {
-        float difficulty = level.getCurrentDifficultyAt(blockPos).getEffectiveDifficulty();
-        if (difficulty >= 2.25F) return master;
-        if (difficulty >= 1.5F) return expert;
-        return classic; // 0.75F
+    public static boolean isMaster(Level level) {
+        return level.getDifficulty().getId() > Difficulty.NORMAL.getId();
     }
 
-    /**
-     * 根据游戏难度选择值
-     *
-     * @param classic   经典难度的值
-     * @param expert    专家难度的值
-     * @param master    大师难度的值
-     * @param legendary 传奇难度的值
-     * @return 选择到的值
-     */
+    /// 根据游戏难度选择值
+    ///
+    /// @param classic 经典难度的值
+    /// @param expert  专家难度的值
+    /// @return 选择到的值
+    public static <T> T switchByDifficulty(Level level, BlockPos blockPos, T classic, T expert) {
+        return switchByDifficulty(level, blockPos, classic, expert, expert, expert);
+    }
+
+    /// 根据游戏难度选择值
+    ///
+    /// @param classic 经典难度的值
+    /// @param expert  专家难度的值
+    /// @param master  大师难度的值
+    /// @return 选择到的值
+    public static <T> T switchByDifficulty(Level level, BlockPos blockPos, T classic, T expert, T master) {
+        return switchByDifficulty(level, blockPos, classic, expert, master, master);
+    }
+
+    /// 根据游戏难度选择值
+    ///
+    /// @param classic   经典难度的值
+    /// @param expert    专家难度的值
+    /// @param master    大师难度的值
+    /// @param legendary 传奇难度的值
+    /// @return 选择到的值
     public static <T> T switchByDifficulty(Level level, BlockPos blockPos, T classic, T expert, T master, T legendary) {
         float difficulty = level.getCurrentDifficultyAt(blockPos).getEffectiveDifficulty();
         if (difficulty >= 3) return legendary;
@@ -192,18 +189,6 @@ public final class LibUtils {
         if (isDev()) {
             runnable.run();
         }
-    }
-
-    @Deprecated(since = "1.2.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
-    public static <A, B> Codec<Tuple<A, B>> tupleCodec(Codec<A> aCodec, Codec<B> bCodec) {
-        return LibCodecUtils.tuple(aCodec, bCodec);
-    }
-
-    @Deprecated(since = "1.2.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.3.0")
-    public static <L, M, R> Codec<Triple<L, M, R>> tripleCodec(Codec<L> lCodec, Codec<M> mCodec, Codec<R> rCodec) {
-        return LibCodecUtils.triple(lCodec, mCodec, rCodec);
     }
 
     public static void setItemAndDropChance(Mob mob, DifficultyInstance difficulty, EquipmentSlot slot, Item item, float chance) {
@@ -249,16 +234,12 @@ public final class LibUtils {
                 .collect(Collectors.joining(" "));
     }
 
-    /**
-     * 将绝对坐标压缩为相对坐标
-     */
+    /// 将绝对坐标压缩为相对坐标
     public static int compressRelativePos(BlockPos pos) {
         return ((pos.getX() & 0xF) << 16) | ((pos.getY() + 2048) << 4) | (pos.getZ() & 0xF);
     }
 
-    /**
-     * 将相对坐标解压为绝对坐标
-     */
+    /// 将相对坐标解压为绝对坐标
     public static BlockPos decompressRelativePos(ChunkPos chunkPos, int compressed) {
         int x = (compressed >>> 16) & 0xF;
         int y = ((compressed >>> 4) & 0xFFF) - 2048;
@@ -280,10 +261,8 @@ public final class LibUtils {
         return FMLEnvironment.dist.isClient();
     }
 
-    /**
-     * @return 单人模式中为false；客户端连接服务端时，客户端为true，服务端为false
-     * @apiNote 你应该在逻辑服务端启动后调用这个方法，且仅适用于在逻辑服务端调用
-     */
+    /// @return 单人模式中为false；客户端连接服务端时，客户端为true，服务端为false
+    /// @apiNote 你应该在逻辑服务端启动后调用这个方法，且仅适用于在逻辑服务端调用
     public static boolean isLogicalClient() {
         return isPhysicalClient() && ServerLifecycleHooks.getCurrentServer() == null;
     }
@@ -292,18 +271,14 @@ public final class LibUtils {
         return FMLEnvironment.dist.isDedicatedServer();
     }
 
-    /**
-     * @return 逻辑客户端为false, 逻辑服务端为true
-     * @apiNote 你应该在逻辑服务端启动后调用这个方法
-     */
+    /// @return 逻辑客户端为false, 逻辑服务端为true
+    /// @apiNote 你应该在逻辑服务端启动后调用这个方法
     public static boolean isLogicalServer() {
         if (isPhysicalServer()) return true;
         return ServerLifecycleHooks.getCurrentServer() != null && ServerLifecycleHooks.getCurrentServer().isSameThread();
     }
 
-    /**
-     * @author ChatGPT
-     */
+    /// @author ChatGPT
     public static float cubicBezier(float t, float p0, float p1, float p2, float p3) {
         float u = 1 - t;
         float tt = t * t;
@@ -347,7 +322,7 @@ public final class LibUtils {
     }
 
     public static boolean isAnimal(LivingEntity living) {
-        return living instanceof Animal || living instanceof WaterAnimal;
+        return !(living instanceof Enemy) && (living instanceof Animal || living instanceof WaterAnimal);
     }
 
     public static ResourceLocation withUniqueSuffix(ResourceLocation id) {
@@ -361,9 +336,7 @@ public final class LibUtils {
         return getOwner(entity);
     }
 
-    /**
-     * 尝试寻找该实体的所有者，如果找不到则返回该实体
-     */
+    /// 尝试寻找该实体的所有者，如果找不到则返回该实体
     public static Entity getOwner(Entity entity) {
         Entity owner = switch (entity) {
             case PartEntity<?> partEntity -> partEntity.getParent();
@@ -382,14 +355,51 @@ public final class LibUtils {
         return getChunkIfLoaded(chunkSource, chunkPos.x, chunkPos.z);
     }
 
-    /**
-     * 较大程度地减小开销，切记要在服务器线程调用！
-     */
+    /// 较大程度地减小开销，切记要在服务器线程调用！
     public static @Nullable ChunkAccess getChunkIfLoaded(ServerChunkCache chunkSource, int cx, int cz) {
         CompletableFuture<ChunkResult<ChunkAccess>> future = chunkSource.getChunkFutureMainThread(cx, cz, ChunkStatus.FULL, false);
         if (future != GenerationChunkHolder.UNLOADED_CHUNK_FUTURE && future.isDone()) {
             return future.join().orElse(null);
         }
         return null;
+    }
+
+    /// 整数乘非负小数得到新整数
+    public static int multiplyInt(int original, float factor, RandomSource random) {
+        int sign = Mth.sign(factor);
+        if (sign == 0) {
+            return 0;
+        }
+        factor = Math.abs(factor);
+        int i = (int) factor;
+        original *= i;
+        if (checkChance(factor - i, random)) {
+            ++original;
+        }
+        return original * sign;
+    }
+
+    /// 整数除正数小数得到新整数
+    public static int divideInt(int original, float factor, RandomSource random) {
+        int sign = Mth.sign(factor);
+        if (sign == 0) {
+            return 0;
+        }
+        factor = Math.abs(factor);
+        float f = original / factor;
+        original = (int) f;
+        if (checkChance(f - original, random)) {
+            ++original;
+        }
+        return original * sign;
+    }
+
+    public static boolean canHitEntity(@Nullable Entity target, @Nullable Entity owner) {
+        if (target == null || target.isRemoved()) return false; // 有模组把target写成了null
+        target = getOwner(target);
+        if (owner == target || !target.isAttackable() || !target.canBeHitByProjectile() || target instanceof ArmorStand) {
+            return false;
+        }
+        return owner == null || (!owner.isPassengerOfSameVehicle(target)/* && !target.skipAttackInteraction(owner)*/);
     }
 }

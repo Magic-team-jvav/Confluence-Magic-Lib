@@ -5,6 +5,7 @@
     "compatibilityLevel": "JAVA_21",
     "refmap": "confluence_magic_lib.refmap.json",
     "mixins": [
+        "FoodDataMixin",
         "PlayerMixin",
         "PrimaryLevelDataMixin",
         "ShapedRecipePatternMixin",
@@ -14,10 +15,8 @@
         "fixer.DataComponentPatch$PatchKeyFixer",
         "fixer.ItemStackFixer",
         "fixer.PiecesContainerFixer",
-        "naturalspawner.LocalMobCapCalculator$MobCountsMixin",
-        "naturalspawner.LocalMobCapCalculatorMixin",
-        "naturalspawner.NaturalSpawner$SpawnStateMixin",
-        "naturalspawner.NaturalSpawner1Mixin"
+        "naturalspawner.MobCategoryMixin",
+        "naturalspawner.NaturalSpawnerMixin"
     ],
     "client": [
         "accessor.KeyMappingAccessor",

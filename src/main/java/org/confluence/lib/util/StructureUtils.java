@@ -17,6 +17,7 @@ import java.util.Map;
 import static org.confluence.lib.util.VectorUtils.*;
 
 public final class StructureUtils {
+    //主要是类内部引用，很少外部使用，你无须在意.png
     public static void ball8(BlockPos.MutableBlockPos posCheck, boolean replace, int x, int y, int z, int blockState, BlockPos centerPos, Object2IntMap<BlockPos> blockMap) {
         for (int i = 0; i < 8; i++) {
             posCheck.set(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1)));

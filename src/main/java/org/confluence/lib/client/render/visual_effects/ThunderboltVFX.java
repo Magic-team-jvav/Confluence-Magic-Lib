@@ -2,7 +2,6 @@ package org.confluence.lib.client.render.visual_effects;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -18,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.confluence.lib.util.RenderUtils.*;
 import static org.confluence.lib.util.VectorUtils.lightningPathList;
 
 public class ThunderboltVFX extends VisualEffects {
@@ -33,6 +33,8 @@ public class ThunderboltVFX extends VisualEffects {
 
         ROTATE0 += 0.03;
         ROTATE1 += 0.03;
+        if (ROTATE0 > (Math.PI * 2)) ROTATE0 -= (Math.PI * 2);
+        if (ROTATE1 > (Math.PI * 2)) ROTATE1 -= (Math.PI * 2);
 
         int maxCount = 5;
         double moveDis = 0.5;
@@ -132,10 +134,11 @@ public class ThunderboltVFX extends VisualEffects {
         for (Vector2d removePoint : removePoints) {
             POINTS_MAP.remove(removePoint);
         }
-        drawCube(poseStack, bufferSource, 10, 0, 0, 0, 255, entityMainPos, true);
-        drawCube(poseStack, bufferSource, 10.1, 255, 255, 255, 255, entityMainPos, false);
-        drawCube(poseStack, bufferSource, 10.3, 180, 0, 255, 255, entityMainPos, false);
-        drawCube(poseStack, bufferSource, 11.5, 128, 0, 255, 127, entityMainPos, false);
+        VertexConsumer consumer1 = bufferSource.getBuffer(RenderType.debugQuads());
+        drawCube(poseStack, 10, 0, 0, 0, 255, entityMainPos, new Vector3d(0, 0, 0), true, ROTATE0, ROTATE1, consumer1);
+        drawCube(poseStack, 10.1, 255, 255, 255, 255, entityMainPos, new Vector3d(0, 0, 0), false, ROTATE0, ROTATE1, consumer1);
+        drawCube(poseStack, 10.3, 180, 0, 255, 255, entityMainPos, new Vector3d(0, 0, 0), false, ROTATE0, ROTATE1, consumer1);
+        drawCube(poseStack, 11.5, 128, 0, 255, 127, entityMainPos, new Vector3d(0, 0, 0), false, ROTATE0, ROTATE1, consumer1);
 
         while ((LIGHTNING.size() < 10) && (random2.nextDouble() < 0.6)) {
             Vector3d facing = new Vector3d(random2.nextDouble() * 2 - 1, random2.nextDouble() * 2 - 1, random2.nextDouble() * 2 - 1);
@@ -201,10 +204,6 @@ public class ThunderboltVFX extends VisualEffects {
         }
     }
 
-    private Vector3d toVector3d(Vec3 vec3) {
-        return new Vector3d(vec3.x, vec3.y, vec3.z);
-    }
-
     private void renderLightningPath(PoseStack poseStack, MultiBufferSource bufferSource, List<Vector3d> pathPoints, int red, int green, int blue, int alpha, double side, Vector3d entityPos, boolean face) {
 
         List<Vector3d> points = new ArrayList<>();
@@ -220,6 +219,8 @@ public class ThunderboltVFX extends VisualEffects {
             if (j >= 2) {
                 points.clear();
                 VectorUtils.findVerticalPlane(point, before, after, side, points);
+                while(points.size() < 4) points.add(new Vector3d(0, 0, 0));
+
                 points0.add(points.get(0));
                 points1.add(points.get(1));
                 points2.add(points.get(2));
@@ -232,198 +233,63 @@ public class ThunderboltVFX extends VisualEffects {
 
         PoseStack.Pose pose = poseStack.last();
         poseStack.pushPose();
-        Vector3d cameraPos = toVector3d(getCamera().getPosition());
-        cameraPos = new Vector3d(cameraPos.x - entityPos.x, cameraPos.y - entityPos.y, cameraPos.z - entityPos.z);
+        Vector3d rawCameraPos = toVector3d(getCamera().getPosition());
+        double cx = rawCameraPos.x - entityPos.x;
+        double cy = rawCameraPos.y - entityPos.y;
+        double cz = rawCameraPos.z - entityPos.z;
+
+        double cLen = Math.sqrt(cx * cx + cy * cy + cz * cz);
+        if (cLen > 1e-6) {
+            cx /= cLen;
+            cy /= cLen;
+            cz /= cLen;
+        }
 
         for (int i = 0; i < points0.size() - 1; i++) {
-            Vector3d startPoint0 = points0.get(i);
-            Vector3d endPoint0 = points0.get(i + 1);
-            Vector3d startPoint1 = points1.get(i);
-            Vector3d endPoint1 = points1.get(i + 1);
-            Vector3d startPoint2 = points2.get(i);
-            Vector3d endPoint2 = points2.get(i + 1);
-            Vector3d startPoint3 = points3.get(i);
-            Vector3d endPoint3 = points3.get(i + 1);
+            double s0x = points0.get(i).x, s0y = points0.get(i).y, s0z = points0.get(i).z;
+            double e0x = points0.get(i+1).x, e0y = points0.get(i+1).y, e0z = points0.get(i+1).z;
+
+            double s1x = points1.get(i).x, s1y = points1.get(i).y, s1z = points1.get(i).z;
+
+            double s2x = points2.get(i).x, s2y = points2.get(i).y, s2z = points2.get(i).z;
+            double e2x = points2.get(i+1).x, e2y = points2.get(i+1).y, e2z = points2.get(i+1).z;
+
+            double s3x = points3.get(i).x, s3y = points3.get(i).y, s3z = points3.get(i).z;
+            double e3x = points3.get(i+1).x, e3y = points3.get(i+1).y, e3z = points3.get(i+1).z;
 
             VertexConsumer consumer = bufferSource.getBuffer(RenderType.debugQuads());
 
             poseStack.pushPose();
             {
-                if (face || calculateNormal(startPoint0, endPoint0, endPoint1, cameraPos)) {
-                    consumer.addVertex(pose, (float) startPoint0.x, (float) startPoint0.y, (float) startPoint0.z)
-                            .setColor(red, green, blue, alpha);
-                    consumer.addVertex(pose, (float) endPoint0.x, (float) endPoint0.y, (float) endPoint0.z)
-                            .setColor(red, green, blue, alpha);
-                    consumer.addVertex(pose, (float) endPoint1.x, (float) endPoint1.y, (float) endPoint1.z)
-                            .setColor(red, green, blue, alpha);
-                    consumer.addVertex(pose, (float) startPoint1.x, (float) startPoint1.y, (float) startPoint1.z)
-                            .setColor(red, green, blue, alpha);
+                if (face || calculateNormalRaw(s0x, s0y, s0z, e2x, e2y, e2z, e3x, e3y, e3z, cx, cy, cz)) {
+                    consumer.addVertex(pose, (float)s0x, (float)s0y, (float)s0z).setColor(red, green, blue, alpha);
+                    consumer.addVertex(pose, (float)e0x, (float)e0y, (float)e0z).setColor(red, green, blue, alpha);
+                    consumer.addVertex(pose, (float)e3x, (float)e3y, (float)e3z).setColor(red, green, blue, alpha);
+                    consumer.addVertex(pose, (float)s1x, (float)s1y, (float)s1z).setColor(red, green, blue, alpha);
                 }
 
-                if (face || calculateNormal(startPoint1, endPoint1, endPoint2, cameraPos)) {
-                    consumer.addVertex(pose, (float) startPoint1.x, (float) startPoint1.y, (float) startPoint1.z)
-                            .setColor(red, green, blue, alpha);
-                    consumer.addVertex(pose, (float) endPoint1.x, (float) endPoint1.y, (float) endPoint1.z)
-                            .setColor(red, green, blue, alpha);
-                    consumer.addVertex(pose, (float) endPoint2.x, (float) endPoint2.y, (float) endPoint2.z)
-                            .setColor(red, green, blue, alpha);
-                    consumer.addVertex(pose, (float) startPoint2.x, (float) startPoint2.y, (float) startPoint2.z)
-                            .setColor(red, green, blue, alpha);
+                if (face || calculateNormalRaw(s1x, s1y, s1z, e3x, e3y, e3z, s0x, s0y, s0z, cx, cy, cz)) {
+                    consumer.addVertex(pose, (float)s1x, (float)s1y, (float)s1z).setColor(red, green, blue, alpha);
+                    consumer.addVertex(pose, (float)e3x, (float)e3y, (float)e3z).setColor(red, green, blue, alpha);
+                    consumer.addVertex(pose, (float)s0x, (float)s0y, (float)s0z).setColor(red, green, blue, alpha);
+                    consumer.addVertex(pose, (float)s2x, (float)s2y, (float)s2z).setColor(red, green, blue, alpha);
                 }
 
-                if (face || calculateNormal(startPoint2, endPoint2, endPoint3, cameraPos)) {
-                    consumer.addVertex(pose, (float) startPoint2.x, (float) startPoint2.y, (float) startPoint2.z)
-                            .setColor(red, green, blue, alpha);
-                    consumer.addVertex(pose, (float) endPoint2.x, (float) endPoint2.y, (float) endPoint2.z)
-                            .setColor(red, green, blue, alpha);
-                    consumer.addVertex(pose, (float) endPoint3.x, (float) endPoint3.y, (float) endPoint3.z)
-                            .setColor(red, green, blue, alpha);
-                    consumer.addVertex(pose, (float) startPoint3.x, (float) startPoint3.y, (float) startPoint3.z)
-                            .setColor(red, green, blue, alpha);
+                if (face || calculateNormalRaw(s2x, s2y, s2z, s0x, s0y, s0z, s1x, s1y, s1z, cx, cy, cz)) {
+                    consumer.addVertex(pose, (float)s2x, (float)s2y, (float)s2z).setColor(red, green, blue, alpha);
+                    consumer.addVertex(pose, (float)s0x, (float)s0y, (float)s0z).setColor(red, green, blue, alpha);
+                    consumer.addVertex(pose, (float)s1x, (float)s1y, (float)s1z).setColor(red, green, blue, alpha);
+                    consumer.addVertex(pose, (float)e3x, (float)e3y, (float)e3z).setColor(red, green, blue, alpha);
                 }
 
-                if (face || calculateNormal(startPoint3, endPoint3, endPoint0, cameraPos)) {
-                    consumer.addVertex(pose, (float) startPoint3.x, (float) startPoint3.y, (float) startPoint3.z)
-                            .setColor(red, green, blue, alpha);
-                    consumer.addVertex(pose, (float) endPoint3.x, (float) endPoint3.y, (float) endPoint3.z)
-                            .setColor(red, green, blue, alpha);
-                    consumer.addVertex(pose, (float) endPoint0.x, (float) endPoint0.y, (float) endPoint0.z)
-                            .setColor(red, green, blue, alpha);
-                    consumer.addVertex(pose, (float) startPoint0.x, (float) startPoint0.y, (float) startPoint0.z)
-                            .setColor(red, green, blue, alpha);
+                if (face || calculateNormalRaw(s3x, s3y, s3z, s1x, s1y, s1z, s2x, s2y, s2z, cx, cy, cz)) {
+                    consumer.addVertex(pose, (float)s3x, (float)s3y, (float)s3z).setColor(red, green, blue, alpha);
+                    consumer.addVertex(pose, (float)s1x, (float)s1y, (float)s1z).setColor(red, green, blue, alpha);
+                    consumer.addVertex(pose, (float)s2x, (float)s2y, (float)s2z).setColor(red, green, blue, alpha);
+                    consumer.addVertex(pose, (float)s0x, (float)s0y, (float)s0z).setColor(red, green, blue, alpha);
                 }
             }
             poseStack.popPose();
-        }
-        poseStack.popPose();
-    }
-
-    public static boolean calculateNormal(Vector3d p0, Vector3d p1, Vector3d p2, Vector3d cameraPos) {
-
-        Vector3d edge1 = new Vector3d(p1).sub(p0);
-        Vector3d edge2 = new Vector3d(p2).sub(p0);
-
-        Vector3d normal = new Vector3d(edge1).cross(edge2);
-
-        normal.normalize();
-
-        Vector3d cameraV = new Vector3d(cameraPos.x - p0.x, cameraPos.y - p0.y, cameraPos.z - p0.z);
-
-        cameraV.normalize();
-
-        double cosCamera = (cameraV.x * normal.x + cameraV.y * normal.y + cameraV.z * normal.z) / (cameraV.length() * normal.length());
-
-        return (cosCamera > 0);
-    }
-
-    private void drawCube(PoseStack poseStack, MultiBufferSource bufferSource, double ballSide, int red, int green, int blue, int alpha, Vector3d entityPos, boolean face) {
-
-        PoseStack.Pose pose = poseStack.last();
-
-        VertexConsumer consumer = bufferSource.getBuffer(RenderType.debugQuads());
-
-        double ballSide1 = ballSide * Math.sqrt(2);
-
-        double x0_y = ballSide1 * Math.cos(ROTATE0) / 2;
-        double x1_y = -ballSide1 * Math.sin(ROTATE0) / 2;
-        double x2_y = -x0_y;
-        double x3_y = -x1_y;
-        double z0_y = ballSide1 * Math.sin(ROTATE0) / 2;
-        double z1_y = ballSide1 * Math.cos(ROTATE0) / 2;
-        double z2_y = -z0_y;
-        double z3_y = -z1_y;
-
-        Vector3d point0_y = new Vector3d(x0_y, ballSide / 2, z0_y);
-        Vector3d point1_y = new Vector3d(x1_y, ballSide / 2, z1_y);
-        Vector3d point2_y = new Vector3d(x2_y, ballSide / 2, z2_y);
-        Vector3d point3_y = new Vector3d(x3_y, ballSide / 2, z3_y);
-
-        double cosZ = Math.cos(ROTATE1);
-        double sinZ = Math.sin(ROTATE1);
-
-        Vector3d ballPoint0 = new Vector3d(
-                point0_y.x * cosZ - point0_y.y * sinZ,
-                point0_y.x * sinZ + point0_y.y * cosZ,
-                point0_y.z
-        );
-        Vector3d ballPoint1 = new Vector3d(
-                point1_y.x * cosZ - point1_y.y * sinZ,
-                point1_y.x * sinZ + point1_y.y * cosZ,
-                point1_y.z
-        );
-        Vector3d ballPoint2 = new Vector3d(
-                point2_y.x * cosZ - point2_y.y * sinZ,
-                point2_y.x * sinZ + point2_y.y * cosZ,
-                point2_y.z
-        );
-        Vector3d ballPoint3 = new Vector3d(
-                point3_y.x * cosZ - point3_y.y * sinZ,
-                point3_y.x * sinZ + point3_y.y * cosZ,
-                point3_y.z
-        );
-        Vector3d cameraPos = toVector3d(getCamera().getPosition());
-        cameraPos = new Vector3d(cameraPos.x - entityPos.x, cameraPos.y - entityPos.y, cameraPos.z - entityPos.z);
-
-        poseStack.pushPose();
-        if (face || calculateNormal(ballPoint0, new Vector3d(ballPoint2).negate(), new Vector3d(ballPoint3).negate(), cameraPos)) {
-            consumer.addVertex(pose, (float) ballPoint0.x, (float) ballPoint0.y, (float) ballPoint0.z)
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) -ballPoint2.x, (float) -ballPoint2.y, (float) -ballPoint2.z)
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) -ballPoint3.x, (float) -ballPoint3.y, (float) -ballPoint3.z)
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) ballPoint1.x, (float) ballPoint1.y, (float) ballPoint1.z)
-                    .setColor(red, green, blue, alpha);
-        }
-        if (face || calculateNormal(ballPoint1, new Vector3d(ballPoint3).negate(), new Vector3d(ballPoint0).negate(), cameraPos)) {
-            consumer.addVertex(pose, (float) ballPoint1.x, (float) ballPoint1.y, (float) ballPoint1.z)
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) -ballPoint3.x, (float) -ballPoint3.y, (float) -ballPoint3.z)
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) -ballPoint0.x, (float) -ballPoint0.y, (float) -ballPoint0.z)
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) ballPoint2.x, (float) ballPoint2.y, (float) ballPoint2.z)
-                    .setColor(red, green, blue, alpha);
-        }
-        if (face || calculateNormal(ballPoint2, new Vector3d(ballPoint0).negate(), new Vector3d(ballPoint1).negate(), cameraPos)) {
-            consumer.addVertex(pose, (float) ballPoint2.x, (float) ballPoint2.y, (float) ballPoint2.z)
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) -ballPoint0.x, (float) -ballPoint0.y, (float) -ballPoint0.z)
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) -ballPoint1.x, (float) -ballPoint1.y, (float) -ballPoint1.z)
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) ballPoint3.x, (float) ballPoint3.y, (float) ballPoint3.z)
-                    .setColor(red, green, blue, alpha);
-        }
-        if (face || calculateNormal(ballPoint3, new Vector3d(ballPoint1).negate(), new Vector3d(ballPoint2).negate(), cameraPos)) {
-            consumer.addVertex(pose, (float) ballPoint3.x, (float) ballPoint3.y, (float) ballPoint3.z)
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) -ballPoint1.x, (float) -ballPoint1.y, (float) -ballPoint1.z)
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) -ballPoint2.x, (float) -ballPoint2.y, (float) -ballPoint2.z)
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) ballPoint0.x, (float) ballPoint0.y, (float) ballPoint0.z)
-                    .setColor(red, green, blue, alpha);
-        }
-        if (face || calculateNormal(ballPoint0, ballPoint1, ballPoint2, cameraPos)) {
-            consumer.addVertex(pose, (float) ballPoint0.x, (float) ballPoint0.y, (float) ballPoint0.z)
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) ballPoint1.x, (float) ballPoint1.y, (float) ballPoint1.z)
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) ballPoint2.x, (float) ballPoint2.y, (float) ballPoint2.z)
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) ballPoint3.x, (float) ballPoint3.y, (float) ballPoint3.z)
-                    .setColor(red, green, blue, alpha);
-        }
-        if (face || calculateNormal(new Vector3d(ballPoint2).negate(), new Vector3d(ballPoint1).negate(), new Vector3d(ballPoint0).negate(), cameraPos)) {
-            consumer.addVertex(pose, (float) -ballPoint0.x, (float) -ballPoint0.y, (float) -ballPoint0.z)
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) -ballPoint1.x, (float) -ballPoint1.y, (float) -ballPoint1.z)
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) -ballPoint2.x, (float) -ballPoint2.y, (float) -ballPoint2.z)
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) -ballPoint3.x, (float) -ballPoint3.y, (float) -ballPoint3.z)
-                    .setColor(red, green, blue, alpha);
         }
         poseStack.popPose();
     }

@@ -7,9 +7,7 @@ import java.lang.annotation.Target;
 
 import static java.lang.annotation.ElementType.*;
 
-/**
- * 用于标记该部分是否需要移动至lib
- */
+/// 用于标记该部分是否需要移动至[ScheduledForMove#module]
 @Documented
 @Retention(RetentionPolicy.SOURCE)
 @Target({

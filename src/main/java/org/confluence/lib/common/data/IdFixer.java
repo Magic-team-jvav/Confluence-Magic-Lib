@@ -21,6 +21,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.StateHolder;
 import net.neoforged.fml.ModLoader;
+import net.neoforged.neoforge.common.util.Lazy;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.event.NameFixRegisterEvent;
@@ -64,14 +65,41 @@ public class IdFixer {
     public static final ResourceLocation FIXED_STP = ConfluenceMagicLib.asResource("simple_template_piece");
     public static final ResourceLocation GP = ResourceLocation.fromNamespaceAndPath(ConfluenceMagicLib.CONFLUENCE_ID, "grid_piece");
     public static final ResourceLocation FIXED_GP = ConfluenceMagicLib.asResource("grid_piece");
-    private static Map<String, String> BLOCK_NAME_FIX_MAP;
-    private static Map<String, String> ITEM_NAME_FIX_MAP;
-    private static Map<String, String> BIOME_NAME_FIX_MAP;
+    private static final Lazy<Map<String, String>> BLOCK_NAME_FIX_MAP;
+    private static final Lazy<Map<String, String>> ITEM_NAME_FIX_MAP;
+    private static final Lazy<Map<String, String>> BIOME_NAME_FIX_MAP = Lazy.of(() -> {
+        ImmutableMap.Builder<String, String> biome = ImmutableMap.builder();
+        ModLoader.postEvent(new NameFixRegisterEvent.Biome(biome));
+        return biome.build();
+    });
+
+    static {
+        Lazy<Map<String, String>> map = Lazy.of(() -> {
+            ImmutableMap.Builder<String, String> blockWithItem = ImmutableMap.builder();
+            ModLoader.postEvent(new NameFixRegisterEvent.BlockWithItem(blockWithItem));
+            return blockWithItem.build();
+        });
+
+        BLOCK_NAME_FIX_MAP = Lazy.of(() -> {
+            ImmutableMap.Builder<String, String> block = ImmutableMap.builder();
+            ModLoader.postEvent(new NameFixRegisterEvent.Block(block));
+            block.putAll(map.get());
+            return block.build();
+        });
+
+        ITEM_NAME_FIX_MAP = Lazy.of(() -> {
+            ImmutableMap.Builder<String, String> item = ImmutableMap.builder();
+            ModLoader.postEvent(new NameFixRegisterEvent.Item(item));
+            item.putAll(map.get());
+            return item.build();
+        });
+    }
+
     public static final Codec.ResultFunction<ResourceKey<Biome>> FIX_BIOME_KEY_FUNC = new Codec.ResultFunction<>() {
         @Override
         public <T> DataResult<Pair<ResourceKey<Biome>, T>> apply(DynamicOps<T> ops, T input, DataResult<Pair<ResourceKey<Biome>, T>> a) {
             return ops.getStringValue(input).result().map(s -> {
-                String s1 = BIOME_NAME_FIX_MAP.get(s);
+                String s1 = BIOME_NAME_FIX_MAP.get().get(s);
                 try {
                     return s1 == null ? a : DataResult.success(new Pair<>(ResourceKey.create(Registries.BIOME, ResourceLocation.parse(s1)), input), Lifecycle.stable());
                 } catch (Exception e) {
@@ -102,7 +130,7 @@ public class IdFixer {
                     T t = map.get(StateHolder.NAME_TAG);
                     if (t != null) ops.getStringValue(t).ifSuccess(s -> {
                         String s1 = s;
-                        while ((s = BLOCK_NAME_FIX_MAP.get(s1)) != null) s1 = s;
+                        while ((s = BLOCK_NAME_FIX_MAP.get().get(s1)) != null) s1 = s;
                         ops.mergeToMap(input, ops.createString(StateHolder.NAME_TAG), ops.createString(s1))
                                 .ifSuccess(t1 -> mutableObject.setValue(codec.decode(ops, t1)));
                     });
@@ -149,7 +177,7 @@ public class IdFixer {
                 if (a.isSuccess()) return a;
                 return ops.getStringValue(input).result().map(s -> {
                     String s1 = s;
-                    while ((s = ITEM_NAME_FIX_MAP.get(s1)) != null) s1 = s;
+                    while ((s = ITEM_NAME_FIX_MAP.get().get(s1)) != null) s1 = s;
                     return codec.decode(ops, ops.createString(s1));
                 }).orElse(a);
             }
@@ -168,7 +196,7 @@ public class IdFixer {
                 if (a.isSuccess()) return a;
                 return ops.getStringValue(input).result().map(s -> {
                     String s1 = s;
-                    while ((s = BIOME_NAME_FIX_MAP.get(s1)) != null) s1 = s;
+                    while ((s = BIOME_NAME_FIX_MAP.get().get(s1)) != null) s1 = s;
                     return codec.decode(ops, ops.createString(s1));
                 }).orElse(a);
             }
@@ -178,25 +206,5 @@ public class IdFixer {
                 return t;
             }
         };
-    }
-
-    public static void postRegisterEvents() {
-        ImmutableMap.Builder<String, String> blockWithItem = ImmutableMap.builder();
-        ModLoader.postEvent(new NameFixRegisterEvent.BlockWithItem(blockWithItem));
-        ImmutableMap<String, String> map = blockWithItem.build();
-
-        ImmutableMap.Builder<String, String> block = ImmutableMap.builder();
-        ModLoader.postEvent(new NameFixRegisterEvent.Block(block));
-        block.putAll(map);
-        BLOCK_NAME_FIX_MAP = block.build();
-
-        ImmutableMap.Builder<String, String> item = ImmutableMap.builder();
-        ModLoader.postEvent(new NameFixRegisterEvent.Item(item));
-        item.putAll(map);
-        ITEM_NAME_FIX_MAP = item.build();
-
-        ImmutableMap.Builder<String, String> biome = ImmutableMap.builder();
-        ModLoader.postEvent(new NameFixRegisterEvent.Biome(biome));
-        BIOME_NAME_FIX_MAP = biome.build();
     }
 }
