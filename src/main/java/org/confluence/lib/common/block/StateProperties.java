@@ -148,7 +148,7 @@ public class StateProperties {
         }
 
         public static ForwardTwoPart getAnotherPart(ForwardTwoPart exclude) {
-            return exclude.isFront() ? BASE : FORWARD;
+            return exclude.isForward() ? BASE : FORWARD;
         }
 
         public String toString() {
@@ -163,7 +163,7 @@ public class StateProperties {
             return this == BASE;
         }
 
-        public boolean isFront() {
+        public boolean isForward() {
             return this == FORWARD;
         }
     }
