@@ -43,7 +43,7 @@ public class HorizontalDirectionalWithForwardTwoPartBlock extends HorizontalDire
     }
 
     @Override
-    public BlockState getStateForPlacement(BlockPlaceContext pContext) {
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext pContext) {
         Level level = pContext.getLevel();
         BlockState blockState = defaultBlockState().setValue(FACING, pContext.getHorizontalDirection().getOpposite());
         BlockPos relativePos = pContext.getClickedPos().relative(StateProperties.ForwardTwoPart.getConnectedDirection(blockState));
