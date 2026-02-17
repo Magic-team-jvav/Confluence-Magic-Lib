@@ -46,6 +46,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.component.NbtComponent;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -337,12 +338,13 @@ public final class LibUtils {
     }
 
     /// 尝试寻找该实体的所有者，如果找不到则返回该实体
-    public static Entity getOwner(Entity entity) {
+    @Contract("null -> null; !null -> !null")
+    public static @Nullable Entity getOwner(@Nullable Entity entity) {
         Entity owner = switch (entity) {
             case PartEntity<?> partEntity -> partEntity.getParent();
             case OwnableEntity ownableEntity -> ownableEntity.getOwner();
             case TraceableEntity traceableEntity -> traceableEntity.getOwner();
-            default -> entity;
+            case null, default -> entity;
         };
         return owner == null ? entity : owner;
     }
