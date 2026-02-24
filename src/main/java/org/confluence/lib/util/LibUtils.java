@@ -41,6 +41,7 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.neoforge.common.EffectCure;
 import net.neoforged.neoforge.entity.PartEntity;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -408,5 +409,10 @@ public final class LibUtils {
 
     public static boolean isSingleplayerOwner(ServerPlayer player) {
         return player.server.isSingleplayerOwner(player.getGameProfile());
+    }
+
+    /// 可于游戏加载早期阶段判断
+    public static boolean isModLoaded(String modid) {
+        return LoadingModList.get().getModFileById(modid) != null;
     }
 }

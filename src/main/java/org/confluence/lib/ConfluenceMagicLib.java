@@ -14,7 +14,6 @@ import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.crafting.IngredientType;
@@ -29,6 +28,7 @@ import org.confluence.lib.common.recipe.AmountIngredient;
 import org.confluence.lib.common.worldgen.structure.GridPiece;
 import org.confluence.lib.common.worldgen.structure.SimpleTemplatePiece;
 import org.confluence.lib.util.DelayTaskHolder;
+import org.confluence.lib.util.LibUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +40,7 @@ public final class ConfluenceMagicLib {
     public static final String LIB_ID = "confluence_magic_lib";
     public static final String CONFLUENCE_ID = "confluence";
     public static final Logger LOGGER = LoggerFactory.getLogger("Confluence Magic Lib");
-    public static final Supplier<Boolean> IS_CONFLUENCE_LOADED = Suppliers.memoize(() -> ModList.get().isLoaded(CONFLUENCE_ID));
+    public static final Supplier<Boolean> IS_CONFLUENCE_LOADED = Suppliers.memoize(() -> LibUtils.isModLoaded(CONFLUENCE_ID));
 
     //region 数据附件
     private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPE = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, LIB_ID);
