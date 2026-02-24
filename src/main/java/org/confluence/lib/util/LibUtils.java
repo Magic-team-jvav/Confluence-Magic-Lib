@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ChunkResult;
 import net.minecraft.server.level.GenerationChunkHolder;
 import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -403,5 +404,9 @@ public final class LibUtils {
             return false;
         }
         return owner == null || (!owner.isPassengerOfSameVehicle(target)/* && !target.skipAttackInteraction(owner)*/);
+    }
+
+    public static boolean isSingleplayerOwner(ServerPlayer player) {
+        return player.server.isSingleplayerOwner(player.getGameProfile());
     }
 }
