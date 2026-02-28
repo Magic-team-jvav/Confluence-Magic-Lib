@@ -140,7 +140,7 @@ public final class GameEvents {
         EquipmentSlot slot = event.getSlot();
         if (livingEntity.isAlive()) {
             DelayTaskHolder delayTaskHolder = livingEntity.getExistingDataOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
-            if (delayTaskHolder != null && !event.getFrom().getItem().shouldCauseBlockBreakReset(event.getFrom(), event.getTo())) {
+            if (delayTaskHolder != null && !ItemStack.isSameItem(event.getFrom(), event.getTo())) {
                 delayTaskHolder.removeTask(slot);
             }
         }
