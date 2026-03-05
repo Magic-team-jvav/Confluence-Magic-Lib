@@ -4,9 +4,7 @@ import net.minecraft.world.entity.Entity;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.confluence.lib.network.SetEntityDataPacketS2C;
 
-/**
- * @see SetEntityDataPacketS2C
- */
+/// @see SetEntityDataPacketS2C
 public interface IExtraSyncedData<T extends Entity> extends SelfGetter<T> {
     default void confluence$setData(byte dataId, Object o) {
         T self = confluence$self();
