@@ -341,7 +341,7 @@ public final class FeatureUtils {
         return true;
     }
 
-
+    //生成一個凸多面體的blockPos列表
     public static void updateLeavesOptimized(WorldGenLevel level, LongOpenHashSet trunkSet, LongOpenHashSet leavesSet, boolean cleanUncovered, boolean debugMode) {
         if (leavesSet.isEmpty()) return;
 
@@ -355,17 +355,16 @@ public final class FeatureUtils {
         }
 
         BlockState[] debugColors = debugMode ? new BlockState[]{
-                Blocks.LIGHT_BLUE_CONCRETE.defaultBlockState(), Blocks.CYAN_CONCRETE.defaultBlockState(),
-                Blocks.GREEN_CONCRETE.defaultBlockState(), Blocks.LIME_CONCRETE.defaultBlockState(),
-                Blocks.YELLOW_CONCRETE.defaultBlockState(), Blocks.ORANGE_CONCRETE.defaultBlockState(),
-                Blocks.RED_CONCRETE.defaultBlockState()
+                Blocks.CYAN_CONCRETE.defaultBlockState(), Blocks.GREEN_CONCRETE.defaultBlockState(),
+                Blocks.LIME_CONCRETE.defaultBlockState(), Blocks.YELLOW_CONCRETE.defaultBlockState(),
+                Blocks.ORANGE_CONCRETE.defaultBlockState(), Blocks.RED_CONCRETE.defaultBlockState()
         } : null;
 
         while (!queue.isEmpty()) {
             long currentLong = queue.poll();
             int currentDist = distanceMap.get(currentLong);
 
-            if (currentDist >= 7) continue;
+            if (currentDist >= 6) continue;
 
             BlockPos currentPos = BlockPos.of(currentLong);
             for (Direction direction : Direction.values()) {

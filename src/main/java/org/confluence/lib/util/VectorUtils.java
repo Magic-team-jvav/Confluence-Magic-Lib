@@ -690,4 +690,189 @@ public final class VectorUtils {
         returnList.add(point2);
         returnList.add(point3);
     }
+
+    //凸包的内部點集采樣
+    public static List<BlockPos> getBlocksInConvexHull(List<Vector3d> points) {
+        List<BlockPos> result = new ArrayList<>();
+        if (points == null || points.size() < 4) return result;
+
+        double cx = 0, cy = 0, cz = 0;
+        for (Vector3d p : points) { cx += p.x; cy += p.y; cz += p.z; }
+        cx /= points.size(); cy /= points.size(); cz /= points.size();
+
+        int pivotIdx = 0;
+        double maxDistSq = 0;
+        for (int i = 0; i < points.size(); i++) {
+            double d = points.get(i).distanceSquared(cx, cy, cz);
+            if (d > maxDistSq) { maxDistSq = d; pivotIdx = i; }
+        }
+        Vector3d pivot = points.get(pivotIdx);
+
+        int p1Idx = -1;
+        maxDistSq = 0;
+        for (int i = 0; i < points.size(); i++) {
+            if (i == pivotIdx) continue;
+            double d = points.get(i).distanceSquared(pivot);
+            if (d > maxDistSq) { maxDistSq = d; p1Idx = i; }
+        }
+        if (p1Idx == -1) return result;
+        Vector3d p1 = points.get(p1Idx);
+
+        int p2Idx = -1;
+        double maxArea = 0;
+        for (int i = 0; i < points.size(); i++) {
+            if (i == pivotIdx || i == p1Idx) continue;
+            double area = triArea(pivot, p1, points.get(i));
+            if (area > maxArea) { maxArea = area; p2Idx = i; }
+        }
+        if (p2Idx == -1) return result;
+        Vector3d p2 = points.get(p2Idx);
+
+        int p3Idx = -1;
+        double maxDist = 0;
+        for (int i = 0; i < points.size(); i++) {
+            if (i == pivotIdx || i == p1Idx || i == p2Idx) continue;
+            double d = pointToPlaneDist(points.get(i), pivot, p1, p2);
+            if (Math.abs(d) > Math.abs(maxDist)) { maxDist = d; p3Idx = i; }
+        }
+        if (p3Idx == -1) return result;
+        if (Math.abs(maxDist) < 1e-7) return result;
+        Vector3d p3 = points.get(p3Idx);
+
+        cx = (pivot.x + p1.x + p2.x + p3.x) / 4.0;
+        cy = (pivot.y + p1.y + p2.y + p3.y) / 4.0;
+        cz = (pivot.z + p1.z + p2.z + p3.z) / 4.0;
+
+        List<int[]> initialFaces;
+        if (maxDist > 0) {
+            initialFaces = new ArrayList<>(List.of(
+                    new int[]{pivotIdx, p1Idx, p2Idx},
+                    new int[]{pivotIdx, p2Idx, p3Idx},
+                    new int[]{pivotIdx, p3Idx, p1Idx},
+                    new int[]{p1Idx, p3Idx, p2Idx})
+            );
+        } else {
+            initialFaces = new ArrayList<>(List.of(
+                    new int[]{pivotIdx, p2Idx, p1Idx},
+                    new int[]{pivotIdx, p1Idx, p3Idx},
+                    new int[]{pivotIdx, p3Idx, p2Idx},
+                    new int[]{p1Idx, p2Idx, p3Idx})
+            );
+        }
+        List<int[]> faces = new ArrayList<>(initialFaces);
+
+        for (int i = 0; i < points.size(); i++) {
+            if (i == pivotIdx || i == p1Idx || i == p2Idx || i == p3Idx) continue;
+
+            Vector3d point = points.get(i);
+            List<int[]> newFaces = new ArrayList<>();
+            Set<Long> boundaryEdges = new HashSet<>();
+
+            for (int[] face : faces) {
+                if (isPointOutside(point, points.get(face[0]), points.get(face[1]), points.get(face[2]), cx, cy, cz)) {
+                    addEdge(boundaryEdges, face[0], face[1]);
+                    addEdge(boundaryEdges, face[1], face[2]);
+                    addEdge(boundaryEdges, face[2], face[0]);
+                } else {
+                    newFaces.add(face);
+                }
+            }
+
+            if (boundaryEdges.isEmpty()) continue;
+
+            for (long edge : boundaryEdges) {
+                int a = (int) (edge >> 32);
+                int b = (int) edge;
+                newFaces.add(new int[]{a, b, i});
+            }
+            faces = newFaces;
+        }
+
+        double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, minZ = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE, maxZ = -Double.MAX_VALUE;
+        for (Vector3d p : points) {
+            minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+            minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+            minZ = Math.min(minZ, p.z); maxZ = Math.max(maxZ, p.z);
+        }
+
+        BlockPos.MutableBlockPos mPos = new BlockPos.MutableBlockPos();
+        for (int x = (int) Math.floor(minX); x <= (int) Math.ceil(maxX); x++) {
+            for (int y = (int) Math.floor(minY); y <= (int) Math.ceil(maxY); y++) {
+                for (int z = (int) Math.floor(minZ); z <= (int) Math.ceil(maxZ); z++) {
+                    double px = x + 0.5, py = y + 0.5, pz = z + 0.5;
+                    boolean inside = true;
+                    for (int[] face : faces) {
+                        Vector3d a = points.get(face[0]), b = points.get(face[1]), c = points.get(face[2]);
+
+                        double[] normal = getNormal(a, b, c);
+                        double nx = normal[0], ny = normal[1], nz = normal[2];
+
+                        double fcx = (a.x + b.x + c.x) / 3.0;
+                        double fcy = (a.y + b.y + c.y) / 3.0;
+                        double fcz = (a.z + b.z + c.z) / 3.0;
+                        if (nx * (cx - fcx) + ny * (cy - fcy) + nz * (cz - fcz) > 0) {
+                            nx = -nx; ny = -ny; nz = -nz;
+                        }
+
+                        if ((px - a.x) * nx + (py - a.y) * ny + (pz - a.z) * nz > 1e-7) {
+                            inside = false;
+                            break;
+                        }
+                    }
+                    if (inside) result.add(mPos.set(x, y, z).immutable());
+                }
+            }
+        }
+        return result;
+    }
+
+    private static double[] getNormal(Vector3d a, Vector3d b, Vector3d c) {
+        double abx = b.x - a.x, aby = b.y - a.y, abz = b.z - a.z;
+        double acx = c.x - a.x, acy = c.y - a.y, acz = c.z - a.z;
+        double nx = aby * acz - abz * acy;
+        double ny = abz * acx - abx * acz;
+        double nz = abx * acy - aby * acx;
+        return new double[]{nx, ny, nz};
+    }
+
+    private static void addEdge(Set<Long> boundary, int a, int b) {
+        long code = ((long) a << 32) | b;
+        long reverseCode = ((long) b << 32) | a;
+
+        if (boundary.contains(reverseCode)) {
+            boundary.remove(reverseCode);
+        } else {
+            boundary.add(code);
+        }
+    }
+
+    private static double triArea(Vector3d a, Vector3d b, Vector3d c) {
+        double abx = b.x - a.x, aby = b.y - a.y, abz = b.z - a.z;
+        double acx = c.x - a.x, acy = c.y - a.y, acz = c.z - a.z;
+        double nx = aby * acz - abz * acy;
+        double ny = abz * acx - abx * acz;
+        double nz = abx * acy - aby * acx;
+        return Math.sqrt(nx*nx + ny*ny + nz*nz);
+    }
+
+    private static double pointToPlaneDist(Vector3d p, Vector3d a, Vector3d b, Vector3d c) {
+        double[] normal = getNormal(a, b, c);
+        return (p.x - a.x) * normal[0] + (p.y - a.y) * normal[1] + (p.z - a.z) * normal[2];
+    }
+
+    private static boolean isPointOutside(Vector3d p, Vector3d a, Vector3d b, Vector3d c, double cx, double cy, double cz) {
+        double[] normal = getNormal(a, b, c);
+        double nx = normal[0], ny = normal[1], nz = normal[2];
+
+        double fcx = (a.x + b.x + c.x) / 3.0;
+        double fcy = (a.y + b.y + c.y) / 3.0;
+        double fcz = (a.z + b.z + c.z) / 3.0;
+
+        if (nx * (cx - fcx) + ny * (cy - fcy) + nz * (cz - fcz) > 0) {
+            nx = -nx; ny = -ny; nz = -nz;
+        }
+
+        return (p.x - a.x) * nx + (p.y - a.y) * ny + (p.z - a.z) * nz > 1e-7;
+    }
 }
