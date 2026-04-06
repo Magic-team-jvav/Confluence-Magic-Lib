@@ -1,9 +1,8 @@
 package org.confluence.lib.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import org.confluence.lib.mixed.IPoseStack;
 
-public class AntiPushPoseStack extends PoseStack implements IPoseStack {
+public class AntiPushPoseStack extends PoseStack {
     @Override
     public void popPose() {
         popPose(false);
@@ -24,10 +23,5 @@ public class AntiPushPoseStack extends PoseStack implements IPoseStack {
         if (real) {
             super.pushPose();
         }
-    }
-
-    @Override
-    public boolean confluence$isAntiPush() {
-        return true;
     }
 }

@@ -23,8 +23,7 @@
         "client.BlockModelShaperMixin",
         "client.GuiGraphicsMixin",
         "client.LocalPlayerMixin",
-        "client.MissingTextureAtlasSpriteMixin",
-        "client.PoseSackMixin"
+        "client.MissingTextureAtlasSpriteMixin"
     ],
     "injectors": {
         "defaultRequire": 1
