@@ -12,42 +12,6 @@ public class RenderUtils {
         return new Vector3d(vec3.x, vec3.y, vec3.z);
     }
 
-    public static boolean calculateNormalRaw(double p0x, double p0y, double p0z,
-                                             double p1x, double p1y, double p1z,
-                                             double p2x, double p2y, double p2z,
-                                             double cx, double cy, double cz) {
-
-        double dx1 = p1x - p0x;
-        double dy1 = p1y - p0y;
-        double dz1 = p1z - p0z;
-
-        double dx2 = p2x - p0x;
-        double dy2 = p2y - p0y;
-        double dz2 = p2z - p0z;
-
-        double nx = dy1 * dz2 - dz1 * dy2;
-        double ny = dz1 * dx2 - dx1 * dz2;
-        double nz = dx1 * dy2 - dy1 * dx2;
-
-        double len = Math.sqrt(nx * nx + ny * ny + nz * nz);
-        if (len < 1e-6) return false;
-
-        nx /= len;
-        ny /= len;
-        nz /= len;
-
-        double cLen = Math.sqrt(cx * cx + cy * cy + cz * cz);
-        if (cLen < 1e-6) return false;
-
-        cx /= cLen;
-        cy /= cLen;
-        cz /= cLen;
-
-        double dotProduct = nx * cx + ny * cy + nz * cz;
-
-        return dotProduct > 0;
-    }
-
     public static void drawCube(PoseStack poseStack, double ballSide, int red, int green, int blue, int alpha, Vector3d entityPos, Vector3d pos0, boolean face, double rotate0, double rotate1, VertexConsumer consumer) {
 
         PoseStack.Pose pose = poseStack.last();
@@ -100,70 +64,79 @@ public class RenderUtils {
         double py0 = pos0.y;
         double pz0 = pos0.z;
 
-        if (face || calculateNormalRaw(p0x, p0y, bs_sin0_div2, p2x, p2y, z2, p3x, p3y, z3, v0x, v0y, v0z)) {
-            consumer.addVertex(pose, (float) (p0x + px0), (float) (p0y + py0), (float) (bs_sin0_div2 + pz0))
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) (-p2x + px0), (float) (-p2y + py0), (float) (-z2 + pz0))
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) (-p3x + px0), (float) (-p3y + py0), (float) (-z3 + pz0))
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) (p1x + px0), (float) (p1y + py0), (float) (bs_cos0_div2 + pz0))
-                    .setColor(red, green, blue, alpha);
+        if (face || calculateNormalRaw(p0x, p0y, bs_sin0_div2, -p2x, -p2y, -z2, -p3x, -p3y, -z3, v0x, v0y, v0z)) {
+            consumer.addVertex(pose, (float) (p0x + px0), (float) (p0y + py0), (float) (bs_sin0_div2 + pz0)).setColor(red, green, blue, alpha);
+            consumer.addVertex(pose, (float) (-p2x + px0), (float) (-p2y + py0), (float) (-z2 + pz0)).setColor(red, green, blue, alpha);
+            consumer.addVertex(pose, (float) (-p3x + px0), (float) (-p3y + py0), (float) (-z3 + pz0)).setColor(red, green, blue, alpha);
+            consumer.addVertex(pose, (float) (p1x + px0), (float) (p1y + py0), (float) (bs_cos0_div2 + pz0)).setColor(red, green, blue, alpha);
         }
 
-        if (face || calculateNormalRaw(p1x, p1y, bs_cos0_div2, p3x, p3y, z3, p0x, p0y, bs_sin0_div2, v0x, v0y, v0z)) {
-            consumer.addVertex(pose, (float) (p1x + px0), (float) (p1y + py0), (float) (bs_cos0_div2 + pz0))
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) (-p3x + px0), (float) (-p3y + py0), (float) (-z3 + pz0))
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) (-p0x + px0), (float) (-p0y + py0), (float) (-bs_sin0_div2 + pz0))
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) (p2x + px0), (float) (p2y + py0), (float) (z2 + pz0))
-                    .setColor(red, green, blue, alpha);
+        if (face || calculateNormalRaw(p1x, p1y, bs_cos0_div2, -p3x, -p3y, -z3, -p0x, -p0y, -bs_sin0_div2, v0x, v0y, v0z)) {
+            consumer.addVertex(pose, (float) (p1x + px0), (float) (p1y + py0), (float) (bs_cos0_div2 + pz0)).setColor(red, green, blue, alpha);
+            consumer.addVertex(pose, (float) (-p3x + px0), (float) (-p3y + py0), (float) (-z3 + pz0)).setColor(red, green, blue, alpha);
+            consumer.addVertex(pose, (float) (-p0x + px0), (float) (-p0y + py0), (float) (-bs_sin0_div2 + pz0)).setColor(red, green, blue, alpha);
+            consumer.addVertex(pose, (float) (p2x + px0), (float) (p2y + py0), (float) (z2 + pz0)).setColor(red, green, blue, alpha);
         }
 
-        if (face || calculateNormalRaw(p2x, p2y, z2, p0x, p0y, bs_sin0_div2, p1x, p1y, bs_cos0_div2, v0x, v0y, v0z)) {
-            consumer.addVertex(pose, (float) (p2x + px0), (float) (p2y + py0), (float) (z2 + pz0))
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) (-p0x + px0), (float) (-p0y + py0), (float) (-bs_sin0_div2 + pz0))
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) (-p1x + px0), (float) (-p1y + py0), (float) (-bs_cos0_div2 + pz0))
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) (p3x + px0), (float) (p3y + py0), (float) (z3 + pz0))
-                    .setColor(red, green, blue, alpha);
+        if (face || calculateNormalRaw(p2x, p2y, z2, -p0x, -p0y, -bs_sin0_div2, -p1x, -p1y, -bs_cos0_div2, v0x, v0y, v0z)) {
+            consumer.addVertex(pose, (float) (p2x + px0), (float) (p2y + py0), (float) (z2 + pz0)).setColor(red, green, blue, alpha);
+            consumer.addVertex(pose, (float) (-p0x + px0), (float) (-p0y + py0), (float) (-bs_sin0_div2 + pz0)).setColor(red, green, blue, alpha);
+            consumer.addVertex(pose, (float) (-p1x + px0), (float) (-p1y + py0), (float) (-bs_cos0_div2 + pz0)).setColor(red, green, blue, alpha);
+            consumer.addVertex(pose, (float) (p3x + px0), (float) (p3y + py0), (float) (z3 + pz0)).setColor(red, green, blue, alpha);
         }
 
-        if (face || calculateNormalRaw(p3x, p3y, z3, p1x, p1y, bs_cos0_div2, p2x, p2y, z2, v0x, v0y, v0z)) {
-            consumer.addVertex(pose, (float) (p3x + px0), (float) (p3y + py0), (float) (z3 + pz0))
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) (-p1x + px0), (float) (-p1y + py0), (float) (-bs_cos0_div2 + pz0))
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) (-p2x + px0), (float) (-p2y + py0), (float) (-z2 + pz0))
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) (p0x + px0), (float) (p0y + py0), (float) (bs_sin0_div2 + pz0))
-                    .setColor(red, green, blue, alpha);
+        if (face || calculateNormalRaw(p3x, p3y, z3, -p1x, -p1y, -bs_cos0_div2, -p2x, -p2y, -z2, v0x, v0y, v0z)) {
+            consumer.addVertex(pose, (float) (p3x + px0), (float) (p3y + py0), (float) (z3 + pz0)).setColor(red, green, blue, alpha);
+            consumer.addVertex(pose, (float) (-p1x + px0), (float) (-p1y + py0), (float) (-bs_cos0_div2 + pz0)).setColor(red, green, blue, alpha);
+            consumer.addVertex(pose, (float) (-p2x + px0), (float) (-p2y + py0), (float) (-z2 + pz0)).setColor(red, green, blue, alpha);
+            consumer.addVertex(pose, (float) (p0x + px0), (float) (p0y + py0), (float) (bs_sin0_div2 + pz0)).setColor(red, green, blue, alpha);
         }
 
         if (face || calculateNormalRaw(p0x, p0y, bs_sin0_div2, p1x, p1y, bs_cos0_div2, p2x, p2y, z2, v0x, v0y, v0z)) {
-            consumer.addVertex(pose, (float) (p0x + px0), (float) (p0y + py0), (float) (bs_sin0_div2 + pz0))
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) (p1x + px0), (float) (p1y + py0), (float) (bs_cos0_div2 + pz0))
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) (p2x + px0), (float) (p2y + py0), (float) (z2 + pz0))
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) (p3x + px0), (float) (p3y + py0), (float) (z3 + pz0))
-                    .setColor(red, green, blue, alpha);
+            consumer.addVertex(pose, (float) (p0x + px0), (float) (p0y + py0), (float) (bs_sin0_div2 + pz0)).setColor(red, green, blue, alpha);
+            consumer.addVertex(pose, (float) (p1x + px0), (float) (p1y + py0), (float) (bs_cos0_div2 + pz0)).setColor(red, green, blue, alpha);
+            consumer.addVertex(pose, (float) (p2x + px0), (float) (p2y + py0), (float) (z2 + pz0)).setColor(red, green, blue, alpha);
+            consumer.addVertex(pose, (float) (p3x + px0), (float) (p3y + py0), (float) (z3 + pz0)).setColor(red, green, blue, alpha);
         }
 
-        if (face || calculateNormalRaw(p2x, p2y, z2, p1x, p1y, bs_cos0_div2, p0x, p0y, bs_sin0_div2, v0x, v0y, v0z)) {
-            consumer.addVertex(pose, (float) (-p0x + px0), (float) (-p0y + py0), (float) (-bs_sin0_div2 + pz0))
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) (-p1x + px0), (float) (-p1y + py0), (float) (-bs_cos0_div2 + pz0))
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) (-p2x + px0), (float) (-p2y + py0), (float) (-z2 + pz0))
-                    .setColor(red, green, blue, alpha);
-            consumer.addVertex(pose, (float) (-p3x + px0), (float) (-p3y + py0), (float) (-z3 + pz0))
-                    .setColor(red, green, blue, alpha);
+        if (face || calculateNormalRaw(-p0x, -p0y, -bs_sin0_div2, -p3x, -p3y, -z3, -p2x, -p2y, -z2, v0x, v0y, v0z)) {
+            consumer.addVertex(pose, (float) (-p0x + px0), (float) (-p0y + py0), (float) (-bs_sin0_div2 + pz0)).setColor(red, green, blue, alpha);
+            consumer.addVertex(pose, (float) (-p3x + px0), (float) (-p3y + py0), (float) (-z3 + pz0)).setColor(red, green, blue, alpha);
+            consumer.addVertex(pose, (float) (-p2x + px0), (float) (-p2y + py0), (float) (-z2 + pz0)).setColor(red, green, blue, alpha);
+            consumer.addVertex(pose, (float) (-p1x + px0), (float) (-p1y + py0), (float) (-bs_cos0_div2 + pz0)).setColor(red, green, blue, alpha);
         }
+    }
+
+    public static boolean calculateNormalRaw(double p0x, double p0y, double p0z,
+                                             double p1x, double p1y, double p1z,
+                                             double p2x, double p2y, double p2z,
+                                             double cx, double cy, double cz) {
+
+        double dx1 = p1x - p0x;
+        double dy1 = p1y - p0y;
+        double dz1 = p1z - p0z;
+
+        double dx2 = p2x - p0x;
+        double dy2 = p2y - p0y;
+        double dz2 = p2z - p0z;
+
+        double nx = dy1 * dz2 - dz1 * dy2;
+        double ny = dz1 * dx2 - dx1 * dz2;
+        double nz = dx1 * dy2 - dy1 * dx2;
+
+        double len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+        if (len < 1e-6) return false;
+
+        nx /= len;
+        ny /= len;
+        nz /= len;
+
+        double cLen = Math.sqrt(cx * cx + cy * cy + cz * cz);
+        if (cLen < 1e-6) return false;
+        cx /= cLen; cy /= cLen; cz /= cLen;
+
+        double dotProduct = nx * cx + ny * cy + nz * cz;
+
+        return dotProduct > 0;
     }
 }
