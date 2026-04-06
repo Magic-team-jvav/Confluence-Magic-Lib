@@ -4,15 +4,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.QuartPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ChunkResult;
-import net.minecraft.server.level.GenerationChunkHolder;
-import net.minecraft.server.level.ServerChunkCache;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.*;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -34,6 +32,8 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -355,8 +355,16 @@ public final class LibUtils {
         return getChunkIfLoaded(chunkSource, SectionPos.blockToSectionCoord(blockPos.getX()), SectionPos.blockToSectionCoord(blockPos.getZ()));
     }
 
+    public static @Nullable ChunkAccess getChunkIfLoaded(ServerLevel level, BlockPos blockPos) {
+        return getChunkIfLoaded(level.getChunkSource(), blockPos);
+    }
+
     public static @Nullable ChunkAccess getChunkIfLoaded(ServerChunkCache chunkSource, ChunkPos chunkPos) {
         return getChunkIfLoaded(chunkSource, chunkPos.x, chunkPos.z);
+    }
+
+    public static @Nullable ChunkAccess getChunkIfLoaded(ServerLevel level, ChunkPos chunkPos) {
+        return getChunkIfLoaded(level.getChunkSource(), chunkPos);
     }
 
     /// 较大程度地减小开销，切记要在服务器线程调用！
@@ -366,6 +374,20 @@ public final class LibUtils {
             return future.join().orElse(null);
         }
         return null;
+    }
+
+    public static @Nullable ChunkAccess getChunkIfLoaded(ServerLevel level, int cx, int cz) {
+        return getChunkIfLoaded(level.getChunkSource(), cx, cz);
+    }
+
+    /// @return 一个BiomeManager，通过它获得的群系，如果是The Void，则表示该坐标所在区块未加载
+    /// @apiNote 你应该在服务器线程调用这个方法
+    public static BiomeManager getBiomeManagerThatChunkMustBeLoaded(ServerLevel level) {
+        return level.getBiomeManager().withDifferentSource((qx, qy, qz) -> {
+            ChunkAccess access = LibUtils.getChunkIfLoaded(level, QuartPos.toSection(qx), QuartPos.toSection(qz));
+            if (access == null) return level.registryAccess().holderOrThrow(Biomes.THE_VOID);
+            return access.getNoiseBiome(qx, qy, qz);
+        });
     }
 
     /// 整数乘非负小数得到新整数
