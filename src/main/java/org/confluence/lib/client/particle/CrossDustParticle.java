@@ -6,7 +6,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.util.Mth;
 import org.confluence.lib.common.particle.CrossDustParticleOptions;
-import org.confluence.lib.util.LibUtils;
+import org.confluence.lib.util.LibMathUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,7 +52,7 @@ public class CrossDustParticle extends TextureSheetParticle {
         float progress = (float) age / lifetime;
         if (options.noGravity) {
             this.accelOld = accel;
-            this.accel = LibUtils.cubicBezier(progress, options.speedCurve.x, options.speedCurve.y, options.speedCurve.z, options.speedCurve.w);
+            this.accel = LibMathUtils.cubicBezier(progress, options.speedCurve.x, options.speedCurve.y, options.speedCurve.z, options.speedCurve.w);
             float k = (accel - accelOld) / (progress - lastProgress);
             this.xd = options.velocity.x * k;
             this.yd = options.velocity.y * k;
@@ -60,7 +60,7 @@ public class CrossDustParticle extends TextureSheetParticle {
         }
         this.oRoll = roll;
         this.rollDeltaOld = rollDelta;
-        this.rollDelta = LibUtils.cubicBezier(progress, options.rollCurve.x, options.rollCurve.y, options.rollCurve.z, options.rollCurve.w);
+        this.rollDelta = LibMathUtils.cubicBezier(progress, options.rollCurve.x, options.rollCurve.y, options.rollCurve.z, options.rollCurve.w);
         float k = (rollDelta - rollDeltaOld) / (progress - lastProgress);
         this.roll += options.roll * k * Mth.DEG_TO_RAD;
 

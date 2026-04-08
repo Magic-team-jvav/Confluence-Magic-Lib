@@ -12,7 +12,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.*;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.Difficulty;
@@ -281,14 +280,9 @@ public final class LibUtils {
         return ServerLifecycleHooks.getCurrentServer() != null && ServerLifecycleHooks.getCurrentServer().isSameThread();
     }
 
-    /// @author ChatGPT
+    @Deprecated
     public static float cubicBezier(float t, float p0, float p1, float p2, float p3) {
-        float u = 1 - t;
-        float tt = t * t;
-        float uu = u * u;
-        float uuu = uu * u;
-        float ttt = tt * t;
-        return uuu * p0 + 3 * uu * t * p1 + 3 * u * tt * p2 + ttt * p3;
+        return LibMathUtils.cubicBezier(t, p0, p1, p2, p3);
     }
 
     public static <T> void resetDataComponent(ItemStack itemStack, DataComponentType<T> type) {
@@ -300,12 +294,14 @@ public final class LibUtils {
         }
     }
 
+    @Deprecated
     public static boolean checkChance(float value, RandomSource random) {
-        return value >= 1.0F || (value > 0.0F && random.nextFloat() < value);
+        return LibMathUtils.checkChance(value, random);
     }
 
+    @Deprecated
     public static boolean checkChance(double value, RandomSource random) {
-        return value >= 1.0 || (value > 0.0 && random.nextDouble() < value);
+        return LibMathUtils.checkChance(value, random);
     }
 
     public static <K, V> Map<K, V> convertTupleListToMap(List<Tuple<K, V>> list) {
@@ -390,34 +386,14 @@ public final class LibUtils {
         });
     }
 
-    /// 整数乘非负小数得到新整数
+    @Deprecated
     public static int multiplyInt(int original, float factor, RandomSource random) {
-        int sign = Mth.sign(factor);
-        if (sign == 0) {
-            return 0;
-        }
-        factor = Math.abs(factor);
-        int i = (int) factor;
-        original *= i;
-        if (checkChance(factor - i, random)) {
-            ++original;
-        }
-        return original * sign;
+        return LibMathUtils.multiplyInt(original, factor, random);
     }
 
-    /// 整数除正数小数得到新整数
+    @Deprecated
     public static int divideInt(int original, float factor, RandomSource random) {
-        int sign = Mth.sign(factor);
-        if (sign == 0) {
-            return 0;
-        }
-        factor = Math.abs(factor);
-        float f = original / factor;
-        original = (int) f;
-        if (checkChance(f - original, random)) {
-            ++original;
-        }
-        return original * sign;
+        return LibMathUtils.divideInt(original, factor, random);
     }
 
     public static boolean canHitEntity(@Nullable Entity target, @Nullable Entity owner) {
