@@ -74,15 +74,15 @@ public final class LibUtils {
         return value;
     }
 
-    public static void createItemEntity(ItemStack itemStack, double x, double y, double z, Level level, int pickUpDelay) {
-        if (itemStack.isEmpty()) return;
-        ItemEntity itemEntity = new ItemEntity(level, x, y, z, itemStack);
+    public static void createItemEntity(ItemStack stack, double x, double y, double z, Level level, int pickUpDelay) {
+        if (stack.isEmpty()) return;
+        ItemEntity itemEntity = new ItemEntity(level, x, y, z, stack);
         itemEntity.setPickUpDelay(pickUpDelay);
         level.addFreshEntity(itemEntity);
     }
 
-    public static void createItemEntity(ItemStack itemStack, Vec3 pos, Level level, int pickUpDelay) {
-        createItemEntity(itemStack, pos.x, pos.y, pos.z, level, pickUpDelay);
+    public static void createItemEntity(ItemStack stack, Vec3 pos, Level level, int pickUpDelay) {
+        createItemEntity(stack, pos.x, pos.y, pos.z, level, pickUpDelay);
     }
 
     public static void createItemEntity(Item item, int count, double x, double y, double z, Level level, int pickUpDelay) {
@@ -128,8 +128,8 @@ public final class LibUtils {
     /// @param classic 经典难度的值
     /// @param expert  专家难度的值
     /// @return 选择到的值
-    public static <T> T switchByDifficulty(Level level, BlockPos blockPos, T classic, T expert) {
-        return switchByDifficulty(level, blockPos, classic, expert, expert, expert);
+    public static <T> T switchByDifficulty(Level level, BlockPos pos, T classic, T expert) {
+        return switchByDifficulty(level, pos, classic, expert, expert, expert);
     }
 
     /// 根据游戏难度选择值
@@ -138,8 +138,8 @@ public final class LibUtils {
     /// @param expert  专家难度的值
     /// @param master  大师难度的值
     /// @return 选择到的值
-    public static <T> T switchByDifficulty(Level level, BlockPos blockPos, T classic, T expert, T master) {
-        return switchByDifficulty(level, blockPos, classic, expert, master, master);
+    public static <T> T switchByDifficulty(Level level, BlockPos pos, T classic, T expert, T master) {
+        return switchByDifficulty(level, pos, classic, expert, master, master);
     }
 
     /// 根据游戏难度选择值
@@ -149,8 +149,8 @@ public final class LibUtils {
     /// @param master    大师难度的值
     /// @param legendary 传奇难度的值
     /// @return 选择到的值
-    public static <T> T switchByDifficulty(Level level, BlockPos blockPos, T classic, T expert, T master, T legendary) {
-        float difficulty = level.getCurrentDifficultyAt(blockPos).getEffectiveDifficulty();
+    public static <T> T switchByDifficulty(Level level, BlockPos pos, T classic, T expert, T master, T legendary) {
+        float difficulty = level.getCurrentDifficultyAt(pos).getEffectiveDifficulty();
         if (difficulty >= 3) return legendary;
         if (difficulty >= 2.25F) return master;
         if (difficulty >= 1.5F) return expert;
@@ -179,8 +179,8 @@ public final class LibUtils {
         return living.getMainHandItem().is(item) || living.getOffhandItem().is(item);
     }
 
-    public static boolean anyHandHasItem(LivingEntity living, TagKey<Item> item) {
-        return living.getMainHandItem().is(item) || living.getOffhandItem().is(item);
+    public static boolean anyHandHasItem(LivingEntity living, TagKey<Item> tag) {
+        return living.getMainHandItem().is(tag) || living.getOffhandItem().is(tag);
     }
 
     public static boolean isDev() {
@@ -203,31 +203,31 @@ public final class LibUtils {
         mob.setDropChance(slot, chance);
     }
 
-    public static CompoundTag getItemStackNbt(ItemStack itemStack) {
-        return getItemStackNbtNoCopy(itemStack).copy();
+    public static CompoundTag getItemStackNbt(ItemStack stack) {
+        return getItemStackNbtNoCopy(stack).copy();
     }
 
-    public static CompoundTag getItemStackNbtNoCopy(ItemStack itemStack) {
-        NbtComponent nbtComponent = itemStack.get(ConfluenceMagicLib.NBT);
+    public static CompoundTag getItemStackNbtNoCopy(ItemStack stack) {
+        NbtComponent nbtComponent = stack.get(ConfluenceMagicLib.NBT);
         if (nbtComponent == null) {
             CompoundTag nbt = new CompoundTag();
-            itemStack.set(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
+            stack.set(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
             return nbt;
         }
         return nbtComponent.nbt();
     }
 
-    public static @Nullable CompoundTag getItemStackNbtIfPresent(ItemStack itemStack) {
-        NbtComponent component = itemStack.get(ConfluenceMagicLib.NBT);
+    public static @Nullable CompoundTag getItemStackNbtIfPresent(ItemStack stack) {
+        NbtComponent component = stack.get(ConfluenceMagicLib.NBT);
         if (component == null) return null;
         return component.nbt();
     }
 
-    public static void updateItemStackNbt(ItemStack itemStack, Consumer<CompoundTag> consumer) {
-        NbtComponent nbtComponent = itemStack.get(ConfluenceMagicLib.NBT);
+    public static void updateItemStackNbt(ItemStack stack, Consumer<CompoundTag> consumer) {
+        NbtComponent nbtComponent = stack.get(ConfluenceMagicLib.NBT);
         CompoundTag nbt = nbtComponent == null ? new CompoundTag() : nbtComponent.nbt().copy();
         consumer.accept(nbt);
-        itemStack.set(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
+        stack.set(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
     }
 
     public static String toTitleCase(String raw) {
@@ -242,11 +242,11 @@ public final class LibUtils {
     }
 
     /// 将相对坐标解压为绝对坐标
-    public static BlockPos decompressRelativePos(ChunkPos chunkPos, int compressed) {
+    public static BlockPos decompressRelativePos(ChunkPos pos, int compressed) {
         int x = (compressed >>> 16) & 0xF;
         int y = ((compressed >>> 4) & 0xFFF) - 2048;
         int z = compressed & 0xF;
-        return chunkPos.getBlockAt(x, y, z);
+        return pos.getBlockAt(x, y, z);
     }
 
     public static CompoundTag getOrCreatePersistedData(Player player) {

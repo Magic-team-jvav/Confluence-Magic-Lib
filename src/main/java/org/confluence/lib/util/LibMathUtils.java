@@ -52,15 +52,35 @@ public final class LibMathUtils {
         return original * sign;
     }
 
-    /// original-to.....original-from_____original_____original+from.....original+to
-    /// @return value belongs to \[original-to, original-from\] or \[original+from, original+to\]
+    /// o-t.....o-f____o____o+f.....o+t
+    ///
+    /// @param original middle point
+    /// @param from     positive integer
+    /// @param to       positive integer
+    /// @return value belongs to \[o-t, o-f\] or \[o+f, o+t\]
     public static double randomFromTo(RandomSource random, double original, double from, double to) {
         if (from >= to) {
             throw new IllegalArgumentException("from must be less than to, currently is " + from + " >= " + to);
         }
+        if (from <= 0) {
+            throw new IllegalArgumentException("from must be positive, currently is " + from);
+        }
         if (random.nextBoolean()) {
             return Mth.nextDouble(random, original + from, original + to);
         }
-        return Mth.nextDouble(random, original - from, original - to);
+        return Mth.nextDouble(random, original - to, original - from);
+    }
+
+    public static int randomFromTo(RandomSource random, int original, int from, int to) {
+        if (from >= to) {
+            throw new IllegalArgumentException("from must be less than to, currently is " + from + " >= " + to);
+        }
+        if (from <= 0) {
+            throw new IllegalArgumentException("from must be positive, currently is " + from);
+        }
+        if (random.nextBoolean()) {
+            return Mth.nextInt(random, original + from, original + to);
+        }
+        return Mth.nextInt(random, original - to, original - from);
     }
 }
