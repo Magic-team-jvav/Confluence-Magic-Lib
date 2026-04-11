@@ -13,8 +13,10 @@ import org.confluence.lib.util.LibUtils;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
-public final class StartupConfig {
+public final class LibStartupConfig {
+    public static ModConfigSpec.ConfigValue<List<? extends String>> ATTRIBUTE_REPLACE;
     private static ModConfigSpec.LongValue modifyTime;
     private static ModConfigSpec.ConfigValue<String> version;
     private static ModConfigSpec.ConfigValue<String> messageDigest;
@@ -23,6 +25,13 @@ public final class StartupConfig {
 
     static void register(ModContainer container) {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        ATTRIBUTE_REPLACE = builder.defineListAllowEmpty("attributeReplacements", () -> List.of(
+                "crit_chance = confluence_magic_lib:generic.critical_chance",
+                "ranged_damage = confluence_magic_lib:generic.ranged_damage",
+                "dodge_chance = confluence_magic_lib:generic.dodge_chance",
+                "magic_damage = confluence_magic_lib:generic.magic_damage",
+                "armor_penetration = confluence_magic_lib:generic.armor_penetration"
+        ), () -> "", o -> true);
         modifyTime = builder.defineInRange("modifyTime", -1, Long.MIN_VALUE, Long.MAX_VALUE);
         version = builder.define("version", "");
         messageDigest = builder.define("messageDigest", "");

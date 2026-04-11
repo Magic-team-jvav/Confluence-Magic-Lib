@@ -1,4 +1,12 @@
 {
+    "attribute.name.generic.armor_penetration": "Armor Penetration",
+    "attribute.name.generic.critical_chance": "Critical Chance",
+    "attribute.name.generic.dodge_chance": "Dodge Chance",
+    "attribute.name.generic.magic_damage": "Magic Damage",
+    "attribute.name.generic.ranged_damage": "Ranged Damage",
+    "attribute.name.generic.ranged_velocity": "Ranged Velocity",
+    "attribute.name.player.aggro": "Aggro",
+    "attribute.name.player.pickup_range": "Pickup Range",
     "tooltip.confluence.work_in_progress": "Still Work In Progress!",
     "jei.tooltip.environment.biome": "Requires any biome:",
     "jei.tooltip.environment.block": "Requires any block nearby:",

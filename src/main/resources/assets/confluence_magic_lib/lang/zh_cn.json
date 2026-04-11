@@ -1,4 +1,12 @@
 {
+    "attribute.name.generic.armor_penetration": "护甲穿透",
+    "attribute.name.generic.critical_chance": "暴击率",
+    "attribute.name.generic.dodge_chance": "闪避率",
+    "attribute.name.generic.magic_damage": "魔法伤害",
+    "attribute.name.generic.ranged_damage": "远程伤害",
+    "attribute.name.generic.ranged_velocity": "远程速度",
+    "attribute.name.player.aggro": "仇恨",
+    "attribute.name.player.pickup_range": "拾取范围",
     "tooltip.confluence.work_in_progress": "仍在开发中！",
     "jei.tooltip.environment.biome": "需要任意生物群系：",
     "jei.tooltip.environment.block": "需要任意方块在附近：",
