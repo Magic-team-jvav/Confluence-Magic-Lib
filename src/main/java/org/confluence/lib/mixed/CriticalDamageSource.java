@@ -20,17 +20,23 @@ public interface CriticalDamageSource {
     @ApiStatus.Internal
     MutableBoolean WARNED = new MutableBoolean();
 
+    @ApiStatus.Internal
     static float processCritical(@Nullable Entity attacker, float amount, LivingEntity victim, DamageSource damageSource) {
         boolean crit = false;
-        if (attacker instanceof Player player && !LibAttributes.hasCustomAttribute(ConfluenceMagicLib.CRITICAL_CHANCE)) {
-            if (LibMathUtils.checkChance(player.getAttributeValue(ConfluenceMagicLib.CRITICAL_CHANCE), player.getRandom())) {
-                amount *= 1.5F;
-                player.crit(victim);
-                crit = true;
-            }
-        }
+        /// [LibAttributes#applyToArrow]
         if (damageSource.getDirectEntity() instanceof AbstractArrow arrow) {
             crit |= arrow.isCritArrow();
+        }
+        // 检查完箭矢暴击后不再检查暴击
+        if (!crit && attacker instanceof Player player &&
+                !LibAttributes.hasCustomAttribute(ConfluenceMagicLib.CRITICAL_CHANCE) &&
+                LibMathUtils.checkChance(player.getAttributeValue(ConfluenceMagicLib.CRITICAL_CHANCE), player.getRandom())
+        ) {
+            player.crit(victim);
+            crit = true;
+        }
+        if (crit) { // 暴击伤害统一乘1.5倍
+            amount *= 1.5F;
         }
         if (!(damageSource instanceof CriticalDamageSource iDamageSource)) {
             if (WARNED.isFalse()) {

@@ -109,7 +109,7 @@ public final class LibAttributes {
         if (attacker instanceof LivingEntity living) {
             AttributeInstance instance = living.getAttribute(Attributes.ATTACK_KNOCKBACK);
             if (instance != null) {
-                original *= (1.0 + instance.getValue());
+                return original * (1.0 + instance.getValue());
             }
         }
         return original;
@@ -131,7 +131,7 @@ public final class LibAttributes {
         ) {
             AttributeInstance instance = living.getAttribute(ConfluenceMagicLib.RANGED_DAMAGE);
             if (instance != null) {
-                amount *= (float) instance.getValue();
+                return amount * (float) instance.getValue();
             }
         }
         return amount;
@@ -145,7 +145,7 @@ public final class LibAttributes {
         ) {
             AttributeInstance instance = living.getAttribute(ConfluenceMagicLib.MAGIC_DAMAGE);
             if (instance != null) {
-                amount *= (float) instance.getValue();
+                return amount * (float) instance.getValue();
             }
         }
         return amount;

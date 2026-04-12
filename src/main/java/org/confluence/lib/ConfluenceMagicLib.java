@@ -54,32 +54,32 @@ public final class ConfluenceMagicLib {
 
     // region 属性
     private static final DeferredRegister<Attribute> ATTRIBUTES = DeferredRegister.create(Registries.ATTRIBUTE, LIB_ID);
-    /// 玩家怪物生成速度系数
-    public static final DeferredHolder<Attribute, RangedAttribute> MOB_SPAWN_SPEED_MULTIPLIER = registerAttribute("player.mob_spawn_speed_multiplier", 1, 0, 1024, RangedAttribute::new, a -> a.setSentiment(Attribute.Sentiment.NEUTRAL));
-    /// 玩家怪物生成数量系数
-    public static final DeferredHolder<Attribute, RangedAttribute> MOB_SPAWN_COUNT_MULTIPLIER = registerAttribute("player.mob_spawn_count_multiplier", 1, 0, 1024, RangedAttribute::new, a -> a.setSentiment(Attribute.Sentiment.NEUTRAL));
     /// 暴击率，请优先使用[org.confluence.lib.common.LibAttributes#getCriticalChance]
-    public static final DeferredHolder<Attribute, PercentageAttribute> CRITICAL_CHANCE = registerAttribute("generic.critical_chance", 0.0, 0.0, 10.0, PercentageAttribute::new, a -> a.setSyncable(true)); // ADDITION
+    public static final DeferredHolder<Attribute, PercentageAttribute> CRITICAL_CHANCE = registerAttribute("generic.critical_chance", 0.0, 0.0, 10.0, PercentageAttribute::new, a -> a.setSyncable(true)); // ADD_VALUE
     /// 远程速度，请优先使用[org.confluence.lib.common.LibAttributes#getRangedVelocity]
     public static final DeferredHolder<Attribute, RangedAttribute> RANGED_VELOCITY = registerAttribute("generic.ranged_velocity", 1.0, 0.0, 10.0, RangedAttribute::new, a -> a.setSyncable(true)); // MULTIPLY_TOTAL
     /// 远程伤害，请优先使用[org.confluence.lib.common.LibAttributes#getRangedDamage]
     public static final DeferredHolder<Attribute, RangedAttribute> RANGED_DAMAGE = registerAttribute("generic.ranged_damage", 1.0, 0.0, 10.0, RangedAttribute::new, a -> a.setSyncable(true)); // MULTIPLY_TOTAL
     /// 闪避率，请优先使用[org.confluence.lib.common.LibAttributes#getDodgeChance]
-    public static final DeferredHolder<Attribute, PercentageAttribute> DODGE_CHANCE = registerAttribute("generic.dodge_chance", 0.0, 0.0, 1.0, PercentageAttribute::new, a -> a.setSyncable(true)); // ADDITION
+    public static final DeferredHolder<Attribute, PercentageAttribute> DODGE_CHANCE = registerAttribute("generic.dodge_chance", 0.0, 0.0, 1.0, PercentageAttribute::new, a -> a.setSyncable(true)); // ADD_VALUE
     /// 魔法伤害，请优先使用[org.confluence.lib.common.LibAttributes#getMagicDamage]
     public static final DeferredHolder<Attribute, RangedAttribute> MAGIC_DAMAGE = registerAttribute("generic.magic_damage", 1.0, 0.0, 10.0, RangedAttribute::new, a -> a.setSyncable(true)); // MULTIPLY_TOTAL
     /// 护甲穿透，请优先使用[org.confluence.lib.common.LibAttributes#getArmorPenetration]
-    public static final DeferredHolder<Attribute, RangedAttribute> ARMOR_PENETRATION = registerAttribute("generic.armor_penetration", 0.0, 0.0, 10000, RangedAttribute::new, a -> a.setSyncable(true)); // ADDITION
+    public static final DeferredHolder<Attribute, RangedAttribute> ARMOR_PENETRATION = registerAttribute("generic.armor_penetration", 0.0, 0.0, 10000, RangedAttribute::new, a -> a.setSyncable(true)); // ADD_VALUE
+    /// 生物生成速度系数
+    public static final DeferredHolder<Attribute, RangedAttribute> MOB_SPAWN_SPEED_MULTIPLIER = registerAttribute("player.mob_spawn_speed_multiplier", 1, 0, 1024, RangedAttribute::new, a -> a.setSentiment(Attribute.Sentiment.NEUTRAL));
+    /// 生物生成数量系数
+    public static final DeferredHolder<Attribute, RangedAttribute> MOB_SPAWN_COUNT_MULTIPLIER = registerAttribute("player.mob_spawn_count_multiplier", 1, 0, 1024, RangedAttribute::new, a -> a.setSentiment(Attribute.Sentiment.NEUTRAL));
     /// 拾取范围
-    public static final DeferredHolder<Attribute, RangedAttribute> PICKUP_RANGE = registerAttribute("player.pickup_range", 0.0, 0.0, 64.0, RangedAttribute::new, a -> a.setSyncable(true)); // ADDITION
+    public static final DeferredHolder<Attribute, RangedAttribute> PICKUP_RANGE = registerAttribute("player.pickup_range", 0.0, 0.0, 64.0, RangedAttribute::new, a -> a.setSyncable(true)); // ADD_VALUE
     /// 仇恨值
-    public static final DeferredHolder<Attribute, RangedAttribute> AGGRO = registerAttribute("player.aggro", 0.0, -10000.0, 10000.0, RangedAttribute::new, a -> a.setSentiment(Attribute.Sentiment.NEGATIVE));
+    public static final DeferredHolder<Attribute, RangedAttribute> AGGRO = registerAttribute("player.aggro", 0.0, -10000.0, 10000.0, RangedAttribute::new, a -> a.setSentiment(Attribute.Sentiment.NEGATIVE)); // ADD_VALUE
     /// 仆从容量
-    public static final DeferredHolder<Attribute, RangedAttribute> MINION_CAPACITY = registerAttribute("player.minion_capacity", 1.0, 0.0, 128.0, RangedAttribute::new, a -> a.setSyncable(true));
+    public static final DeferredHolder<Attribute, RangedAttribute> MINION_CAPACITY = registerAttribute("player.minion_capacity", 1.0, 0.0, 128.0, RangedAttribute::new, a -> a.setSyncable(true)); // ADD_VALUE
     /// 哨兵容量
-    public static final DeferredHolder<Attribute, RangedAttribute> SENTRY_CAPACITY = registerAttribute("player.sentry_capacity", 1.0, 0.0, 128.0, RangedAttribute::new, a -> a.setSyncable(true));
+    public static final DeferredHolder<Attribute, RangedAttribute> SENTRY_CAPACITY = registerAttribute("player.sentry_capacity", 1.0, 0.0, 128.0, RangedAttribute::new, a -> a.setSyncable(true)); // ADD_VALUE
     /// 召唤伤害，请优先使用[org.confluence.lib.common.LibAttributes#getSummonDamage]
-    public static final DeferredHolder<Attribute, RangedAttribute> SUMMON_DAMAGE = registerAttribute("player.summon_damage", 1.0, 0.0, 2048.0, RangedAttribute::new, a -> a.setSyncable(true));
+    public static final DeferredHolder<Attribute, RangedAttribute> SUMMON_DAMAGE = registerAttribute("player.summon_damage", 1.0, 0.0, 2048.0, RangedAttribute::new, a -> a.setSyncable(true)); // MULTIPLY_TOTAL
     /// 仆从击退
     public static final DeferredHolder<Attribute, RangedAttribute> SUMMON_KNOCKBACK = registerAttribute("player.summon_knockback", 0.0, 0.0, 5.0, RangedAttribute::new, a -> a.setSyncable(true));
     // 鞭速度 同 近战攻击速度，故不注册
