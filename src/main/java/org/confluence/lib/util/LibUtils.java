@@ -410,6 +410,8 @@ public final class LibUtils {
     }
 
     /// 可于游戏加载早期阶段判断
+    ///
+    /// 不能在mixin plugin中使用
     public static boolean isModLoaded(String modid) {
         return LoadingModList.get().getModFileById(modid) != null;
     }
