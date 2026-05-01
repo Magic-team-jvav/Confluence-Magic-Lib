@@ -336,6 +336,10 @@ public final class LibUtils {
     }
 
     /// 尝试寻找该实体的所有者，如果找不到则返回该实体
+    ///
+    /// 适合查询始作俑者
+    ///
+    /// @see LibUtils#tryFindBeImpacted(Entity) 适合查询直接受影响的实体的方法
     @Contract("null -> null; !null -> !null")
     public static @Nullable Entity getOwner(@Nullable Entity entity) {
         Entity owner = switch (entity) {
@@ -345,6 +349,15 @@ public final class LibUtils {
             case null, default -> entity;
         };
         return owner == null ? entity : owner;
+    }
+
+    /// 适合查询直接受影响的实体，如攻击本体
+    @Contract("null -> null; !null -> !null")
+    public static @Nullable Entity tryFindBeImpacted(@Nullable Entity entity) {
+        if (entity instanceof PartEntity<?> part) {
+            return part.getParent();
+        }
+        return entity;
     }
 
     public static @Nullable ChunkAccess getChunkIfLoaded(ServerChunkCache chunkSource, BlockPos blockPos) {
