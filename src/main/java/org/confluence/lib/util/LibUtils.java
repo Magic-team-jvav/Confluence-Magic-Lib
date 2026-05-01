@@ -22,6 +22,7 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.WaterAnimal;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -427,5 +428,9 @@ public final class LibUtils {
     /// 不能在mixin plugin中使用
     public static boolean isModLoaded(String modid) {
         return LoadingModList.get().getModFileById(modid) != null;
+    }
+
+    public static void poweringCreeper(Creeper creeper) {
+        creeper.getEntityData().set(Creeper.DATA_IS_POWERED, true);
     }
 }
