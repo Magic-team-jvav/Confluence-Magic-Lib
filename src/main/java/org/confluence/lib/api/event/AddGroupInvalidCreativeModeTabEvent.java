@@ -1,4 +1,4 @@
-package org.confluence.lib.event;
+package org.confluence.lib.api.event;
 
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;

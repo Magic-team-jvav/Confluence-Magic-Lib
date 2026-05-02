@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.fml.ModLoader;
 import net.neoforged.neoforge.registries.BaseMappedRegistry;
-import org.confluence.lib.event.NameFixRegisterEvent;
+import org.confluence.lib.api.event.NameFixRegisterEvent;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

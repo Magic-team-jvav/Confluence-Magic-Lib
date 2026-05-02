@@ -1,4 +1,4 @@
-package org.confluence.lib.event;
+package org.confluence.lib.api.event;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;

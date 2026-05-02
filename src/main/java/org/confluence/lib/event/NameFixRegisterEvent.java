@@ -1,58 +1,77 @@
 package org.confluence.lib.event;
 
-import com.google.common.collect.ImmutableMap;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.Event;
 import net.neoforged.fml.event.IModBusEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import org.jetbrains.annotations.ApiStatus;
 
+@Deprecated(since = "1.3.0", forRemoval = true)
+@ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
 public abstract class NameFixRegisterEvent extends Event implements IModBusEvent {
-    private final ImmutableMap.Builder<String, String> builder;
+    private final org.confluence.lib.api.event.NameFixRegisterEvent e;
 
-    public NameFixRegisterEvent(ImmutableMap.Builder<String, String> builder) {
-        this.builder = builder;
+    public NameFixRegisterEvent(org.confluence.lib.api.event.NameFixRegisterEvent e) {
+        this.e = e;
     }
 
     public NameFixRegisterEvent register(String source, String target) {
-        builder.put(source, target);
+        e.register(source, target);
         return this;
     }
 
     public NameFixRegisterEvent register(ResourceLocation source, ResourceLocation target) {
-        builder.put(source.toString(), target.toString());
+        e.register(source, target);
         return this;
     }
 
     public NameFixRegisterEvent register(String source, ResourceLocation target) {
-        builder.put(source, target.toString());
+        e.register(source, target);
         return this;
     }
 
     public NameFixRegisterEvent register(ResourceLocation source, String target) {
-        builder.put(source.toString(), target);
+        e.register(source, target);
         return this;
     }
 
     public static class BlockWithItem extends NameFixRegisterEvent {
-        public BlockWithItem(ImmutableMap.Builder<String, String> builder) {
-            super(builder);
+        public BlockWithItem(org.confluence.lib.api.event.NameFixRegisterEvent.BlockWithItem e) {
+            super(e);
+        }
+
+        static {
+            NeoForge.EVENT_BUS.addListener(org.confluence.lib.api.event.NameFixRegisterEvent.BlockWithItem.class, e -> NeoForge.EVENT_BUS.post(new BlockWithItem(e)));
         }
     }
 
     public static class Block extends NameFixRegisterEvent {
-        public Block(ImmutableMap.Builder<String, String> builder) {
-            super(builder);
+        public Block(org.confluence.lib.api.event.NameFixRegisterEvent.Block e) {
+            super(e);
+        }
+
+        static {
+            NeoForge.EVENT_BUS.addListener(org.confluence.lib.api.event.NameFixRegisterEvent.Block.class, e -> NeoForge.EVENT_BUS.post(new Block(e)));
         }
     }
 
     public static class Item extends NameFixRegisterEvent {
-        public Item(ImmutableMap.Builder<String, String> builder) {
-            super(builder);
+        public Item(org.confluence.lib.api.event.NameFixRegisterEvent.Item e) {
+            super(e);
+        }
+
+        static {
+            NeoForge.EVENT_BUS.addListener(org.confluence.lib.api.event.NameFixRegisterEvent.Item.class, e -> NeoForge.EVENT_BUS.post(new Item(e)));
         }
     }
 
     public static class Biome extends NameFixRegisterEvent {
-        public Biome(ImmutableMap.Builder<String, String> builder) {
-            super(builder);
+        public Biome(org.confluence.lib.api.event.NameFixRegisterEvent.Biome e) {
+            super(e);
+        }
+
+        static {
+            NeoForge.EVENT_BUS.addListener(org.confluence.lib.api.event.NameFixRegisterEvent.Biome.class, e -> NeoForge.EVENT_BUS.post(new Biome(e)));
         }
     }
 }

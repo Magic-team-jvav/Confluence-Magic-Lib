@@ -5,8 +5,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.neoforged.neoforge.common.NeoForge;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.confluence.lib.ConfluenceMagicLib;
+import org.confluence.lib.api.event.ProcessCriticalDamageEvent;
 import org.confluence.lib.common.LibAttributes;
 import org.confluence.lib.util.LibMathUtils;
 import org.jetbrains.annotations.ApiStatus;
@@ -28,25 +30,28 @@ public interface CriticalDamageSource {
             crit |= arrow.isCritArrow();
         }
         // 检查完箭矢暴击后不再检查暴击
-        if (!crit && attacker instanceof Player player &&
-                !LibAttributes.hasCustomAttribute(ConfluenceMagicLib.CRITICAL_CHANCE) &&
+        if (!crit && attacker instanceof Player player && !LibAttributes.hasCustomAttribute(ConfluenceMagicLib.CRITICAL_CHANCE) &&
                 LibMathUtils.checkChance(player.getAttributeValue(ConfluenceMagicLib.CRITICAL_CHANCE), player.getRandom())
         ) {
             player.crit(victim);
             crit = true;
         }
-        if (crit) { // 暴击伤害统一乘1.5倍
-            amount *= 1.5F;
-        }
-        if (!(damageSource instanceof CriticalDamageSource iDamageSource)) {
+        ProcessCriticalDamageEvent event;
+        if (damageSource instanceof CriticalDamageSource cds) {
+            crit |= cds.confluence$isCritical();
+            event = NeoForge.EVENT_BUS.post(new ProcessCriticalDamageEvent(victim, damageSource, amount, crit));
+            cds.confluence$setCritical(event.isCritical());
+        } else {
+            event = NeoForge.EVENT_BUS.post(new ProcessCriticalDamageEvent(victim, damageSource, amount, crit));
             if (WARNED.isFalse()) {
                 WARNED.setTrue();
                 ConfluenceMagicLib.LOGGER.warn("DamageSource had remodified by unknown mod, so critical damage indicator expired now");
             }
-            return amount;
         }
-        crit |= iDamageSource.confluence$isCritical();
-        iDamageSource.confluence$setCritical(crit);
+        amount = event.getAmount();
+        if (event.isCritical()) {
+            amount *= event.getCriticalDamageMultiplier();
+        }
         return amount;
     }
 }

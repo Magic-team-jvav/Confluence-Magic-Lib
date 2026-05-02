@@ -1,4 +1,4 @@
-package org.confluence.lib.event;
+package org.confluence.lib.api.event;
 
 import it.unimi.dsi.fastutil.objects.ObjectDoubleImmutablePair;
 import it.unimi.dsi.fastutil.objects.ObjectDoublePair;

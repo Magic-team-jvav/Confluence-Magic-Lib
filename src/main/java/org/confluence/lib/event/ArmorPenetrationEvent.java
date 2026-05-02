@@ -2,32 +2,40 @@ package org.confluence.lib.event;
 
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.neoforge.event.entity.living.LivingEvent;
+import net.neoforged.bus.api.Event;
+import net.neoforged.neoforge.common.NeoForge;
+import org.jetbrains.annotations.ApiStatus;
 
-public class ArmorPenetrationEvent extends LivingEvent {
-    private final DamageSource damageSource;
-    private final float armorValue;
-    private float penetration;
+@Deprecated(since = "1.3.0", forRemoval = true)
+@ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
+public class ArmorPenetrationEvent extends Event {
+    private final org.confluence.lib.api.event.ArmorPenetrationEvent e;
 
-    public ArmorPenetrationEvent(LivingEntity victim, DamageSource damageSource, float armorValue) {
-        super(victim);
-        this.damageSource = damageSource;
-        this.armorValue = armorValue;
+    public ArmorPenetrationEvent(org.confluence.lib.api.event.ArmorPenetrationEvent e) {
+        this.e = e;
+    }
+
+    public LivingEntity getEntity() {
+        return e.getEntity();
     }
 
     public DamageSource getDamageSource() {
-        return damageSource;
+        return e.getDamageSource();
     }
 
     public float getArmorValue() {
-        return armorValue;
+        return e.getArmorValue();
     }
 
     public void setPenetration(float penetration) {
-        this.penetration = penetration;
+        e.setPenetration(penetration);
     }
 
     public float getPenetration() {
-        return penetration;
+        return e.getPenetration();
+    }
+
+    static {
+        NeoForge.EVENT_BUS.addListener(org.confluence.lib.api.event.ArmorPenetrationEvent.class, e -> NeoForge.EVENT_BUS.post(new ArmorPenetrationEvent(e)));
     }
 }

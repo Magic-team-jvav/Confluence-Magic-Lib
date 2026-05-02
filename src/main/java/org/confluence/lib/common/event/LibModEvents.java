@@ -20,11 +20,11 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.LibStartupConfig;
+import org.confluence.lib.api.event.CustomGroupItemIconEvent;
+import org.confluence.lib.api.event.NameFixRegisterEvent;
 import org.confluence.lib.common.LibAttributes;
 import org.confluence.lib.common.fluid.FluidBuilder;
 import org.confluence.lib.common.item.GroupItem;
-import org.confluence.lib.event.CustomGroupItemIconEvent;
-import org.confluence.lib.event.NameFixRegisterEvent;
 import org.confluence.lib.network.AttackDamagePacketS2C;
 import org.confluence.lib.network.SetEntityDataPacketS2C;
 
