@@ -21,6 +21,9 @@ public final class LibStartupConfig {
     private static ModConfigSpec.ConfigValue<String> version;
     private static ModConfigSpec.ConfigValue<String> messageDigest;
     private static ModConfigSpec.IntValue alarmTimes;
+
+    private static ModConfigSpec.BooleanValue ITEM_GROUPS;
+
     private static ModConfigSpec spec;
 
     static void register(ModContainer container) {
@@ -36,6 +39,9 @@ public final class LibStartupConfig {
         version = builder.define("version", "");
         messageDigest = builder.define("messageDigest", "");
         alarmTimes = builder.defineInRange("alarmTimes", -1, Integer.MIN_VALUE, Integer.MAX_VALUE);
+
+        ITEM_GROUPS = builder.define("itemGroups", true);
+
         spec = builder.build();
         container.registerConfig(ModConfig.Type.STARTUP, spec);
     }
@@ -84,5 +90,9 @@ public final class LibStartupConfig {
             }
             shouldAlarmInThisJVM = false;
         }
+    }
+
+    public static boolean itemGroups() {
+        return ITEM_GROUPS != null && ITEM_GROUPS.get();
     }
 }

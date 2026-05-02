@@ -46,7 +46,7 @@ public class PlayerContainer<C extends BlockEntity & PlayerContainer.ValidEntity
         for (int k = 0; k < tag.size(); k++) {
             CompoundTag compoundtag = tag.getCompound(k);
             int j = compoundtag.getByte("Slot") & 255;
-            if (j >= 0 && j < getContainerSize()) {
+            if (j < getContainerSize()) {
                 setItemNoUpdate(j, ItemStack.parse(levelRegistry, compoundtag).orElse(ItemStack.EMPTY));
             }
         }

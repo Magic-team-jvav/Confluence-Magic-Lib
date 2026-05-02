@@ -19,11 +19,13 @@ import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.PercentageAttribute;
 import net.neoforged.neoforge.common.crafting.IngredientType;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.confluence.lib.common.component.ModRarity;
 import org.confluence.lib.common.component.NbtComponent;
 import org.confluence.lib.common.component.ToolMode;
+import org.confluence.lib.common.item.GroupItem;
 import org.confluence.lib.common.particle.CrossDustParticleOptions;
 import org.confluence.lib.common.recipe.AmountIngredient;
 import org.confluence.lib.common.worldgen.structure.GridPiece;
@@ -46,11 +48,17 @@ public final class ConfluenceMagicLib {
     @Deprecated
     public static final Supplier<Boolean> IS_CONFLUENCE_LOADED = () -> IS_CONFLUENCE_LOAD;
 
-    //region 数据附件
+    // region 物品
+    private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(LIB_ID);
+
+    private static final DeferredItem<GroupItem> GROUP = ITEMS.register("group", GroupItem::new);
+    // endregion
+
+    // region 数据附件
     private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPE = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, LIB_ID);
 
     public static final Supplier<AttachmentType<DelayTaskHolder>> DELAY_TASK_HOLDER = ATTACHMENT_TYPE.register("delay_task_holder", () -> AttachmentType.builder(DelayTaskHolder::new).build());
-    //endregion
+    // endregion
 
     // region 属性
     private static final DeferredRegister<Attribute> ATTRIBUTES = DeferredRegister.create(Registries.ATTRIBUTE, LIB_ID);
@@ -113,6 +121,8 @@ public final class ConfluenceMagicLib {
     public static final Supplier<DataComponentType<ModRarity>> MOD_RARITY = DATA_COMPONENT_TYPES.registerComponentType("mod_rarity", builder -> builder.persistent(ModRarity.CODEC).networkSynchronized(ModRarity.STREAM_CODEC));
     public static final Supplier<DataComponentType<ToolMode>> TOOL_MODE = DATA_COMPONENT_TYPES.registerComponentType("tool_mode", builder -> builder.persistent(ToolMode.CODEC).networkSynchronized(ToolMode.STREAM_CODEC));
     public static final Supplier<DataComponentType<NbtComponent>> NBT = DATA_COMPONENT_TYPES.registerComponentType("nbt", builder -> builder.persistent(NbtComponent.CODEC).networkSynchronized(NbtComponent.STREAM_CODEC));
+    public static final Supplier<DataComponentType<GroupItem.Stacks>> GROUP_STACKS = DATA_COMPONENT_TYPES.registerComponentType("group_stacks", builder -> builder.persistent(GroupItem.Stacks.CODEC).networkSynchronized(GroupItem.Stacks.STREAM_CODEC));
+    public static final Supplier<DataComponentType<GroupItem.BelongsTo>> BELONGS_TO_GROUP = DATA_COMPONENT_TYPES.registerComponentType("belongs_to_group", builder -> builder.persistent(GroupItem.BelongsTo.CODEC).networkSynchronized(GroupItem.BelongsTo.STREAM_CODEC));
     // endregion
 
     // region 粒子
@@ -134,6 +144,7 @@ public final class ConfluenceMagicLib {
 
     public ConfluenceMagicLib(IEventBus eventBus, ModContainer container) {
         LibStartupConfig.register(container);
+        ITEMS.register(eventBus);
         ATTACHMENT_TYPE.register(eventBus);
         {
             ATTRIBUTES.register(eventBus);
@@ -160,5 +171,9 @@ public final class ConfluenceMagicLib {
 
     public static ResourceLocation asResource(String path) {
         return ResourceLocation.fromNamespaceAndPath(LIB_ID, path);
+    }
+
+    public static ResourceLocation asConfluenceResource(String path) {
+        return ResourceLocation.fromNamespaceAndPath(CONFLUENCE_ID, path);
     }
 }

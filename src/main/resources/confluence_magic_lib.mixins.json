@@ -6,6 +6,7 @@
     "refmap": "confluence_magic_lib.refmap.json",
     "mixins": [
         "AbstractArrowMixin",
+        "CreativeModeTabMixin",
         "DamageSourceMixin",
         "FoodDataMixin",
         "LivingEntityMixin",
@@ -20,7 +21,10 @@
     ],
     "client": [
         "accessor.KeyMappingAccessor",
+        "client.AbstractContainerScreenMixin",
         "client.BlockModelShaperMixin",
+        "client.ClientItemStackMixin",
+        "client.CreativeModeInventoryScreenMixin",
         "client.GuiGraphicsMixin",
         "client.LocalPlayerMixin",
         "client.MissingTextureAtlasSpriteMixin"
