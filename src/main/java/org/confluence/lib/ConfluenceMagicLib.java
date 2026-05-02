@@ -19,7 +19,6 @@ import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.PercentageAttribute;
 import net.neoforged.neoforge.common.crafting.IngredientType;
 import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.confluence.lib.common.component.ModRarity;
@@ -32,7 +31,6 @@ import org.confluence.lib.common.worldgen.structure.GridPiece;
 import org.confluence.lib.common.worldgen.structure.SimpleTemplatePiece;
 import org.confluence.lib.util.DelayTaskHolder;
 import org.confluence.lib.util.LibUtils;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,13 +49,14 @@ public final class ConfluenceMagicLib {
     // region 物品
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(LIB_ID);
 
-    private static final DeferredItem<GroupItem> GROUP = ITEMS.register("group", GroupItem::new);
+    static {
+        ITEMS.register("group", GroupItem::new);
+    }
     // endregion
 
     // region 数据附件
     private static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPE = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, LIB_ID);
-
-    public static final Supplier<AttachmentType<DelayTaskHolder>> DELAY_TASK_HOLDER = ATTACHMENT_TYPE.register("delay_task_holder", () -> AttachmentType.builder(DelayTaskHolder::new).build());
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<DelayTaskHolder>> DELAY_TASK_HOLDER = ATTACHMENT_TYPE.register("delay_task_holder", () -> AttachmentType.builder(DelayTaskHolder::new).build());
     // endregion
 
     // region 属性
@@ -107,35 +106,33 @@ public final class ConfluenceMagicLib {
 
     // region 材料类型
     private static final DeferredRegister<IngredientType<?>> INGREDIENT_TYPES = DeferredRegister.create(NeoForgeRegistries.Keys.INGREDIENT_TYPES, LIB_ID);
-    public static final Supplier<IngredientType<AmountIngredient>> AMOUNT_INGREDIENT_TYPE = INGREDIENT_TYPES.register("amount_ingredient", () -> new IngredientType<>(AmountIngredient.CODEC, AmountIngredient.STREAM_CODEC));
+    public static final DeferredHolder<IngredientType<?>, IngredientType<AmountIngredient>> AMOUNT_INGREDIENT_TYPE = INGREDIENT_TYPES.register("amount_ingredient", () -> new IngredientType<>(AmountIngredient.CODEC, AmountIngredient.STREAM_CODEC));
     // endregion
 
     // region 结构
     private static final DeferredRegister<StructurePieceType> PIECE_TYPES = DeferredRegister.create(BuiltInRegistries.STRUCTURE_PIECE, LIB_ID);
-    public static final Supplier<StructurePieceType.StructureTemplateType> SIMPLE_TEMPLATE_PIECE = PIECE_TYPES.register("simple_template_piece", () -> SimpleTemplatePiece::new);
-    public static final Supplier<StructurePieceType.ContextlessType> GRID_PIECE = PIECE_TYPES.register("grid_piece", () -> GridPiece::new);
+    public static final DeferredHolder<StructurePieceType, StructurePieceType.StructureTemplateType> SIMPLE_TEMPLATE_PIECE = PIECE_TYPES.register("simple_template_piece", () -> SimpleTemplatePiece::new);
+    public static final DeferredHolder<StructurePieceType, StructurePieceType.ContextlessType> GRID_PIECE = PIECE_TYPES.register("grid_piece", () -> GridPiece::new);
     // endregion
 
     // region 数据组件
     private static final DeferredRegister.DataComponents DATA_COMPONENT_TYPES = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, LIB_ID);
-    public static final Supplier<DataComponentType<ModRarity>> MOD_RARITY = DATA_COMPONENT_TYPES.registerComponentType("mod_rarity", builder -> builder.persistent(ModRarity.CODEC).networkSynchronized(ModRarity.STREAM_CODEC));
-    public static final Supplier<DataComponentType<ToolMode>> TOOL_MODE = DATA_COMPONENT_TYPES.registerComponentType("tool_mode", builder -> builder.persistent(ToolMode.CODEC).networkSynchronized(ToolMode.STREAM_CODEC));
-    public static final Supplier<DataComponentType<NbtComponent>> NBT = DATA_COMPONENT_TYPES.registerComponentType("nbt", builder -> builder.persistent(NbtComponent.CODEC).networkSynchronized(NbtComponent.STREAM_CODEC));
-    public static final Supplier<DataComponentType<GroupItem.Stacks>> GROUP_STACKS = DATA_COMPONENT_TYPES.registerComponentType("group_stacks", builder -> builder.persistent(GroupItem.Stacks.CODEC).networkSynchronized(GroupItem.Stacks.STREAM_CODEC));
-    public static final Supplier<DataComponentType<GroupItem.BelongsTo>> BELONGS_TO_GROUP = DATA_COMPONENT_TYPES.registerComponentType("belongs_to_group", builder -> builder.persistent(GroupItem.BelongsTo.CODEC).networkSynchronized(GroupItem.BelongsTo.STREAM_CODEC));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ModRarity>> MOD_RARITY = DATA_COMPONENT_TYPES.registerComponentType("mod_rarity", builder -> builder.persistent(ModRarity.CODEC).networkSynchronized(ModRarity.STREAM_CODEC));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ToolMode>> TOOL_MODE = DATA_COMPONENT_TYPES.registerComponentType("tool_mode", builder -> builder.persistent(ToolMode.CODEC).networkSynchronized(ToolMode.STREAM_CODEC));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<NbtComponent>> NBT = DATA_COMPONENT_TYPES.registerComponentType("nbt", builder -> builder.persistent(NbtComponent.CODEC).networkSynchronized(NbtComponent.STREAM_CODEC));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<GroupItem.Stacks>> GROUP_STACKS = DATA_COMPONENT_TYPES.registerComponentType("group_stacks", builder -> builder.persistent(GroupItem.Stacks.CODEC).networkSynchronized(GroupItem.Stacks.STREAM_CODEC));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<GroupItem.BelongsTo>> BELONGS_TO_GROUP = DATA_COMPONENT_TYPES.registerComponentType("belongs_to_group", builder -> builder.persistent(GroupItem.BelongsTo.CODEC).networkSynchronized(GroupItem.BelongsTo.STREAM_CODEC));
     // endregion
 
     // region 粒子
     private static final DeferredRegister<ParticleType<?>> PARTICLES = DeferredRegister.create(BuiltInRegistries.PARTICLE_TYPE, LIB_ID);
-    public static final Supplier<ParticleType<CrossDustParticleOptions>> CROSS_DUST_PARTICLE = PARTICLES.register("cross_dust", () -> new ParticleType<>(false) {
+    public static final DeferredHolder<ParticleType<?>, ParticleType<CrossDustParticleOptions>> CROSS_DUST_PARTICLE = PARTICLES.register("cross_dust", () -> new ParticleType<>(false) {
         @Override
-        @NotNull
         public MapCodec<CrossDustParticleOptions> codec() {
             return CrossDustParticleOptions.CODEC;
         }
 
         @Override
-        @NotNull
         public StreamCodec<? super RegistryFriendlyByteBuf, CrossDustParticleOptions> streamCodec() {
             return CrossDustParticleOptions.STREAM_CODEC;
         }
