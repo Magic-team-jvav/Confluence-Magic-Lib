@@ -2,17 +2,17 @@ package org.confluence.lib.color;
 
 import java.util.Objects;
 
-public record IntegerRGBA(int red, int green, int blue, int alpha) {
-    public static IntegerRGBA of(int rgba) {
-        return new IntegerRGBA((rgba & 0x00FF0000) >> 16, (rgba & 0x0000FF00) >> 8, rgba & 0x000000FF, (rgba & 0xFF000000) >> 24);
+public record IntegerARGB(int alpha, int red, int green, int blue) {
+    public static IntegerARGB of(int argb) {
+        return new IntegerARGB((argb & 0xFF000000) >> 24, (argb & 0x00FF0000) >> 16, (argb & 0x0000FF00) >> 8, argb & 0x000000FF);
     }
 
-    public IntegerRGBA mixture(IntegerRGBA another, float anotherRatio) {
+    public IntegerARGB mixture(IntegerARGB another, float anotherRatio) {
         int r = Math.round(red - (red - another.red) * anotherRatio);
         int g = Math.round(green - (green - another.green) * anotherRatio);
         int b = Math.round(blue - (blue - another.blue) * anotherRatio);
         int a = Math.round(alpha - (alpha - another.alpha) * anotherRatio);
-        return new IntegerRGBA(r, g, b, a);
+        return new IntegerARGB(r, g, b, a);
     }
 
     public int get() {
@@ -22,11 +22,13 @@ public record IntegerRGBA(int red, int green, int blue, int alpha) {
     @Override
     public boolean equals(Object o) {
         if (o == this) return true;
-        return o instanceof IntegerRGBA(int red1, int green1, int blue1, int alpha1) && red == red1 && blue == blue1 && green == green1 && alpha == alpha1;
+        return o instanceof IntegerARGB(
+                int a, int r, int g, int b
+        ) && alpha == a && red == r && blue == b && green == g;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(red, green, blue, alpha);
+        return Objects.hash(alpha, red, green, blue);
     }
 }

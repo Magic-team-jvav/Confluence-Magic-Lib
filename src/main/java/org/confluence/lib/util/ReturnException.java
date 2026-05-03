@@ -1,10 +1,12 @@
 package org.confluence.lib.util;
 
+import org.jetbrains.annotations.Nullable;
+
 /// 用来在lambda循环中跳出循环
 public class ReturnException extends RuntimeException {
-    private final Object value;
+    private final @Nullable Object value;
 
-    public ReturnException(Object value) {
+    public ReturnException(@Nullable Object value) {
         this.value = value;
     }
 
@@ -12,7 +14,7 @@ public class ReturnException extends RuntimeException {
         this(null);
     }
 
-    public Object getValue() {
+    public @Nullable Object getValue() {
         return value;
     }
 }

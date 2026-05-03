@@ -55,13 +55,7 @@ public class SimpleClientItemExtensions implements IClientItemExtensions {
     @Override
     public BlockEntityWithoutLevelRenderer getCustomRenderer() {
         if (renderer == null) {
-            Minecraft minecraft = Minecraft.getInstance();
-            this.renderer = new BlockEntityWithoutLevelRenderer(minecraft.getBlockEntityRenderDispatcher(), minecraft.getEntityModels()) {
-                @Override
-                public void renderByItem(ItemStack stack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay) {
-                    renderByItemCallback.render(minecraft, stack, displayContext, poseStack, buffer, packedLight, packedOverlay);
-                }
-            };
+            this.renderer = new Renderer(Minecraft.getInstance());
         }
         return renderer;
     }
@@ -97,5 +91,19 @@ public class SimpleClientItemExtensions implements IClientItemExtensions {
     @FunctionalInterface
     public interface ArmPoseGetter {
         @Nullable HumanoidModel.ArmPose get(LivingEntity living, InteractionHand hand, ItemStack itemStack);
+    }
+
+    private class Renderer extends BlockEntityWithoutLevelRenderer {
+        private final Minecraft minecraft;
+
+        public Renderer(Minecraft minecraft) {
+            super(minecraft.getBlockEntityRenderDispatcher(), minecraft.getEntityModels());
+            this.minecraft = minecraft;
+        }
+
+        @Override
+        public void renderByItem(ItemStack stack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay) {
+            renderByItemCallback.render(minecraft, stack, displayContext, poseStack, buffer, packedLight, packedOverlay);
+        }
     }
 }

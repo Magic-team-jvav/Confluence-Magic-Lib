@@ -1,18 +1,11 @@
 package org.confluence.lib.util;
 
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.ExplosionDamageCalculator;
+import org.jetbrains.annotations.ApiStatus;
 
-public class MultiplyExplosionDamageCalculator extends ExplosionDamageCalculator {
-    private final float multiplier;
-
+@Deprecated(since = "1.3.0", forRemoval = true)
+@ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
+public class MultiplyExplosionDamageCalculator extends org.confluence.lib.util.damage.MultiplyExplosionDamageCalculator {
     public MultiplyExplosionDamageCalculator(float multiplier) {
-        this.multiplier = multiplier;
-    }
-
-    @Override
-    public float getEntityDamageAmount(Explosion explosion, Entity entity) {
-        return super.getEntityDamageAmount(explosion, entity) * multiplier;
+        super(multiplier);
     }
 }

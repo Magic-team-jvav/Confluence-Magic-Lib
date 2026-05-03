@@ -9,9 +9,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.mixed.ILibExtraSyncedData;
 
-/**
- * @see ILibExtraSyncedData
- */
+/// @see ILibExtraSyncedData
 public record SetEntityDataPacketS2C(int entityId, Entry... entries) implements CustomPacketPayload {
     public static final byte DATA_BOOLEAN = 0;
     public static final Type<SetEntityDataPacketS2C> TYPE = new Type<>(ConfluenceMagicLib.asResource("set_entity_data"));

@@ -188,8 +188,10 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
 
     protected abstract int maxIngredientSize();
 
+    @Override
     public abstract String getGroup();
 
+    @Override
     public abstract ItemStack getToastSymbol();
 
     public static Vector2i findPatternTopLeft(List<String> pattern, int patternWidth, int patternHeight) {

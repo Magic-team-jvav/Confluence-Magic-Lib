@@ -85,7 +85,6 @@ public class GridPiece extends StructurePiece {
             tag.put("BlockList", BlockState.CODEC.listOf().encodeStart(NbtOps.INSTANCE, blockList).getOrThrow());
             tag.put("Features", FEATURES_CODEC.encodeStart(NbtOps.INSTANCE, features).getOrThrow());
         }
-        tag.putBoolean("confluence:fixed_relative_pos", true);
     }
 
     @Override
@@ -100,9 +99,8 @@ public class GridPiece extends StructurePiece {
         }
         Registry<ConfiguredFeature<?, ?>> configuredFeatures = level.registryAccess().registryOrThrow(Registries.CONFIGURED_FEATURE);
         for (Tuple<BlockPos, ResourceLocation> pair : features) {
-            configuredFeatures.getHolder(pair.getB()).ifPresent(feature -> {
-                feature.value().place(level, generator, random, pair.getA());
-            });
+            configuredFeatures.getHolder(pair.getB())
+                    .ifPresent(feature -> feature.value().place(level, generator, random, pair.getA()));
         }
     }
 

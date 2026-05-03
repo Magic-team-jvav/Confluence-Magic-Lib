@@ -3,9 +3,6 @@ package org.confluence.lib.color;
 import java.util.Objects;
 
 public record IntegerRGB(int red, int green, int blue) {
-    //public static final IntegerRGB HALLOW_A = of(0xFF0051);
-    //public static final IntegerRGB HALLOW_B = of(0x12FFE2);
-    //public static final IntegerRGB HALLOW_C = of(0xFFFA00);
     public static final IntegerRGB VOID_A = of(0x2c182a);
     public static final IntegerRGB VOID_B = of(0x3b2e6b);
     public static final IntegerRGB VOID_C = of(0x3c6f98);
@@ -41,14 +38,6 @@ public record IntegerRGB(int red, int green, int blue) {
         int b = Math.round(blue - (blue - another.blue) * anotherRatio);
         return new IntegerRGB(r, g, b);
     }
-    /*
-    public int mixture(int rgb, float ratio) {
-        int r = Math.round(red - (red - ((rgb & 0xFF0000) >> 16)) * ratio);
-        int g = Math.round(green - (green - ((rgb & 0x00FF00) >> 8)) * ratio);
-        int b = Math.round(blue - (blue - (rgb & 0x0000FF)) * ratio);
-        return (r << 16) + (g << 8) + b;
-    }
-    */
 
     public int get() {
         return (red << 16) + (green << 8) + blue;

@@ -16,7 +16,7 @@ import java.util.Map;
 import static org.confluence.lib.util.VectorUtils.*;
 
 public final class StructureUtils {
-    // 主要是类内部引用，很少外部使用，你无须在意.png
+    /// 主要是类内部引用，很少外部使用，你无须在意.png
     public static void ball8(BlockPos.MutableBlockPos posCheck, boolean replace, int x, int y, int z, int blockState, BlockPos centerPos, Object2IntMap<BlockPos> blockMap) {
         for (int i = 0; i < 8; i++) {
             posCheck.set(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1)));
@@ -45,8 +45,9 @@ public final class StructureUtils {
         }
     }
 
-    // 填充方法
-    // 球体填充
+    /// 填充方法
+    ///
+    /// 球体填充
     public static void ball(double radiusD, BlockPos centerPos, int blockState, boolean replace, Object2IntMap<BlockPos> blockMap) {
         int radius = Mth.ceil(radiusD);
         double radius2 = radiusD * radiusD;
@@ -64,7 +65,7 @@ public final class StructureUtils {
         }
     }
 
-    // 球体填充，带有指定y坐标上下不同种方块填充
+    /// 球体填充，带有指定y坐标上下不同种方块填充
     public static void ball(double radiusD, BlockPos centerPos, int blockState1, int blockState2, boolean replace, Object2IntMap<BlockPos> blockMap, int checkY) {
         int radius = Mth.ceil(radiusD);
         double radius2 = radiusD * radiusD;
@@ -82,7 +83,7 @@ public final class StructureUtils {
         }
     }
 
-    // 球体填充，带有随机比例
+    /// 球体填充，带有随机比例
     public static void ball(double radiusD, BlockPos centerPos, int blockState, boolean replace, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
         int radius = Mth.ceil(radiusD);
         double radius2 = radiusD * radiusD;
@@ -100,7 +101,7 @@ public final class StructureUtils {
         }
     }
 
-    // 椭球体填充
+    /// 椭球体填充
     public static void ellipsoid(double radiusDX, double radiusDY, double radiusDZ, BlockPos centerPos, int blockState, boolean replace, Object2IntMap<BlockPos> blockMap) {
         int radiusX = Mth.ceil(radiusDX);
         int radiusY = Mth.ceil(radiusDY);
@@ -122,7 +123,7 @@ public final class StructureUtils {
         }
     }
 
-    // 椭球体填充，带有指定y坐标上下不同种方块填充
+    /// 椭球体填充，带有指定y坐标上下不同种方块填充
     public static void ellipsoid(double radiusDX, double radiusDY, double radiusDZ, BlockPos centerPos, int blockState1, int blockState2, boolean replace, Object2IntMap<BlockPos> blockMap, int checkY) {
         int radiusX = Mth.ceil(radiusDX);
         int radiusY = Mth.ceil(radiusDY);
@@ -144,7 +145,7 @@ public final class StructureUtils {
         }
     }
 
-    // 椭球体填充，带有随机比例
+    /// 椭球体填充，带有随机比例
     public static void ellipsoid(double radiusDX, double radiusDY, double radiusDZ, BlockPos centerPos, int blockState, boolean replace, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
         int radiusX = Mth.ceil(radiusDX);
         int radiusY = Mth.ceil(radiusDY);
@@ -166,7 +167,7 @@ public final class StructureUtils {
         }
     }
 
-    // 立方体填充
+    /// 立方体填充
     public static void rectangular(BlockPos startPos, BlockPos endPos, int blockstate, Object2IntMap<BlockPos> blockMap, int replace) {
         int startX = Math.min(endPos.getX(), startPos.getX());
         int startY = Math.min(endPos.getY(), startPos.getY());
@@ -195,7 +196,7 @@ public final class StructureUtils {
         }
     }
 
-    // 立方体填充，带有随机比例
+    /// 立方体填充，带有随机比例
     public static void rectangular(BlockPos startPos, BlockPos endPos, int blockstate, Object2IntMap<BlockPos> blockMap, int replace, float placePer, WorldgenRandom random) {
         int startX = Math.min(endPos.getX(), startPos.getX());
         int startY = Math.min(endPos.getY(), startPos.getY());
@@ -225,7 +226,7 @@ public final class StructureUtils {
         }
     }
 
-    // 任意角度圆台填充
+    /// 任意角度圆台填充
     public static void frustumSet(Vector3d startPos, Vector3d endPos, double startRadius, double endRadius, int blockstate, Object2IntMap<BlockPos> blockMap) {
         int xStart0 = (int) (startPos.x + startRadius + 1);
         int xStart1 = (int) (startPos.x - startRadius - 1);
@@ -265,14 +266,14 @@ public final class StructureUtils {
         }
     }
 
-    // 金字塔填充
+    /// 金字塔填充
     public static void pyramidSet(BlockPos centerPos, int blockstate, int layerCount, Object2IntMap<BlockPos> blockMap) {
         for (int i = 0; i < layerCount; i++) {
             rectangular(centerPos.offset(layerCount - i, i, layerCount - i), centerPos.offset(i - layerCount, i, i - layerCount), blockstate, blockMap, 0);
         }
     }
 
-    // 迷宫填充
+    /// 迷宫填充
     public static void mazeSet(BlockPos centerPos, double distance, int layer, int blockstate, int width, int height, WorldgenRandom random, float difficulty, Object2IntMap<BlockPos> blockMap) {
         Map<Vector3d, BooleanStorage4> mazePos = mazePos(VectorUtils.toVector3d(centerPos), distance, layer, random, difficulty);
         int length = Mth.ceil(distance * 0.5);
@@ -295,8 +296,9 @@ public final class StructureUtils {
         }
     }
 
-    // 列表快捷填充
-    // 在整个坐标列表上填充球体，带有半径渐变
+    /// 列表快捷填充
+    ///
+    /// 在整个坐标列表上填充球体，带有半径渐变
     public static void lineSet(List<Vector3d> VctList, double rStart, double rEnd, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap) {
         double step = (rEnd - rStart) / VctList.size();
         int i = 0;
@@ -305,7 +307,7 @@ public final class StructureUtils {
         }
     }
 
-    // 在整个坐标列表上填充球体，带有指定y坐标上下不同种方块填充
+    /// 在整个坐标列表上填充球体，带有指定y坐标上下不同种方块填充
     public static void lineSet(List<Vector3d> VctList, double rStart, double rEnd, int blockstate1, int blockstate2, boolean replace, Object2IntMap<BlockPos> blockMap, int checkY) {
         double step = (rEnd - rStart) / VctList.size();
         int i = 0;
@@ -314,14 +316,14 @@ public final class StructureUtils {
         }
     }
 
-    // 在整个坐标列表上填充椭球体
+    /// 在整个坐标列表上填充椭球体
     public static void lineSetEllipsoid(List<Vector3d> VctList, double radiusDX, double radiusDY, double radiusDZ, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap) {
         for (Vector3d posPoint : VctList) {
             ellipsoid(radiusDX, radiusDY, radiusDZ, VectorUtils.fromVector3d(posPoint), blockstate, replace, blockMap);
         }
     }
 
-    // 在整个坐标列表上填充球体，带有半径渐变、随机比例
+    /// 在整个坐标列表上填充球体，带有半径渐变、随机比例
     public static void lineSet(List<Vector3d> VctList, double rStart, double rEnd, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
         double step = (rEnd - rStart) / VctList.size();
         int i = 0;
@@ -330,36 +332,37 @@ public final class StructureUtils {
         }
     }
 
-    // 在整个坐标列表上填充椭球体，带有随机比例
+    /// 在整个坐标列表上填充椭球体，带有随机比例
     public static void lineSetEllipsoid(List<Vector3d> VctList, double radiusDX, double radiusDY, double radiusDZ, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
         for (Vector3d posPoint : VctList) {
             ellipsoid(radiusDX, radiusDY, radiusDZ, VectorUtils.fromVector3d(posPoint), blockstate, replace, blockMap, placePer, random);
         }
     }
 
-    // 在整个坐标列表上放置地物
+    /// 在整个坐标列表上放置地物
     public static void lineSetFeature(List<Vector3d> list, Map<BlockPos, ResourceLocation> featureMap, ResourceLocation[] feature, WorldgenRandom random) {
         for (Vector3d vctPos : list) {
             featureMap.put(VectorUtils.fromVector3d(vctPos), Util.getRandom(feature, random));
         }
     }
 
-    // 快捷方法整合
-    // 不规则球体填充，带有壁厚、随机比例
+    /// 快捷方法整合
+    ///
+    /// 不规则球体填充，带有壁厚、随机比例
     public static void ball(int radius, int wall, BlockPos centerPos, Object2IntMap<BlockPos> blockMap, float chance, WorldgenRandom random, int wallBlock, int airBlock) {
         List<Vector3d> list = ballPos(radius, centerPos, chance, random);
         lineSet(list, radius, radius, wallBlock, true, blockMap);
         lineSet(list, radius - wall, radius - wall, airBlock, true, blockMap);
     }
 
-    // 不规则球体填充，带有壁厚、随机比例、指定y坐标上下不同种方块填充
+    /// 不规则球体填充，带有壁厚、随机比例、指定y坐标上下不同种方块填充
     public static void ball(int radius, int wall, BlockPos centerPos, Object2IntMap<BlockPos> blockMap, float chance, WorldgenRandom random, int wallBlock, int airBlock1, int airBlock2, int checkY) {
         List<Vector3d> list = ballPos(radius, centerPos, chance, random);
         lineSet(list, radius, radius, wallBlock, true, blockMap);
         lineSet(list, radius - wall, radius - wall, airBlock1, airBlock2, true, blockMap, checkY);
     }
 
-    // 获取xz在高度图上的y坐标
+    /// 获取xz在高度图上的y坐标
     public static int getHeight(int x, int z, Structure.GenerationContext context) {
         return context.chunkGenerator().getFirstOccupiedHeight(x, z, Heightmap.Types.WORLD_SURFACE_WG, context.heightAccessor(), context.randomState());
     }

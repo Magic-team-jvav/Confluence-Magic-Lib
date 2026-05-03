@@ -37,7 +37,8 @@ public class ExpertColorAnimation extends ColorAnimation {
         color.updateColor(deltaR, deltaG, deltaB);
         if ((deltaR != 0 && color.red() == targetValue) ||
                 (deltaG != 0 && color.green() == targetValue) ||
-                (deltaB != 0 && color.blue() == targetValue)) {
+                (deltaB != 0 && color.blue() == targetValue)
+        ) {
             discoStyle = nextStyle;
         }
     }

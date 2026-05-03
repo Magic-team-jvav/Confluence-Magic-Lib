@@ -7,12 +7,8 @@ import net.minecraft.client.particle.*;
 import net.minecraft.util.Mth;
 import org.confluence.lib.common.particle.CrossDustParticleOptions;
 import org.confluence.lib.util.LibMathUtils;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@ParametersAreNonnullByDefault
 public class CrossDustParticle extends TextureSheetParticle {
     protected final SpriteSet sprites;
     protected final CrossDustParticleOptions options;
@@ -114,7 +110,6 @@ public class CrossDustParticle extends TextureSheetParticle {
     }
 
     @Override
-    @NotNull
     public ParticleRenderType getRenderType() {
         return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
     }
@@ -127,8 +122,7 @@ public class CrossDustParticle extends TextureSheetParticle {
         }
 
         @Override
-        @Nullable
-        public Particle createParticle(CrossDustParticleOptions type, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+        public @Nullable Particle createParticle(CrossDustParticleOptions type, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
             return new CrossDustParticle(level, x, y, z, type, sprites);
         }
     }

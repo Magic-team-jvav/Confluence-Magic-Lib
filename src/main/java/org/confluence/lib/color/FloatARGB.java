@@ -4,13 +4,13 @@ import net.minecraft.util.Mth;
 
 import java.util.Objects;
 
-public record FloatRGBA(float red, float green, float blue, float alpha) {
-    public FloatRGBA mixture(FloatRGBA another, float anotherRatio) {
+public record FloatARGB(float alpha, float red, float green, float blue) {
+    public FloatARGB mixture(FloatARGB another, float anotherRatio) {
+        float a = Mth.clamp(alpha - (alpha - another.alpha) * anotherRatio, 0.0F, 1.0F);
         float r = Mth.clamp(red - (red - another.red) * anotherRatio, 0.0F, 1.0F);
         float g = Mth.clamp(green - (green - another.green) * anotherRatio, 0.0F, 1.0F);
         float b = Mth.clamp(blue - (blue - another.blue) * anotherRatio, 0.0F, 1.0F);
-        float a = Mth.clamp(alpha - (alpha - another.alpha) * anotherRatio, 0.0F, 1.0F);
-        return new FloatRGBA(r, g, b, a);
+        return new FloatARGB(a, r, g, b);
     }
 
     public int get() {
@@ -20,11 +20,13 @@ public record FloatRGBA(float red, float green, float blue, float alpha) {
     @Override
     public boolean equals(Object o) {
         if (o == this) return true;
-        return o instanceof FloatRGBA(float red1, float green1, float blue1, float alpha1) && red == red1 && blue == blue1 && green == green1 && alpha == alpha1;
+        return o instanceof FloatARGB(
+                float a, float r, float g, float b
+        ) && alpha == a && red == r && green == g && blue == b;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(red, green, blue, alpha);
+        return Objects.hash(alpha, red, green, blue);
     }
 }

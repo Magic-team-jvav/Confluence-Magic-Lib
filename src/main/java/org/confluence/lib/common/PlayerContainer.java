@@ -1,6 +1,5 @@
 package org.confluence.lib.common;
 
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -12,10 +11,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
 public class PlayerContainer<C extends BlockEntity & PlayerContainer.ValidEntity> extends SimpleContainer implements INBTSerializable<ListTag> {
     @Nullable
     protected C activeContainer;

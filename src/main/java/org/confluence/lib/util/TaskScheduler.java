@@ -14,8 +14,7 @@ import java.util.function.Consumer;
 /// 该类适合如：肉山生成的时候要破坏一大堆方块。之类的任务，如果是生物自己的任务请使用[DelayTaskHolder]类更合适
 public class TaskScheduler {
     // 任务队列（按执行时间排序）
-    private final PriorityQueue<ScheduledTask> taskQueue =
-            new PriorityQueue<>(Comparator.comparingLong(a -> a.executeTime));
+    private final PriorityQueue<ScheduledTask> taskQueue = new PriorityQueue<>(Comparator.comparingLong(a -> a.executeTime));
 
     // 任务计数器（用于打破平局）
     private final AtomicLong sequenceNumber = new AtomicLong(0);

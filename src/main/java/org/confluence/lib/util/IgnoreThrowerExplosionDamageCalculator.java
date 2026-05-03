@@ -1,23 +1,12 @@
 package org.confluence.lib.util;
 
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.Explosion;
+import org.jetbrains.annotations.ApiStatus;
 
-/// 忽略对使用者和使用者无法攻击的对象
-public class IgnoreThrowerExplosionDamageCalculator extends MultiplyExplosionDamageCalculator {
-    private final LivingEntity thrower;
-
+@Deprecated(since = "1.3.0", forRemoval = true)
+@ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
+public class IgnoreThrowerExplosionDamageCalculator extends org.confluence.lib.util.damage.IgnoreThrowerExplosionDamageCalculator {
     public IgnoreThrowerExplosionDamageCalculator(float multiplier, LivingEntity thrower) {
-        super(multiplier);
-        this.thrower = thrower;
-    }
-
-    @Override
-    public float getEntityDamageAmount(Explosion explosion, Entity entity) {
-        if (entity == thrower || (entity instanceof LivingEntity living && !thrower.canAttack(living))) {
-            return 0.0F;
-        }
-        return super.getEntityDamageAmount(explosion, entity);
+        super(multiplier, thrower);
     }
 }
