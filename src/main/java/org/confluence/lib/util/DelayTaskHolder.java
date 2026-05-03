@@ -157,14 +157,14 @@ public class DelayTaskHolder {
 
         /// 运行任务类，isRemoved为true时将在下一刻移除该任务
         class BaseTask implements ITask {
-            protected final ResultRun resultRun;
+            protected final Runner resultRun;
             protected int tick = 0;
             protected final int maxTick;
             protected int repeatCount = 0;
             protected final int maxRepeatCount;
             protected boolean isRemoved;
 
-            private BaseTask(ResultRun resultRun, int removedTick, int maxRepeatCount) {
+            private BaseTask(Runner resultRun, int removedTick, int maxRepeatCount) {
                 this.resultRun = resultRun;
                 this.maxTick = removedTick;
                 this.maxRepeatCount = maxRepeatCount;
@@ -199,9 +199,9 @@ public class DelayTaskHolder {
         }
 
         class TickTask extends BaseTask {
-            private final TickRun tickRun;
+            private final Runner tickRun;
 
-            private TickTask(TickRun tickRun, ResultRun resultRun, int removedTick, int maxRepeatCount) {
+            private TickTask(Runner tickRun, Runner resultRun, int removedTick, int maxRepeatCount) {
                 super(resultRun, removedTick, maxRepeatCount);
                 this.tickRun = tickRun;
             }
@@ -216,18 +216,13 @@ public class DelayTaskHolder {
 
         /// 每一tick执行一次可通过修改返回值来自定义结束的时间之类的逻辑
         @FunctionalInterface
-        interface TickRun {
-            int run(int tick, int maxTick, ITask iTask);
-        }
-
-        @FunctionalInterface
-        interface ResultRun {
+        interface Runner {
             int run(int tick, int maxTick, ITask iTask);
         }
 
         class Builder {
-            private @Nullable TickRun tickRun;
-            private ResultRun resultRun;
+            private @Nullable Runner tickRun;
+            private Runner resultRun;
             private int removedTick;
             private int repeatCount = 1;
 
@@ -238,12 +233,12 @@ public class DelayTaskHolder {
                 return new Builder();
             }
 
-            public Builder tickRun(TickRun tickRun) {
+            public Builder tickRun(Runner tickRun) {
                 this.tickRun = tickRun;
                 return this;
             }
 
-            public Builder resultRun(ResultRun resultRun) {
+            public Builder resultRun(Runner resultRun) {
                 this.resultRun = resultRun;
                 return this;
             }

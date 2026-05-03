@@ -100,7 +100,7 @@ public final class LibUtils {
     /// @param a 形参的方块实体类型
     /// @param b 注册的方块实体类型
     @SuppressWarnings("unchecked")
-    public static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> getTicker(BlockEntityType<A> a, BlockEntityType<E> b, BlockEntityTicker<? super E> ticker) {
+    public static <E extends BlockEntity, A extends BlockEntity> @Nullable BlockEntityTicker<A> getTicker(BlockEntityType<A> a, BlockEntityType<E> b, BlockEntityTicker<? super E> ticker) {
         return a == b ? (BlockEntityTicker<A>) ticker : null;
     }
 
@@ -281,7 +281,8 @@ public final class LibUtils {
         return ServerLifecycleHooks.getCurrentServer() != null && ServerLifecycleHooks.getCurrentServer().isSameThread();
     }
 
-    @Deprecated
+    @Deprecated(since = "1.3.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
     public static float cubicBezier(float t, float p0, float p1, float p2, float p3) {
         return LibMathUtils.cubicBezier(t, p0, p1, p2, p3);
     }
@@ -295,12 +296,14 @@ public final class LibUtils {
         }
     }
 
-    @Deprecated
+    @Deprecated(since = "1.3.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
     public static boolean checkChance(float value, RandomSource random) {
         return LibMathUtils.checkChance(value, random);
     }
 
-    @Deprecated
+    @Deprecated(since = "1.3.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
     public static boolean checkChance(double value, RandomSource random) {
         return LibMathUtils.checkChance(value, random);
     }
@@ -400,12 +403,14 @@ public final class LibUtils {
         });
     }
 
-    @Deprecated
+    @Deprecated(since = "1.3.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
     public static int multiplyInt(int original, float factor, RandomSource random) {
         return LibMathUtils.multiplyInt(original, factor, random);
     }
 
-    @Deprecated
+    @Deprecated(since = "1.3.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
     public static int divideInt(int original, float factor, RandomSource random) {
         return LibMathUtils.divideInt(original, factor, random);
     }

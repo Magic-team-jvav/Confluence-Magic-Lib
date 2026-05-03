@@ -14,7 +14,7 @@ import org.confluence.lib.util.LibMathUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-public interface CriticalDamageSource {
+public interface ILibDamageSource {
     void confluence$setCritical(boolean critical);
 
     boolean confluence$isCritical();
@@ -37,7 +37,7 @@ public interface CriticalDamageSource {
             crit = true;
         }
         ProcessCriticalDamageEvent event;
-        if (damageSource instanceof CriticalDamageSource cds) {
+        if (damageSource instanceof ILibDamageSource cds) {
             crit |= cds.confluence$isCritical();
             event = NeoForge.EVENT_BUS.post(new ProcessCriticalDamageEvent(victim, damageSource, amount, crit));
             cds.confluence$setCritical(event.isCritical());

@@ -1,12 +1,13 @@
 package org.confluence.lib.util;
 
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.WorldGenRegion;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
@@ -20,13 +21,21 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Queue;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 public final class FeatureUtils {
     public static boolean safeSetBlock(WorldGenLevel level, BlockPos pos, BlockState state, Predicate<BlockState> oldState) {
         if (oldState.test(level.getBlockState(pos))) {
+            return level.setBlock(pos, state, 3);
+        }
+        return false;
+    }
+
+    public static boolean setBlockIfIsAir(WorldGenLevel level, BlockPos pos, BlockState state) {
+        if (isPosAir(level, pos)) {
             return level.setBlock(pos, state, 3);
         }
         return false;
@@ -51,29 +60,21 @@ public final class FeatureUtils {
         int xEnd = box.maxX();
         int yEnd = box.maxY();
         int zEnd = box.maxZ();
-        boolean set;
-        BlockPos posPlace;
-        BlockPos posDroop;
-        int yDroop;
-        int length;
+        BlockPos.MutableBlockPos posPlace = new BlockPos.MutableBlockPos();
         for (int x = xStart; x <= xEnd; x++) {
+            posPlace.setX(x);
             for (int y = yStart; y <= yEnd; y++) {
+                posPlace.setY(y);
                 for (int z = zStart; z <= zEnd; z++) {
-                    posPlace = new BlockPos(x, y, z);
-                    set = (!((x == xStart || x == xEnd) && (z == zStart || z == zEnd)) || ((y == yStart || up) && random.nextInt(3) == 0)) && (level.getBlockState(posPlace).isAir());
-                    if (set) {
+                    posPlace.setZ(z);
+                    if ((!((x == xStart || x == xEnd) && (z == zStart || z == zEnd)) || ((up || y == yStart) && random.nextInt(3) == 0)) && isPosAir(level, posPlace)) {
                         level.setBlock(posPlace, leaves, 3);
                     }
-                    if (droop) {
-                        if (posPlace.getY() == yStart) {
-                            yDroop = posPlace.getY() - 1;
-                            length = (level.getBlockState(posPlace).isAir()) ? 0 : random.nextInt(4);
-                            for (int i = 0; i < length; i++) {
-                                posDroop = new BlockPos(x, yDroop - i, z);
-                                if (level.getBlockState(posDroop).isAir()) {
-                                    level.setBlock(posDroop, droopingLeaves, 3);
-                                }
-                            }
+                    if (droop && posPlace.getY() == yStart) {
+                        int yDroop = posPlace.getY() - 1;
+                        int length = isPosAir(level, posPlace) ? 0 : random.nextInt(4);
+                        for (int i = 0; i < length; i++) {
+                            setBlockIfIsAir(level, new BlockPos(x, yDroop - i, z), droopingLeaves);
                         }
                     }
                 }
@@ -93,7 +94,7 @@ public final class FeatureUtils {
     public static void ball8(BlockPos.MutableBlockPos posCheck, boolean replace, int x, int y, int z, BlockState blockState, BlockPos centerPos, WorldGenLevel level) {
         for (int i = 0; i < 8; i++) {
             posCheck.set(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1)));
-            if (replace || level.getBlockState(posCheck).isAir()) {
+            if (replace || isPosAir(level, posCheck)) {
                 level.setBlock(posCheck, blockState, 3);
             }
         }
@@ -104,10 +105,9 @@ public final class FeatureUtils {
             posCheck.set(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1)));
             BlockState state = level.getBlockState(posCheck);
             if (replace || state.isAir()) {
-                BlockState apply = blockState.apply(state);
-                if (apply != null) {
-                    level.setBlock(posCheck, apply, 3);
-                }
+                state = blockState.apply(state);
+                if (state == null) continue;
+                level.setBlock(posCheck, state, 3);
             }
         }
     }
@@ -115,38 +115,31 @@ public final class FeatureUtils {
     public static void ball8(BlockPos.MutableBlockPos posCheck, boolean replace, int x, int y, int z, BlockState blockState1, BlockState blockState2, BlockPos centerPos, WorldGenLevel level, int checkY) {
         for (int i = 0; i < 8; i++) {
             posCheck.set(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1)));
-            if (replace || level.getBlockState(posCheck).isAir()) {
-                if (posCheck.getY() > checkY) {
-                    level.setBlock(posCheck, blockState1, 3);
-                } else {
-                    level.setBlock(posCheck, blockState2, 3);
-                }
+            if (replace || isPosAir(level, posCheck)) {
+                level.setBlock(posCheck, posCheck.getY() > checkY ? blockState1 : blockState2, 3);
             }
         }
     }
 
     public static void ball8(BlockPos.MutableBlockPos posCheck, boolean replace, int x, int y, int z, BlockState blockState, BlockPos centerPos, WorldGenLevel level, float placePer, RandomSource random) {
         for (int i = 0; i < 8; i++) {
-            if (placePer >= random.nextFloat()) {
-                posCheck.set(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1)));
-                if (replace || level.getBlockState(posCheck).isAir()) {
-                    level.setBlock(posCheck, blockState, 3);
-                }
+            if (!LibMathUtils.checkChance(placePer, random)) continue;
+            posCheck.set(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1)));
+            if (replace || isPosAir(level, posCheck)) {
+                level.setBlock(posCheck, blockState, 3);
             }
         }
     }
 
     public static void ball8(BlockPos.MutableBlockPos posCheck, boolean replace, int x, int y, int z, Function<BlockState, @Nullable BlockState> blockState, BlockPos centerPos, WorldGenLevel level, float placePer, RandomSource random) {
         for (int i = 0; i < 8; i++) {
-            if (placePer >= random.nextFloat()) {
-                posCheck.set(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1)));
-                BlockState state = level.getBlockState(posCheck);
-                if (replace || state.isAir()) {
-                    BlockState apply = blockState.apply(state);
-                    if (apply != null) {
-                        level.setBlock(posCheck, apply, 3);
-                    }
-                }
+            if (!LibMathUtils.checkChance(placePer, random)) continue;
+            posCheck.set(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1)));
+            BlockState state = level.getBlockState(posCheck);
+            if (replace || state.isAir()) {
+                BlockState apply = blockState.apply(state);
+                if (apply == null) continue;
+                level.setBlock(posCheck, apply, 3);
             }
         }
     }
@@ -154,19 +147,16 @@ public final class FeatureUtils {
     // 填充方法
     // 球体填充
     public static void ball(double radiusD, BlockPos centerPos, BlockState blockState, boolean replace, WorldGenLevel level) {
-        int radius = (int) radiusD + 1;
+        int radius = Mth.ceil(radiusD);
         double radius2 = radiusD * radiusD;
-        int x2;
-        int y2;
         BlockPos.MutableBlockPos posCheck = centerPos.mutable();
         for (int x = 0; x < radius; x++) {
-            x2 = x * x;
+            int x2 = x * x;
             for (int y = 0; y < radius; y++) {
-                y2 = y * y;
+                int y2 = y * y;
                 for (int z = 0; z < radius; z++) {
-                    if ((x2 + y2 + z * z <= radius2)) {
-                        ball8(posCheck, replace, x, y, z, blockState, centerPos, level);
-                    }
+                    if (x2 + y2 + z * z > radius2) continue;
+                    ball8(posCheck, replace, x, y, z, blockState, centerPos, level);
                 }
             }
         }
@@ -174,19 +164,16 @@ public final class FeatureUtils {
 
     // 球体填充，且允许根据原方块状态灵活调整新方块状态
     public static void ball(double radiusD, BlockPos centerPos, Function<BlockState, @Nullable BlockState> blockState, boolean replace, WorldGenLevel level) {
-        int radius = (int) radiusD + 1;
+        int radius = Mth.ceil(radiusD);
         double radius2 = radiusD * radiusD;
-        int x2;
-        int y2;
         BlockPos.MutableBlockPos posCheck = centerPos.mutable();
         for (int x = 0; x < radius; x++) {
-            x2 = x * x;
+            int x2 = x * x;
             for (int y = 0; y < radius; y++) {
-                y2 = y * y;
+                int y2 = y * y;
                 for (int z = 0; z < radius; z++) {
-                    if ((x2 + y2 + z * z <= radius2)) {
-                        ball8(posCheck, replace, x, y, z, blockState, centerPos, level);
-                    }
+                    if (x2 + y2 + z * z > radius2) continue;
+                    ball8(posCheck, replace, x, y, z, blockState, centerPos, level);
                 }
             }
         }
@@ -194,19 +181,16 @@ public final class FeatureUtils {
 
     // 球体填充，带有指定y坐标上下不同种方块填充
     public static void ball(double radiusD, BlockPos centerPos, BlockState blockState1, BlockState blockState2, boolean replace, WorldGenLevel level, int checkY) {
-        int radius = (int) radiusD + 1;
+        int radius = Mth.ceil(radiusD);
         double radius2 = radiusD * radiusD;
-        int x2;
-        int y2;
         BlockPos.MutableBlockPos posCheck = centerPos.mutable();
         for (int x = 0; x < radius; x++) {
-            x2 = x * x;
+            int x2 = x * x;
             for (int y = 0; y < radius; y++) {
-                y2 = y * y;
+                int y2 = y * y;
                 for (int z = 0; z < radius; z++) {
-                    if ((x2 + y2 + z * z <= radius2)) {
-                        ball8(posCheck, replace, x, y, z, blockState1, blockState2, centerPos, level, checkY);
-                    }
+                    if (x2 + y2 + z * z > radius2) continue;
+                    ball8(posCheck, replace, x, y, z, blockState1, blockState2, centerPos, level, checkY);
                 }
             }
         }
@@ -214,19 +198,16 @@ public final class FeatureUtils {
 
     // 球体填充，带有随机比例
     public static void ball(double radiusD, BlockPos centerPos, BlockState blockState, boolean replace, WorldGenLevel level, float placePer, RandomSource random) {
-        int radius = (int) radiusD + 1;
+        int radius = Mth.ceil(radiusD);
         double radius2 = radiusD * radiusD;
-        int x2;
-        int y2;
         BlockPos.MutableBlockPos posCheck = centerPos.mutable();
         for (int x = 0; x < radius; x++) {
-            x2 = x * x;
+            int x2 = x * x;
             for (int y = 0; y < radius; y++) {
-                y2 = y * y;
+                int y2 = y * y;
                 for (int z = 0; z < radius; z++) {
-                    if ((x2 + y2 + z * z <= radius2)) {
-                        ball8(posCheck, replace, x, y, z, blockState, centerPos, level, placePer, random);
-                    }
+                    if (x2 + y2 + z * z > radius2) continue;
+                    ball8(posCheck, replace, x, y, z, blockState, centerPos, level, placePer, random);
                 }
             }
         }
@@ -234,19 +215,16 @@ public final class FeatureUtils {
 
     // 球体填充，带有随机比例，且允许根据原方块状态灵活调整新方块状态
     public static void ball(double radiusD, BlockPos centerPos, Function<BlockState, @Nullable BlockState> blockState, boolean replace, WorldGenLevel level, float placePer, RandomSource random) {
-        int radius = (int) radiusD + 1;
+        int radius = Mth.ceil(radiusD);
         double radius2 = radiusD * radiusD;
-        int x2;
-        int y2;
         BlockPos.MutableBlockPos posCheck = centerPos.mutable();
         for (int x = 0; x < radius; x++) {
-            x2 = x * x;
+            int x2 = x * x;
             for (int y = 0; y < radius; y++) {
-                y2 = y * y;
+                int y2 = y * y;
                 for (int z = 0; z < radius; z++) {
-                    if ((x2 + y2 + z * z <= radius2)) {
-                        ball8(posCheck, replace, x, y, z, blockState, centerPos, level, placePer, random);
-                    }
+                    if (x2 + y2 + z * z > radius2) continue;
+                    ball8(posCheck, replace, x, y, z, blockState, centerPos, level, placePer, random);
                 }
             }
         }
@@ -265,10 +243,14 @@ public final class FeatureUtils {
         int zLength = endZ - startZ;
         BlockPos.MutableBlockPos posCheck = startPos.mutable();
         for (int x = 0; x <= xLength; x++) {
+            posCheck.setX(startX + x);
             for (int y = 0; y <= yLength; y++) {
+                posCheck.setY(startY + y);
                 for (int z = 0; z <= zLength; z++) {
-                    posCheck.set(startX + x, startY + y, startZ + z);
-                    if (replace || level.getBlockState(posCheck).canBeReplaced()) level.setBlock(posCheck, blockstate, 3);
+                    posCheck.setZ(startZ + z);
+                    if (replace || level.getBlockState(posCheck).canBeReplaced()) {
+                        level.setBlock(posCheck, blockstate, 3);
+                    }
                 }
             }
         }
@@ -276,23 +258,20 @@ public final class FeatureUtils {
 
     // 椭球体填充
     public static void ellipsoid(double radiusDX, double radiusDY, double radiusDZ, BlockPos centerPos, BlockState blockState, boolean replace, WorldGenLevel level) {
-        int radiusX = (int) radiusDX + 1;
-        int radiusY = (int) radiusDY + 1;
-        int radiusZ = (int) radiusDZ + 1;
-        double rX = radiusDX * radiusDX;
-        double rY = radiusDY * radiusDY;
-        double rZ = radiusDZ * radiusDZ;
-        int x2;
-        int y2;
+        int radiusX = Mth.ceil(radiusDX);
+        int radiusY = Mth.ceil(radiusDY);
+        int radiusZ = Mth.ceil(radiusDZ);
+        double inv_rX = LibMathUtils.invertSquare(radiusDX);
+        double inv_rY = LibMathUtils.invertSquare(radiusDY);
+        double inv_rZ = LibMathUtils.invertSquare(radiusDZ);
         BlockPos.MutableBlockPos posCheck = centerPos.mutable();
         for (int x = 0; x < radiusX; x++) {
-            x2 = x * x;
+            int x2 = x * x;
             for (int y = 0; y < radiusY; y++) {
-                y2 = y * y;
+                int y2 = y * y;
                 for (int z = 0; z < radiusZ; z++) {
-                    if ((x2 / rX + y2 / rY + (z * z) / rZ) <= 1) {
-                        ball8(posCheck, replace, x, y, z, blockState, centerPos, level);
-                    }
+                    if (x2 * inv_rX + y2 * inv_rY + z * z * inv_rZ > 1) continue;
+                    ball8(posCheck, replace, x, y, z, blockState, centerPos, level);
                 }
             }
         }
@@ -309,17 +288,18 @@ public final class FeatureUtils {
         int xLength = endX - startX;
         int yLength = endY - startY;
         int zLength = endZ - startZ;
-        boolean bl = true;
         BlockPos.MutableBlockPos posCheck = startPos.mutable();
-        for (int x = 0; (x <= xLength) && bl; x++) {
-            for (int y = 0; (y <= yLength) && bl; y++) {
-                for (int z = 0; (z <= zLength) && bl; z++) {
-                    posCheck.set(startX + x, startY + y, startZ + z);
-                    if (!level.getBlockState(posCheck).canBeReplaced()) bl = false;
+        for (int x = 0; x <= xLength; x++) {
+            posCheck.setX(startX + x);
+            for (int y = 0; y <= yLength; y++) {
+                posCheck.setY(startY + y);
+                for (int z = 0; z <= zLength; z++) {
+                    if (level.getBlockState(posCheck.setZ(startZ + z)).canBeReplaced()) continue;
+                    return false;
                 }
             }
         }
-        return bl;
+        return true;
     }
 
     public static boolean ensureCanWrite(WorldGenLevel level, BlockPos pos) {
@@ -341,11 +321,11 @@ public final class FeatureUtils {
         return true;
     }
 
-    //生成一個凸多面體的blockPos列表
-    public static void updateLeavesOptimized(WorldGenLevel level, LongOpenHashSet trunkSet, LongOpenHashSet leavesSet, boolean cleanUncovered, boolean debugMode) {
+    // 生成一個凸多面體的blockPos列表
+    public static void updateLeavesOptimized(WorldGenLevel level, LongSet trunkSet, LongSet leavesSet, boolean cleanUncovered, boolean debugMode) {
         if (leavesSet.isEmpty()) return;
 
-        Long2IntOpenHashMap distanceMap = new Long2IntOpenHashMap(leavesSet.size());
+        Long2IntMap distanceMap = new Long2IntOpenHashMap(leavesSet.size());
         distanceMap.defaultReturnValue(-1);
         Queue<Long> queue = new ArrayDeque<>();
 
@@ -367,7 +347,7 @@ public final class FeatureUtils {
             if (currentDist >= 6) continue;
 
             BlockPos currentPos = BlockPos.of(currentLong);
-            for (Direction direction : Direction.values()) {
+            for (Direction direction : LibUtils.DIRECTIONS) {
                 long neighborLong = currentPos.relative(direction).asLong();
 
                 if (leavesSet.contains(neighborLong) && distanceMap.get(neighborLong) == -1) {

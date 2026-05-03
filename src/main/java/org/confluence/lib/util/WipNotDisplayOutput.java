@@ -5,16 +5,8 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.confluence.lib.common.LibTags;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@ParametersAreNonnullByDefault
-public class WipNotDisplayOutput implements CreativeModeTab.Output {
+public record WipNotDisplayOutput(CreativeModeTab.Output delegate) implements CreativeModeTab.Output {
     private static boolean forceAllow = LibUtils.isDev();
-    private final CreativeModeTab.Output delegate;
-
-    public WipNotDisplayOutput(CreativeModeTab.Output delegate) {
-        this.delegate = delegate;
-    }
 
     @Override
     public void accept(ItemStack stack, CreativeModeTab.TabVisibility tabVisibility) {

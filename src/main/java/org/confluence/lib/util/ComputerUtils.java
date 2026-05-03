@@ -8,21 +8,18 @@ import java.util.*;
 import java.util.function.Predicate;
 
 public final class ComputerUtils {
-
     private static final BlockPos[] DIRECTIONS = {
-            new BlockPos( 1,  0,  0), new BlockPos(-1,  0,  0),
-            new BlockPos( 0,  1,  0), new BlockPos( 0, -1,  0),
-            new BlockPos( 0,  0,  1), new BlockPos( 0,  0, -1)
+            new BlockPos(1, 0, 0), new BlockPos(-1, 0, 0),
+            new BlockPos(0, 1, 0), new BlockPos(0, -1, 0),
+            new BlockPos(0, 0, 1), new BlockPos(0, 0, -1)
     };
 
-
-    /**
-     * DFS包含方块检测
-     * @param center 中心方块坐标
-     * @param radius 半径
-     * @param contains 包含方块的判定条件
-     * @return 如果空间是封闭的，则返回封闭空间；否则返回空列表
-     */
+    /// DFS包含方块检测
+    ///
+    /// @param center   中心方块坐标
+    /// @param radius   半径
+    /// @param contains 包含方块的判定条件
+    /// @return 如果空间是封闭的，则返回封闭空间；否则返回空列表
     public static List<BlockPos> zoomDetection(Level world, BlockPos center, int radius, Predicate<BlockState> contains) {
         // 定义完整的边界范围
         int minX = center.getX() - radius;
@@ -55,11 +52,10 @@ public final class ComputerUtils {
                 BlockPos neighborPos = currentPos.offset(dir);
 
                 // 如果邻居方块在边界内
-                if (
-                        neighborPos.getX() >= minX && neighborPos.getX() <= maxX &&
-                                neighborPos.getY() >= minY && neighborPos.getY() <= maxY &&
-                                neighborPos.getZ() >= minZ && neighborPos.getZ() <= maxZ)
-                {
+                if (neighborPos.getX() >= minX && neighborPos.getX() <= maxX &&
+                        neighborPos.getY() >= minY && neighborPos.getY() <= maxY &&
+                        neighborPos.getZ() >= minZ && neighborPos.getZ() <= maxZ
+                ) {
                     // 如果邻居方块是空气且未被访问，加入栈
                     if (contains.test(world.getBlockState(neighborPos)) && !visited.contains(neighborPos)) {
                         stack.push(neighborPos);
@@ -74,6 +70,4 @@ public final class ComputerUtils {
 
         return closedSpace;
     }
-
-
 }

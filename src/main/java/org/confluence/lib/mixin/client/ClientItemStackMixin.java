@@ -1,12 +1,12 @@
 package org.confluence.lib.mixin.client;
 
 import net.minecraft.world.item.ItemStack;
-import org.confluence.lib.mixed.IClientItemStack;
+import org.confluence.lib.mixed.ILibClientItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(ItemStack.class)
-public class ClientItemStackMixin implements IClientItemStack {
+public class ClientItemStackMixin implements ILibClientItemStack {
     @Unique
     private int confluence$groupId = -1;
 

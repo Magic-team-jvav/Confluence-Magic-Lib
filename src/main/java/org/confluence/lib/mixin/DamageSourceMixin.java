@@ -1,12 +1,12 @@
 package org.confluence.lib.mixin;
 
 import net.minecraft.world.damagesource.DamageSource;
-import org.confluence.lib.mixed.CriticalDamageSource;
+import org.confluence.lib.mixed.ILibDamageSource;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(DamageSource.class)
-public class DamageSourceMixin implements CriticalDamageSource {
+public class DamageSourceMixin implements ILibDamageSource {
     @Unique
     private boolean confluence$critical;
 

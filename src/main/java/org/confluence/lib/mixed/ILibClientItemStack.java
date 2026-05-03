@@ -2,12 +2,12 @@ package org.confluence.lib.mixed;
 
 import net.minecraft.world.item.ItemStack;
 
-public interface IClientItemStack {
+public interface ILibClientItemStack {
     void confluence$setGroupId(int id);
 
     int confluence$getGroupId();
 
-    static IClientItemStack of(ItemStack stack) {
-        return (IClientItemStack) (Object) stack;
+    static ILibClientItemStack of(ItemStack stack) {
+        return (ILibClientItemStack) (Object) stack;
     }
 }

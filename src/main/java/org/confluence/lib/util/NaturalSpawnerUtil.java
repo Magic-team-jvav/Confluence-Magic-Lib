@@ -16,7 +16,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.dimension.LevelStem;
 import org.confluence.lib.ConfluenceMagicLib;
-import org.confluence.lib.mixed.IChunkSpawnDataAccess;
+import org.confluence.lib.mixed.ILibChunkSpawnDataAccess;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -105,7 +105,7 @@ public final class NaturalSpawnerUtil {
             return k < f;
         }
 
-        ChunkSpawnData data = IChunkSpawnDataAccess.of(category).confluence$getData();
+        ChunkSpawnData data = ILibChunkSpawnDataAccess.of(category).confluence$getData();
         if (data == ChunkSpawnData.DEFAULT) {
             return original;
         }

@@ -6,13 +6,13 @@ import net.minecraft.world.level.Level;
 import java.time.format.DateTimeParseException;
 
 public final class LibDateUtils {
-    private static final short[] TIMES = Util.make(new short[24 * 60], times -> {
+    private static final int[] TIMES = Util.make(new int[24 * 60], times -> {
         for (int h = 0; h < 24; h++) {
             int t = h * 60;
             int i = (h - 6) * 1000;
             if (i < 0) i += 24000;
             for (int m = 0; m < 60; m++) {
-                times[t + m] = (short) (i + (int) (m / 0.06F));
+                times[t + m] = i + (int) (m / 0.06F);
             }
         }
     });

@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.booleans.BooleanObjectMutablePair;
 import it.unimi.dsi.fastutil.booleans.BooleanObjectPair;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -27,15 +26,11 @@ import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import org.confluence.lib.common.recipe.AmountIngredient;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
-@SuppressWarnings("unused")
 public final class LibStreamCodecUtils {
     public static final StreamCodec<ByteBuf, Vec2> VEC_2 = StreamCodec.composite(
             ByteBufCodecs.FLOAT, vec2 -> vec2.x,
@@ -128,14 +123,6 @@ public final class LibStreamCodecUtils {
                 ResourceLocation.STREAM_CODEC.encode(buffer, tagKey.location());
             }
         };
-    }
-
-    /**
-     * Use {@link ByteBufCodecs#registry(ResourceKey)} directly
-     */
-    @Deprecated
-    public static <V> StreamCodec<RegistryFriendlyByteBuf, V> registry(Registry<V> registry) {
-        return ByteBufCodecs.registry(registry.key());
     }
 
     public static <B extends ByteBuf, V> StreamCodec<B, V> lazyInitialized(Supplier<StreamCodec<B, V>> delegate) {

@@ -7,9 +7,10 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
+import org.jetbrains.annotations.Nullable;
 
 public final class EnchantmentUtil {
-    public static int getEnchantmentLevel(ResourceKey<Enchantment> enchantments, ItemStack stack) {
+    public static int getEnchantmentLevel(ResourceKey<Enchantment> enchantments, @Nullable ItemStack stack) {
         if(stack == null || stack.isEmpty()) return 0;
         // 从物品堆栈中获取附魔信息，如果没有则使用空的附魔集合。
         ItemEnchantments itemenchantments = stack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);

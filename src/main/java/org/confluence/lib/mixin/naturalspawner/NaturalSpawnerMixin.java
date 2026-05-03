@@ -13,7 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.chunk.LevelChunk;
-import org.confluence.lib.mixed.IChunkSpawnDataAccess;
+import org.confluence.lib.mixed.ILibChunkSpawnDataAccess;
 import org.confluence.lib.util.NaturalSpawnerUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,7 +27,7 @@ public abstract class NaturalSpawnerMixin {
             @Local(argsOnly = true) ServerLevel level,
             @Local(argsOnly = true) LevelChunk chunk
     ) {
-        IChunkSpawnDataAccess.of(category).confluence$setData(NaturalSpawnerUtil.getChunkSpawnData(level.dimension(), chunk.getPos()));
+        ILibChunkSpawnDataAccess.of(category).confluence$setData(NaturalSpawnerUtil.getChunkSpawnData(level.dimension(), chunk.getPos()));
         return category;
     }
 
@@ -41,7 +41,7 @@ public abstract class NaturalSpawnerMixin {
             Operation<Void> original
     ) {
         original.call(category, level, chunk, filter, callback);
-        IChunkSpawnDataAccess.of(category).confluence$setData(NaturalSpawnerUtil.ChunkSpawnData.DEFAULT);
+        ILibChunkSpawnDataAccess.of(category).confluence$setData(NaturalSpawnerUtil.ChunkSpawnData.DEFAULT);
     }
 
     @Definition(id = "k", local = @Local(type = int.class, ordinal = 2))

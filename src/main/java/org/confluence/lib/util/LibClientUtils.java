@@ -24,6 +24,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
@@ -36,12 +37,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class LibClientUtils {
-    public static final float HALF_SQRT_3 = (float) (Math.sqrt(3) / 2.0);
+    @Deprecated(since = "1.3.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
+    public static final float HALF_SQRT_3 = LibMathUtils.HALF_SQRT_3;
     public static final Quaternionf ANGLE_45 = Axis.YP.rotationDegrees(45);
     public static final Quaternionf ANGLE_180 = Axis.ZP.rotationDegrees(180);
     public static final Quaternionf ANGLE_N90 = Axis.YP.rotationDegrees(-90);
     public static final int[] FULL_BRIGHT = {0xF000F0, 0xF000F0, 0xF000F0, 0xF000F0};
-    public static final float INV_255 = 1.0F / 255.0F;
+    @Deprecated(since = "1.3.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
+    public static final float INV_255 = LibMathUtils.INV_255;
     public static final ClampedItemPropertyFunction COULD_ENABLE_PROPERTY_FUNCTION = (stack, level, living, seed) -> {
         CompoundTag tag = LibUtils.getItemStackNbtIfPresent(stack);
         return tag != null && tag.getBoolean(IFunctionCouldEnable.DISABLE_KEY) ? 0 : 1;
@@ -69,13 +74,11 @@ public final class LibClientUtils {
         return minecraft.gameMode.canHurtPlayer() && minecraft.getCameraEntity() instanceof Player;
     }
 
-    /**
-     * 将游戏缓存的贴图写入文件
-     *
-     * @param nativeImage 游戏缓存的贴图
-     * @param path        文件全路径，比如<code>FMLPaths.GAMEDIR.get().resolve("redstone.png")</code>
-     * @param argbMixer   argb的混合方法
-     */
+    /// 将游戏缓存的贴图写入文件
+    ///
+    /// @param nativeImage 游戏缓存的贴图
+    /// @param path        文件全路径，比如<code>FMLPaths.GAMEDIR.get().resolve("redstone.png")</code>
+    /// @param argbMixer   argb的混合方法
     public static void writeImageToFile(NativeImage nativeImage, Path path, Function4<Integer, Integer, Integer, Integer, Integer> argbMixer) {
         int[] pixels = nativeImage.getPixelsRGBA();
         Path parent = path.getParent();

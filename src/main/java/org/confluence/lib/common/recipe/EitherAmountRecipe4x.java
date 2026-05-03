@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.Level;
-import org.confluence.lib.mixed.LibShapedRecipePattern;
+import org.confluence.lib.mixed.ILibShapedRecipePattern;
 import org.confluence.lib.util.LibStreamCodecUtils;
 
 import java.util.function.BiFunction;
@@ -26,7 +26,7 @@ public abstract class EitherAmountRecipe4x<I extends MenuRecipeInput> extends Ab
     public EitherAmountRecipe4x(ItemStack result, ShapedRecipePattern pattern) {
         super(result, pattern.ingredients());
         this.either = Either.left(pattern);
-        LibShapedRecipePattern.setNonSymmetricalMatching(pattern);
+        ILibShapedRecipePattern.setNonSymmetricalMatching(pattern);
     }
 
     public EitherAmountRecipe4x(ItemStack result, NonNullList<Ingredient> ingredients) {
@@ -37,7 +37,7 @@ public abstract class EitherAmountRecipe4x<I extends MenuRecipeInput> extends Ab
     public EitherAmountRecipe4x(ItemStack result, Either<ShapedRecipePattern, NonNullList<Ingredient>> either) {
         super(result, either.map(ShapedRecipePattern::ingredients, Function.identity()));
         this.either = either;
-        either.ifLeft(LibShapedRecipePattern::setNonSymmetricalMatching);
+        either.ifLeft(ILibShapedRecipePattern::setNonSymmetricalMatching);
     }
 
     @Override

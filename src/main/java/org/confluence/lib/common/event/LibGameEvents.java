@@ -37,8 +37,8 @@ import org.confluence.lib.api.event.SwitchItemFunctionEvent;
 import org.confluence.lib.common.LibAttributes;
 import org.confluence.lib.common.data.saved.IGlobalData;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
-import org.confluence.lib.mixed.CriticalDamageSource;
-import org.confluence.lib.mixed.IExtraSyncedData;
+import org.confluence.lib.mixed.ILibDamageSource;
+import org.confluence.lib.mixed.ILibExtraSyncedData;
 import org.confluence.lib.network.AttackDamagePacketS2C;
 import org.confluence.lib.network.SetEntityDataPacketS2C;
 import org.confluence.lib.util.DelayTaskHolder;
@@ -79,7 +79,7 @@ public final class LibGameEvents {
 
     @SubscribeEvent
     public static void player$StartTracking(PlayerEvent.StartTracking event) {
-        if (event.getEntity() instanceof ServerPlayer serverPlayer && event.getTarget() instanceof IExtraSyncedData<?> extraSyncedData) {
+        if (event.getEntity() instanceof ServerPlayer serverPlayer && event.getTarget() instanceof ILibExtraSyncedData<?> extraSyncedData) {
             PacketDistributor.sendToPlayer(serverPlayer, new SetEntityDataPacketS2C(
                     extraSyncedData.confluence$self().getId(),
                     extraSyncedData.confluence$getAllEntries()
@@ -195,7 +195,7 @@ public final class LibGameEvents {
 
         amount = LibAttributes.applyMagicDamage(attacker, damageSource, amount);
         amount = LibAttributes.applyRangedDamage(attacker, damageSource, amount);
-        amount = CriticalDamageSource.processCritical(attacker, amount, victim, damageSource);
+        amount = ILibDamageSource.processCritical(attacker, amount, victim, damageSource);
 
         event.setNewDamage(amount);
     }

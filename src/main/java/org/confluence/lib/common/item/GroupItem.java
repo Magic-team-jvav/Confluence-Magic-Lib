@@ -19,7 +19,7 @@ import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.LibStartupConfig;
 import org.confluence.lib.api.event.AddGroupInvalidCreativeModeTabEvent;
 import org.confluence.lib.api.event.CustomGroupItemIconEvent;
-import org.confluence.lib.mixed.IClientItemStack;
+import org.confluence.lib.mixed.ILibClientItemStack;
 import org.confluence.lib.util.LibUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Unmodifiable;
@@ -96,7 +96,7 @@ public class GroupItem extends Item {
             this.id = id;
             if (LibUtils.isPhysicalClient()) {
                 for (ItemStack stack : values) {
-                    IClientItemStack.of(stack).confluence$setGroupId(id);
+                    ILibClientItemStack.of(stack).confluence$setGroupId(id);
                 }
             }
         }
@@ -214,7 +214,7 @@ public class GroupItem extends Item {
             Set<ItemStack> set = ItemStackLinkedSet.createTypeAndComponentsSet();
             for (ItemStack stack : stacks) {
                 if (LibUtils.isPhysicalClient()) {
-                    IClientItemStack.of(stack).confluence$setGroupId(id);
+                    ILibClientItemStack.of(stack).confluence$setGroupId(id);
                 }
                 set.add(stack);
             }

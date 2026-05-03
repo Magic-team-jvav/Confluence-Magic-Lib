@@ -4,7 +4,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
 
-@javax.annotation.ParametersAreNonnullByDefault
 public class MultiplyExplosionDamageCalculator extends ExplosionDamageCalculator {
     private final float multiplier;
 

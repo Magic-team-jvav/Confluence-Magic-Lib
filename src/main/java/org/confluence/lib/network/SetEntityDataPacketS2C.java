@@ -7,10 +7,10 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.confluence.lib.ConfluenceMagicLib;
-import org.confluence.lib.mixed.IExtraSyncedData;
+import org.confluence.lib.mixed.ILibExtraSyncedData;
 
 /**
- * @see IExtraSyncedData
+ * @see ILibExtraSyncedData
  */
 public record SetEntityDataPacketS2C(int entityId, Entry... entries) implements CustomPacketPayload {
     public static final byte DATA_BOOLEAN = 0;
@@ -48,7 +48,7 @@ public record SetEntityDataPacketS2C(int entityId, Entry... entries) implements 
         context.enqueueWork(() -> {
             if (context.player().isLocalPlayer()) {
                 Entity entity = context.player().level().getEntity(entityId);
-                if (entity instanceof IExtraSyncedData<?> extraSyncedData) {
+                if (entity instanceof ILibExtraSyncedData<?> extraSyncedData) {
                     for (Entry entry : entries) {
                         extraSyncedData.confluence$setData(entry.dataId, entry.data);
                     }
