@@ -37,21 +37,29 @@ public interface ILibDamageSource {
             crit = true;
         }
         ProcessCriticalDamageEvent event;
-        if (damageSource instanceof ILibDamageSource cds) {
-            crit |= cds.confluence$isCritical();
-            event = NeoForge.EVENT_BUS.post(new ProcessCriticalDamageEvent(victim, damageSource, amount, crit));
-            cds.confluence$setCritical(event.isCritical());
-        } else {
+        ILibDamageSource lds = of(damageSource);
+        if (lds == null) {
             event = NeoForge.EVENT_BUS.post(new ProcessCriticalDamageEvent(victim, damageSource, amount, crit));
             if (WARNED.isFalse()) {
                 WARNED.setTrue();
                 ConfluenceMagicLib.LOGGER.warn("DamageSource had remodified by unknown mod, so critical damage indicator expired now");
             }
+        } else {
+            crit |= lds.confluence$isCritical();
+            event = NeoForge.EVENT_BUS.post(new ProcessCriticalDamageEvent(victim, damageSource, amount, crit));
+            lds.confluence$setCritical(event.isCritical());
         }
         amount = event.getAmount();
         if (event.isCritical()) {
             amount *= event.getCriticalDamageMultiplier();
         }
         return amount;
+    }
+
+    static @Nullable ILibDamageSource of(DamageSource damageSource) {
+        if (damageSource instanceof ILibDamageSource lds) {
+            return lds;
+        }
+        return null;
     }
 }
