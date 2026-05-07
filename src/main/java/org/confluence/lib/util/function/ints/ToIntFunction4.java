@@ -1,4 +1,4 @@
-package org.confluence.lib.util.function.integer;
+package org.confluence.lib.util.function.ints;
 
 @FunctionalInterface
 public interface ToIntFunction4<T1, T2, T3, T4> {
