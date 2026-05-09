@@ -18,15 +18,25 @@ public class LanguageFixer {
     /// [net.neoforged.neoforge.server.LanguageHook#loadBuiltinLanguages]
     public static void fix(Map<String, String> modTable) {
         LanguageManager languageManager = Minecraft.getInstance().getLanguageManager();
-        if (languageManager == null) return;
-        String selected = languageManager.getSelected();
-        LanguageInfo language = languageManager.getLanguage(selected);
-        if (language == null || "en_us".equals(selected)) return;
-        InputStream stream = NeoForge.class.getResourceAsStream("/assets/neoforge/lang/zh_cn.json");
-        if (stream == null) return;
-        try (InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
-            modTable.putAll(new Gson().fromJson(reader, new TypeToken<>() {}));
-            modTable.putAll(I18nManager.loadTranslations(selected));
-        } catch (IOException ignored) {}
+        if (languageManager != null) {
+            String selected = languageManager.getSelected();
+            LanguageInfo language = languageManager.getLanguage(selected);
+            if (language != null && !"en_us".equals(selected)) {
+                modTable.putAll(I18nManager.loadTranslations(selected));
+                InputStream stream = NeoForge.class.getResourceAsStream("/assets/neoforge/lang/" + selected + ".json");
+                if (stream != null) {
+                    try (InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
+                        modTable.putAll(new Gson().fromJson(reader, new TypeToken<>() {}));
+                    } catch (IOException ignored) {}
+                }
+                String s = modTable.get("fml.loadingerrorscreen.errorheader");
+                if (s != null) {
+                    Map<String, String> author = Map.of(
+                            "zh_cn", "该界面的本地化功能由汇流来世修复"
+                    );
+                    modTable.put("fml.loadingerrorscreen.errorheader", s + "\n" + author.getOrDefault(selected, "The i18n of this screen is fixed by Confluence Otherworld"));
+                }
+            }
+        }
     }
 }
