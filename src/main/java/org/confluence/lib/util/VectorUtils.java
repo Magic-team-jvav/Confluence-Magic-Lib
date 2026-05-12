@@ -320,6 +320,17 @@ public final class VectorUtils {
         } while (refined);
     }
 
+    /**
+     * 生成多層次、帶有隨機分支的閃電路徑列表
+     *
+     * @param initialLocationList 初始的閃電路徑節點列表（起點和終點即可）
+     * @param dist                相鄰兩個閃電節點之間的基礎間距（用於細分折線，決定閃電的顆粒度/鋸齒密度）
+     * @param move                節點細分時的偏移係數（控制閃電主幹的「抖動」幅度或彎曲程度，值越大越扭曲，超過0.4容易陷入不可控循環，推薦0.125比較寫實）
+     * @param random              隨機數生成器實例
+     * @param layer               閃電的遞迴/分裂層數（控制分支的層級深度，例如 1 只有主幹分出的一次分支，2 會有二級分支）
+     * @param branchPercent       分支長度係數（控制分支相對於主幹的基礎長度比例，結合隨機值決定分支到底有多長）
+     * @return 包含所有生成閃電路徑的列表（外層 List 是不同的閃電鏈，內層 List 是單條閃電的軌跡點坐標）
+     */
     public static List<List<Vector3d>> lightningPathList(List<Vector3d> initialLocationList, double dist, float move, RandomSource random, int layer, float branchPercent) {
         List<List<Vector3d>> listOfLightning = new ArrayList<>();
 
