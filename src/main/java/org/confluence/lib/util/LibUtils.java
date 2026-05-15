@@ -12,6 +12,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.*;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.Difficulty;
@@ -39,6 +40,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.fml.loading.LoadingModList;
@@ -73,6 +75,34 @@ public final class LibUtils {
     @ApiStatus.Internal
     public static <T> T forMixin$ModifyExpression(T value) {
         return value;
+    }
+
+    /**
+     * 获取两个向量的角度（弧度）
+     *
+     * @param a 向量a
+     * @param b 向量b
+     * @return 两个向量的角度（弧度）
+     */
+    public static float getAngleRadians(Vec2 a, Vec2 b) {
+        return getAngleRadians(a.x, a.y, b.x, b.y);
+    }
+
+    /**
+     * 获取两个向量的角度（弧度）
+     *
+     * @param ax 向量a的x坐标
+     * @param ay 向量a的y坐标
+     * @param bx 向量b的x坐标
+     * @param by 向量b的y坐标
+     * @return 角度（弧度）
+     */
+    public static float getAngleRadians(double ax, double ay, double bx, double by) {
+        return (float) (Math.atan2(by - ay, bx - ax)) + 3.141f;// + (a.x > b.x ? Math.PI : 0));
+    }
+
+    public static float rotLerp(float a, float from, float to) {
+        return Mth.rotLerp(a, from, to);
     }
 
     public static void createItemEntity(ItemStack stack, double x, double y, double z, Level level, int pickUpDelay) {
