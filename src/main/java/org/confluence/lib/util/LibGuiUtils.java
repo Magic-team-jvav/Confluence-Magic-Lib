@@ -14,7 +14,7 @@ import static java.lang.Math.min;
 /**
  * GUI工具类，提供各种绘制精灵图的方法
  */
-public final class LibGuiUtil {
+public final class LibGuiUtils {
     /**
      * 绘制精灵图
      *

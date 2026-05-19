@@ -3,7 +3,7 @@ package org.confluence.lib.mixin.naturalspawner;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.world.entity.MobCategory;
 import org.confluence.lib.mixed.ILibChunkSpawnDataAccess;
-import org.confluence.lib.util.NaturalSpawnerUtil;
+import org.confluence.lib.util.NaturalSpawnerUtils;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -11,15 +11,15 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(MobCategory.class)
 public abstract class MobCategoryMixin implements ILibChunkSpawnDataAccess {
     @Unique
-    private NaturalSpawnerUtil.ChunkSpawnData confluence$data = NaturalSpawnerUtil.ChunkSpawnData.DEFAULT;
+    private NaturalSpawnerUtils.ChunkSpawnData confluence$data = NaturalSpawnerUtils.ChunkSpawnData.DEFAULT;
 
     @Override
-    public void confluence$setData(NaturalSpawnerUtil.ChunkSpawnData data) {
+    public void confluence$setData(NaturalSpawnerUtils.ChunkSpawnData data) {
         this.confluence$data = data;
     }
 
     @Override
-    public NaturalSpawnerUtil.ChunkSpawnData confluence$getData() {
+    public NaturalSpawnerUtils.ChunkSpawnData confluence$getData() {
         return confluence$data;
     }
 

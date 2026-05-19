@@ -9,12 +9,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.datafixers.util.Function4;
-import com.mojang.math.Axis;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.item.ClampedItemPropertyFunction;
 import net.minecraft.nbt.CompoundTag;
@@ -40,10 +38,18 @@ public final class LibClientUtils {
     @Deprecated(since = "1.3.0", forRemoval = true)
     @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
     public static final float HALF_SQRT_3 = LibMathUtils.HALF_SQRT_3;
-    public static final Quaternionf ANGLE_45 = Axis.YP.rotationDegrees(45);
-    public static final Quaternionf ANGLE_180 = Axis.ZP.rotationDegrees(180);
-    public static final Quaternionf ANGLE_N90 = Axis.YP.rotationDegrees(-90);
-    public static final int[] FULL_BRIGHT = {0xF000F0, 0xF000F0, 0xF000F0, 0xF000F0};
+    @Deprecated(since = "1.3.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
+    public static final Quaternionf ANGLE_45 = LibRenderUtils.ANGLE_45;
+    @Deprecated(since = "1.3.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
+    public static final Quaternionf ANGLE_180 = LibRenderUtils.ANGLE_180;
+    @Deprecated(since = "1.3.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
+    public static final Quaternionf ANGLE_N90 = LibRenderUtils.ANGLE_N90;
+    @Deprecated(since = "1.3.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
+    public static final int[] FULL_BRIGHT = LibRenderUtils.FULL_BRIGHT;
     @Deprecated(since = "1.3.0", forRemoval = true)
     @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
     public static final float INV_255 = LibMathUtils.INV_255;
@@ -52,26 +58,16 @@ public final class LibClientUtils {
         return tag != null && tag.getBoolean(IFunctionCouldEnable.DISABLE_KEY) ? 0 : 1;
     };
 
+    @Deprecated(since = "1.3.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
     public static void setupOverlayRenderState(boolean blend, boolean depthTest) {
-        if (blend) {
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-        } else {
-            RenderSystem.disableBlend();
-        }
-
-        if (depthTest) {
-            RenderSystem.enableDepthTest();
-        } else {
-            RenderSystem.disableDepthTest();
-        }
-
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        LibRenderUtils.setupOverlayRenderState(blend, depthTest);
     }
 
+    @Deprecated(since = "1.3.0", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
     public static boolean shouldDrawSurvivalElements(Minecraft minecraft) {
-        return minecraft.gameMode.canHurtPlayer() && minecraft.getCameraEntity() instanceof Player;
+        return LibRenderUtils.shouldDrawSurvivalElements(minecraft);
     }
 
     /// 将游戏缓存的贴图写入文件

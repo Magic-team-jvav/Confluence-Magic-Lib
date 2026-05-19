@@ -14,7 +14,7 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.confluence.lib.mixed.ILibChunkSpawnDataAccess;
-import org.confluence.lib.util.NaturalSpawnerUtil;
+import org.confluence.lib.util.NaturalSpawnerUtils;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -27,7 +27,7 @@ public abstract class NaturalSpawnerMixin {
             @Local(argsOnly = true) ServerLevel level,
             @Local(argsOnly = true) LevelChunk chunk
     ) {
-        ILibChunkSpawnDataAccess.of(category).confluence$setData(NaturalSpawnerUtil.getChunkSpawnData(level.dimension(), chunk.getPos()));
+        ILibChunkSpawnDataAccess.of(category).confluence$setData(NaturalSpawnerUtils.getChunkSpawnData(level.dimension(), chunk.getPos()));
         return category;
     }
 
@@ -41,7 +41,7 @@ public abstract class NaturalSpawnerMixin {
             Operation<Void> original
     ) {
         original.call(category, level, chunk, filter, callback);
-        ILibChunkSpawnDataAccess.of(category).confluence$setData(NaturalSpawnerUtil.ChunkSpawnData.DEFAULT);
+        ILibChunkSpawnDataAccess.of(category).confluence$setData(NaturalSpawnerUtils.ChunkSpawnData.DEFAULT);
     }
 
     @Definition(id = "k", local = @Local(type = int.class, ordinal = 2))
@@ -57,6 +57,6 @@ public abstract class NaturalSpawnerMixin {
         if (category.isPersistent()) {
             return original;
         }
-        return NaturalSpawnerUtil.modifySpeed(original, category, k, frequency, obtained);
+        return NaturalSpawnerUtils.modifySpeed(original, category, k, frequency, obtained);
     }
 }

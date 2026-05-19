@@ -43,7 +43,7 @@ import org.confluence.lib.network.AttackDamagePacketS2C;
 import org.confluence.lib.network.SetEntityDataPacketS2C;
 import org.confluence.lib.util.DelayTaskHolder;
 import org.confluence.lib.util.LibUtils;
-import org.confluence.lib.util.NaturalSpawnerUtil;
+import org.confluence.lib.util.NaturalSpawnerUtils;
 import org.jetbrains.annotations.Nullable;
 
 @EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID)
@@ -57,8 +57,8 @@ public final class LibGameEvents {
     @SubscribeEvent
     public static void spawnClusterSize(SpawnClusterSizeEvent event) {
         Mob mob = event.getEntity();
-        NaturalSpawnerUtil.ChunkSpawnData data = NaturalSpawnerUtil.getChunkSpawnData(mob.level().dimension(), mob.chunkPosition());
-        if (data != NaturalSpawnerUtil.ChunkSpawnData.DEFAULT) {
+        NaturalSpawnerUtils.ChunkSpawnData data = NaturalSpawnerUtils.getChunkSpawnData(mob.level().dimension(), mob.chunkPosition());
+        if (data != NaturalSpawnerUtils.ChunkSpawnData.DEFAULT) {
             event.setSize(data.getCount(event.getSize()));
         }
     }
@@ -89,17 +89,17 @@ public final class LibGameEvents {
 
     @SubscribeEvent
     public static void serverStarting(ServerStartingEvent event) {
-        NaturalSpawnerUtil.init(event.getServer());
+        NaturalSpawnerUtils.init(event.getServer());
     }
 
     @SubscribeEvent
     public static void serverTick$Post(ServerTickEvent.Post event) {
-        NaturalSpawnerUtil.update(event.getServer());
+        NaturalSpawnerUtils.update(event.getServer());
     }
 
     @SubscribeEvent
     public static void serverStopped(ServerStoppedEvent event) {
-        NaturalSpawnerUtil.clear();
+        NaturalSpawnerUtils.clear();
         IGlobalData.clearAll();
     }
 

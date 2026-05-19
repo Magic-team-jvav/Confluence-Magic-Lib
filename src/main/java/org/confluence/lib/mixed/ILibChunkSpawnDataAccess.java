@@ -1,12 +1,12 @@
 package org.confluence.lib.mixed;
 
-import org.confluence.lib.util.NaturalSpawnerUtil;
+import org.confluence.lib.util.NaturalSpawnerUtils;
 import org.jetbrains.annotations.NotNull;
 
 public interface ILibChunkSpawnDataAccess {
-    void confluence$setData(NaturalSpawnerUtil.ChunkSpawnData data);
+    void confluence$setData(NaturalSpawnerUtils.ChunkSpawnData data);
 
-    NaturalSpawnerUtil.ChunkSpawnData confluence$getData();
+    NaturalSpawnerUtils.ChunkSpawnData confluence$getData();
 
     static @NotNull ILibChunkSpawnDataAccess of(Object o) {
         return (ILibChunkSpawnDataAccess) o;
