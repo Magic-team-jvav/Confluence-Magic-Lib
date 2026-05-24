@@ -321,7 +321,6 @@ public final class FeatureUtils {
         return true;
     }
 
-    // 生成一個凸多面體的blockPos列表
     public static void updateLeavesOptimized(WorldGenLevel level, LongSet trunkSet, LongSet leavesSet, boolean cleanUncovered, boolean debugMode) {
         if (leavesSet.isEmpty()) return;
 
