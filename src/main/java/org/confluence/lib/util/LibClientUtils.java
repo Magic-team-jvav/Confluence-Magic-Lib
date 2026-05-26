@@ -187,7 +187,7 @@ public final class LibClientUtils {
 
         Matrix4fStack view = RenderSystem.getModelViewStack();
         view.pushMatrix();
-        view.translation(0F, 0F, 0F);
+        view.setTranslation(0F, 0F, 0F);
         RenderSystem.applyModelViewMatrix();
 
         Lighting.setupNetherLevel();
