@@ -3,15 +3,6 @@ package org.confluence.lib.color;
 import java.util.Objects;
 
 public record IntegerRGB(int red, int green, int blue) {
-    public static final IntegerRGB VOID_A = of(0x2c182a);
-    public static final IntegerRGB VOID_B = of(0x3b2e6b);
-    public static final IntegerRGB VOID_C = of(0x3c6f98);
-    public static final IntegerRGB VOID_WEAVE_A = of(0x8641f8);
-    public static final IntegerRGB VOID_WEAVE_B = of(0x6516e9);
-    public static final IntegerRGB VOID_WEAVE_C = of(0x4d57fb);
-    public static final IntegerRGB DREAM_BUBBLE_A = of(0xff3a6f);
-    public static final IntegerRGB DREAM_BUBBLE_B = of(0xffd03a);
-    public static final IntegerRGB DREAM_BUBBLE_C = of(0xb7ff3a);
     public static final IntegerRGB BLACK = of(0x000000);
     public static final IntegerRGB GRAY = of(0x828282);
     public static final IntegerRGB WHITE = of(0xFFFFFF);
