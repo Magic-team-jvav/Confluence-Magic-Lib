@@ -1,45 +1,55 @@
 package org.confluence.lib.common.recipe;
 
+import PortLib.extensions.com.mojang.serialization.Codec.PortCodecExtension;
+import PortLib.extensions.net.minecraft.world.item.crafting.Ingredient.PortIngredientExtension;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
-import net.neoforged.neoforge.common.crafting.ICustomIngredient;
-import net.neoforged.neoforge.common.crafting.IngredientType;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.jetbrains.annotations.Nullable;
+import org.mesdag.portlib.network.PortRegistryFriendlyByteBuf;
+import org.mesdag.portlib.network.codec.PortByteBufCodecs;
+import org.mesdag.portlib.network.codec.PortStreamCodec;
+import org.mesdag.portlib.wrapper.common.crafting.PortCustomIngredient;
+import org.mesdag.portlib.wrapper.common.crafting.PortIngredientType;
 
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-public record AmountIngredient(Ingredient ingredient, int amount) implements ICustomIngredient {
-    public static final Ingredient EMPTY = new Ingredient(new AmountIngredient(Ingredient.EMPTY, 0));
+public final class AmountIngredient extends PortCustomIngredient {
+    public static final Ingredient EMPTY = new AmountIngredient(Ingredient.EMPTY, 0);
     public static final MapCodec<AmountIngredient> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            Ingredient.CODEC.lenientOptionalFieldOf("ingredient", Ingredient.EMPTY).forGetter(AmountIngredient::ingredient),
-            ExtraCodecs.POSITIVE_INT.lenientOptionalFieldOf("count", 0).forGetter(AmountIngredient::amount)
+            PortCodecExtension.lenientOptionalFieldOf(PortIngredientExtension.codec(), "ingredient", Ingredient.EMPTY).forGetter(AmountIngredient::ingredient),
+            PortCodecExtension.lenientOptionalFieldOf(ExtraCodecs.POSITIVE_INT, "count", 0).forGetter(AmountIngredient::amount)
     ).apply(instance, AmountIngredient::new));
-    public static final StreamCodec<RegistryFriendlyByteBuf, AmountIngredient> STREAM_CODEC = ByteBufCodecs.fromCodecWithRegistries(CODEC.codec());
+    public static final PortStreamCodec<PortRegistryFriendlyByteBuf, AmountIngredient> STREAM_CODEC = PortByteBufCodecs.fromCodecWithRegistries(CODEC.codec());
+
+    private final Ingredient ingredient;
+    private final int amount;
+
+    public AmountIngredient(Ingredient ingredient, int amount) {
+        this.ingredient = ingredient;
+        this.amount = amount;
+    }
+
+    public Ingredient ingredient() { return ingredient; }
+    public int amount() { return amount; }
 
     @Override
-    public Stream<ItemStack> getItems() {
+    public Stream<ItemStack> getItemStream() {
         return Arrays.stream(ingredient.getItems()).peek(itemStack -> itemStack.setCount(amount));
     }
 
     @Override
     public boolean test(@Nullable ItemStack stack) {
         if (stack == null) return false;
-        if (stack.getCount() < amount) {
-            return false;
-        } else {
-            return ingredient.test(stack);
-        }
+        if (stack.getCount() < amount) return false;
+        return ingredient.test(stack);
     }
 
     @Override
@@ -48,12 +58,24 @@ public record AmountIngredient(Ingredient ingredient, int amount) implements ICu
     }
 
     @Override
-    public IngredientType<AmountIngredient> getType() {
+    public PortIngredientType<AmountIngredient> getIngredientType() {
         return ConfluenceMagicLib.AMOUNT_INGREDIENT_TYPE.get();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (o instanceof AmountIngredient a) return ingredient.equals(a.ingredient) && amount == a.amount;
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * ingredient.hashCode() + amount;
+    }
+
     public static int getAmount(Ingredient ingredient) {
-        return ingredient.getCustomIngredient() instanceof AmountIngredient ai ? ai.amount : 1;
+        return ingredient instanceof AmountIngredient ai ? ai.amount : 1;
     }
 
     public static Ingredient of(int amount, Ingredient ingredient) {

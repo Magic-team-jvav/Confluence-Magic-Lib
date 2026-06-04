@@ -20,9 +20,10 @@ public record FloatARGB(float alpha, float red, float green, float blue) {
     @Override
     public boolean equals(Object o) {
         if (o == this) return true;
-        return o instanceof FloatARGB(
-                float a, float r, float g, float b
-        ) && alpha == a && red == r && green == g && blue == b;
+        if (o instanceof FloatARGB f) {
+            return alpha == f.alpha() && red == f.red() && green == f.green() && blue == f.blue();
+        }
+        return false;
     }
 
     @Override

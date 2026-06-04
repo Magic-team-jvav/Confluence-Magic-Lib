@@ -1,23 +1,23 @@
 package org.confluence.lib.common.component;
 
+import PortLib.extensions.net.minecraft.world.item.ItemStack.PortItemStackExtension;
 import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.client.animate.ExpertColorAnimation;
 import org.confluence.lib.client.animate.MasterColorAnimation;
 import org.jetbrains.annotations.Nullable;
+import org.mesdag.portlib.network.PortRegistryFriendlyByteBuf;
+import org.mesdag.portlib.network.codec.PortByteBufCodecs;
+import org.mesdag.portlib.network.codec.PortStreamCodec;
 
-public class ModRarity implements DataComponentType<ModRarity> {
+public class ModRarity {
     public static final ModRarity COMMON = new ModRarity("common", 16777215);
     public static final ModRarity UNCOMMON = new ModRarity("uncommon", 16777045);
     public static final ModRarity RARE = new ModRarity("rare", 5636095);
@@ -68,9 +68,9 @@ public class ModRarity implements DataComponentType<ModRarity> {
             Codec.STRING.fieldOf("name").forGetter(ModRarity::name),
             Codec.INT.fieldOf("color").forGetter(ModRarity::color)
     ).apply(instance, ModRarity::new));
-    public static final StreamCodec<RegistryFriendlyByteBuf, ModRarity> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.STRING_UTF8, ModRarity::name,
-            ByteBufCodecs.INT, ModRarity::color,
+    public static final PortStreamCodec<PortRegistryFriendlyByteBuf, ModRarity> STREAM_CODEC = PortStreamCodec.composite(
+            PortByteBufCodecs.STRING_UTF8, ModRarity::name,
+            PortByteBufCodecs.INT, ModRarity::color,
             ModRarity::new
     );
     private final String name;
@@ -98,16 +98,6 @@ public class ModRarity implements DataComponentType<ModRarity> {
             this.textColor = TextColor.fromRgb(color);
         }
         return textColor;
-    }
-
-    @Override
-    public @Nullable Codec<ModRarity> codec() {
-        return CODEC;
-    }
-
-    @Override
-    public StreamCodec<? super RegistryFriendlyByteBuf, ModRarity> streamCodec() {
-        return STREAM_CODEC;
     }
 
     @Override
@@ -147,8 +137,7 @@ public class ModRarity implements DataComponentType<ModRarity> {
     }
 
     public static @Nullable ModRarity getModRarity(ItemStack itemStack, boolean prototype) {
-        DataComponentType<ModRarity> type = ConfluenceMagicLib.MOD_RARITY.get();
-        return prototype ? itemStack.getPrototype().get(type) : itemStack.get(type);
+        return PortItemStackExtension.getData(itemStack, ConfluenceMagicLib.MOD_RARITY);
     }
 
     public static Style withColor(ItemStack itemStack, Style style) {

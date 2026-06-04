@@ -5,9 +5,8 @@ import com.google.gson.reflect.TypeToken;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.LanguageInfo;
 import net.minecraft.client.resources.language.LanguageManager;
-import net.neoforged.fml.i18n.I18nManager;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,8 +23,7 @@ public class LanguageFixer {
         String selected = languageManager.getSelected();
         LanguageInfo language = languageManager.getLanguage(selected);
         if (language == null || "en_us".equals(selected)) return;
-        modTable.putAll(I18nManager.loadTranslations(selected));
-        InputStream stream = NeoForge.class.getResourceAsStream("/assets/neoforge/lang/" + selected + ".json");
+        InputStream stream = MinecraftForge.class.getResourceAsStream("/assets/forge/lang/" + selected + ".json");
         if (stream != null) {
             try (InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
                 modTable.putAll(new Gson().fromJson(reader, new TypeToken<>() {}));

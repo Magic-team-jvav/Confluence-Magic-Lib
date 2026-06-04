@@ -1,21 +1,22 @@
 package org.confluence.lib.network;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.client.DPSMeter;
+import org.mesdag.portlib.network.IPortPacket;
+import org.mesdag.portlib.network.codec.PortByteBufCodecs;
+import org.mesdag.portlib.network.codec.PortStreamCodec;
 
-public record AttackDamagePacketS2C(float amount) implements IPacketS2C {
-    public static final Type<AttackDamagePacketS2C> TYPE = new Type<>(ConfluenceMagicLib.asResource("attack_damage"));
-    public static final StreamCodec<ByteBuf, AttackDamagePacketS2C> STREAM_CODEC = ByteBufCodecs.FLOAT.map(AttackDamagePacketS2C::new, AttackDamagePacketS2C::amount);
+public record AttackDamagePacketS2C(float amount) implements IPortPacket.S2C {
+    public static final ResourceLocation ID = ConfluenceMagicLib.asResource("attack_damage");
+    public static final PortStreamCodec<ByteBuf, AttackDamagePacketS2C> STREAM_CODEC = PortByteBufCodecs.FLOAT.map(AttackDamagePacketS2C::new, AttackDamagePacketS2C::amount);
 
     @Override
-    public Type<AttackDamagePacketS2C> type() {
-        return TYPE;
+    public ResourceLocation identifier() {
+        return ID;
     }
 
     @Override
@@ -24,6 +25,6 @@ public record AttackDamagePacketS2C(float amount) implements IPacketS2C {
     }
 
     public static void sendToClient(ServerPlayer player, float amount) {
-        PacketDistributor.sendToPlayer(player, new AttackDamagePacketS2C(amount));
+        ConfluenceMagicLib.NETWORK_HANDLER.sendToPlayer(player, new AttackDamagePacketS2C(amount));
     }
 }

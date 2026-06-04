@@ -309,7 +309,7 @@ public final class FeatureUtils {
             ChunkPos chunkpos = region.getCenter();
             int k = Math.abs(chunkpos.x - i);
             int l = Math.abs(chunkpos.z - j);
-            if (k <= region.generatingStep.blockStateWriteRadius() && l <= region.generatingStep.blockStateWriteRadius()) {
+            if (k <= region.writeRadiusCutoff && l <= region.writeRadiusCutoff) {
                 if (region.center.isUpgrading()) {
                     LevelHeightAccessor levelheightaccessor = region.center.getHeightAccessorForGeneration();
                     return pos.getY() >= levelheightaccessor.getMinBuildHeight() && pos.getY() < levelheightaccessor.getMaxBuildHeight();

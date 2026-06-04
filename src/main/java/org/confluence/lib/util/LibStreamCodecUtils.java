@@ -12,8 +12,6 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -25,6 +23,8 @@ import net.minecraft.world.phys.Vec2;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import org.confluence.lib.common.recipe.AmountIngredient;
+import org.mesdag.portlib.network.codec.PortByteBufCodecs;
+import org.mesdag.portlib.network.codec.PortStreamCodec;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -32,12 +32,12 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 public final class LibStreamCodecUtils {
-    public static final StreamCodec<ByteBuf, Vec2> VEC_2 = StreamCodec.composite(
-            ByteBufCodecs.FLOAT, vec2 -> vec2.x,
-            ByteBufCodecs.FLOAT, vec2 -> vec2.y,
+    public static final PortStreamCodec<ByteBuf, Vec2> VEC_2 = PortPortStreamCodec.composite(
+            PortByteBufCodecs.FLOAT, vec2 -> vec2.x,
+            PortByteBufCodecs.FLOAT, vec2 -> vec2.y,
             Vec2::new
     );
-    public static final StreamCodec<FriendlyByteBuf, java.util.UUID> UUID = new StreamCodec<>() {
+    public static final PortStreamCodec<FriendlyByteBuf, java.util.UUID> UUID = new PortStreamCodec<>() {
         @Override
         public java.util.UUID decode(FriendlyByteBuf buffer) {
             return buffer.readUUID();
@@ -48,7 +48,7 @@ public final class LibStreamCodecUtils {
             buffer.writeUUID(value);
         }
     };
-    public static final StreamCodec<RegistryFriendlyByteBuf, NonNullList<Ingredient>> INGREDIENTS = new StreamCodec<>() {
+    public static final PortStreamCodec<RegistryFriendlyByteBuf, NonNullList<Ingredient>> INGREDIENTS = new PortStreamCodec<>() {
         @Override
         public NonNullList<Ingredient> decode(RegistryFriendlyByteBuf buffer) {
             NonNullList<Ingredient> nonnulllist = NonNullList.withSize(buffer.readVarInt(), AmountIngredient.EMPTY);
@@ -64,8 +64,8 @@ public final class LibStreamCodecUtils {
             }
         }
     };
-    public static final StreamCodec<RegistryFriendlyByteBuf, BlockState> BLOCK_STATE = new StreamCodec<>() {
-        private final StreamCodec<RegistryFriendlyByteBuf, Block> blockCodec = ByteBufCodecs.registry(Registries.BLOCK);
+    public static final PortStreamCodec<RegistryFriendlyByteBuf, BlockState> BLOCK_STATE = new PortStreamCodec<>() {
+        private final PortStreamCodec<RegistryFriendlyByteBuf, Block> blockCodec = PortByteBufCodecs.registry(Registries.BLOCK);
 
         @Override
         public BlockState decode(RegistryFriendlyByteBuf buffer) {
@@ -81,8 +81,8 @@ public final class LibStreamCodecUtils {
         }
     };
 
-    public static <B extends ByteBuf, V> StreamCodec<B, V> unit(Supplier<V> expectedValue) {
-        return new StreamCodec<>() {
+    public static <B extends ByteBuf, V> PortStreamCodec<B, V> unit(Supplier<V> expectedValue) {
+        return new PortStreamCodec<>() {
             @Override
             public V decode(B buffer) {
                 return expectedValue.get();
@@ -97,24 +97,24 @@ public final class LibStreamCodecUtils {
         };
     }
 
-    public static <B extends ByteBuf, TA, TB> StreamCodec<B, Tuple<TA, TB>> tuple(StreamCodec<? super B, TA> aCodec, StreamCodec<? super B, TB> bCodec) {
-        return StreamCodec.composite(aCodec, Tuple::getA, bCodec, Tuple::getB, Tuple::new);
+    public static <B extends ByteBuf, TA, TB> PortStreamCodec<B, Tuple<TA, TB>> tuple(PortStreamCodec<? super B, TA> aCodec, PortStreamCodec<? super B, TB> bCodec) {
+        return PortPortStreamCodec.composite(aCodec, Tuple::getA, bCodec, Tuple::getB, Tuple::new);
     }
 
-    public static <B extends ByteBuf, L, M, R> StreamCodec<B, Triple<L, M, R>> triple(StreamCodec<? super B, L> lCodec, StreamCodec<? super B, M> mCodec, StreamCodec<? super B, R> rCodec) {
-        return StreamCodec.composite(lCodec, Triple::getLeft, mCodec, Triple::getMiddle, rCodec, Triple::getRight, ImmutableTriple::new);
+    public static <B extends ByteBuf, L, M, R> PortStreamCodec<B, Triple<L, M, R>> triple(PortStreamCodec<? super B, L> lCodec, PortStreamCodec<? super B, M> mCodec, PortStreamCodec<? super B, R> rCodec) {
+        return PortPortStreamCodec.composite(lCodec, Triple::getLeft, mCodec, Triple::getMiddle, rCodec, Triple::getRight, ImmutableTriple::new);
     }
 
-    public static <B extends ByteBuf, K, V> StreamCodec<B, Map<K, V>> map(IntFunction<Map<K, V>> factory, StreamCodec<? super B, K> keyCodec, StreamCodec<? super B, V> valueCodec) {
-        return ByteBufCodecs.map(factory, keyCodec, valueCodec);
+    public static <B extends ByteBuf, K, V> PortStreamCodec<B, Map<K, V>> map(IntFunction<Map<K, V>> factory, PortStreamCodec<? super B, K> keyCodec, PortStreamCodec<? super B, V> valueCodec) {
+        return PortByteBufCodecs.map(factory, keyCodec, valueCodec);
     }
 
-    public static <B extends ByteBuf, V> StreamCodec<B, Object2BooleanMap<V>> object2BooleanMap(StreamCodec<? super B, V> codec) {
-        return ByteBufCodecs.map(Object2BooleanOpenHashMap::new, codec, ByteBufCodecs.BOOL);
+    public static <B extends ByteBuf, V> PortStreamCodec<B, Object2BooleanMap<V>> object2BooleanMap(PortStreamCodec<? super B, V> codec) {
+        return PortByteBufCodecs.map(Object2BooleanOpenHashMap::new, codec, PortByteBufCodecs.BOOL);
     }
 
-    public static <B extends ByteBuf, V> StreamCodec<B, TagKey<V>> tagKey(ResourceKey<Registry<V>> resourceKey) {
-        return new StreamCodec<>() {
+    public static <B extends ByteBuf, V> PortStreamCodec<B, TagKey<V>> tagKey(ResourceKey<Registry<V>> resourceKey) {
+        return new PortStreamCodec<>() {
             public TagKey<V> decode(B buffer) {
                 return TagKey.create(resourceKey, ResourceLocation.STREAM_CODEC.decode(buffer));
             }
@@ -125,8 +125,8 @@ public final class LibStreamCodecUtils {
         };
     }
 
-    public static <B extends ByteBuf, V> StreamCodec<B, V> lazyInitialized(Supplier<StreamCodec<B, V>> delegate) {
-        return new StreamCodec<>() {
+    public static <B extends ByteBuf, V> PortStreamCodec<B, V> lazyInitialized(Supplier<PortStreamCodec<B, V>> delegate) {
+        return new PortStreamCodec<>() {
             @Override
             public V decode(B buffer) {
                 return delegate.get().decode(buffer);
@@ -139,9 +139,9 @@ public final class LibStreamCodecUtils {
         };
     }
 
-    public static StreamCodec<ByteBuf, boolean[]> booleanArray(int size) {
+    public static PortStreamCodec<ByteBuf, boolean[]> booleanArray(int size) {
         int length = size % 8 == 0 ? size / 8 : size / 8 + 1;
-        return new StreamCodec<>() {
+        return new PortStreamCodec<>() {
             @Override
             public boolean[] decode(ByteBuf buffer) {
                 boolean[] result = new boolean[size];
@@ -182,8 +182,8 @@ public final class LibStreamCodecUtils {
         };
     }
 
-    public static <B extends ByteBuf, O> StreamCodec<B, BooleanObjectPair<O>> booleanObjectPair(StreamCodec<? super B, O> objCodec) {
-        return new StreamCodec<>() {
+    public static <B extends ByteBuf, O> PortStreamCodec<B, BooleanObjectPair<O>> booleanObjectPair(PortStreamCodec<? super B, O> objCodec) {
+        return new PortStreamCodec<>() {
             @Override
             public BooleanObjectPair<O> decode(B buffer) {
                 return new BooleanObjectMutablePair<>(buffer.readBoolean(), objCodec.decode(buffer));
@@ -197,8 +197,8 @@ public final class LibStreamCodecUtils {
         };
     }
 
-    public static <E extends Enum<E>> StreamCodec<FriendlyByteBuf, E> fromEnum(E[] values) {
-        return new StreamCodec<>() {
+    public static <E extends Enum<E>> PortStreamCodec<FriendlyByteBuf, E> fromEnum(E[] values) {
+        return new PortStreamCodec<>() {
             @Override
             public E decode(FriendlyByteBuf buffer) {
                 return values[buffer.readVarInt()];
@@ -211,24 +211,24 @@ public final class LibStreamCodecUtils {
         };
     }
 
-    public static <B, C, T1, T2, T3, T4, T5, T6, T7> StreamCodec<B, C> composite(
-            final StreamCodec<? super B, T1> codec1,
+    public static <B, C, T1, T2, T3, T4, T5, T6, T7> PortStreamCodec<B, C> composite(
+            final PortStreamCodec<? super B, T1> codec1,
             final Function<C, T1> getter1,
-            final StreamCodec<? super B, T2> codec2,
+            final PortStreamCodec<? super B, T2> codec2,
             final Function<C, T2> getter2,
-            final StreamCodec<? super B, T3> codec3,
+            final PortStreamCodec<? super B, T3> codec3,
             final Function<C, T3> getter3,
-            final StreamCodec<? super B, T4> codec4,
+            final PortStreamCodec<? super B, T4> codec4,
             final Function<C, T4> getter4,
-            final StreamCodec<? super B, T5> codec5,
+            final PortStreamCodec<? super B, T5> codec5,
             final Function<C, T5> getter5,
-            final StreamCodec<? super B, T6> codec6,
+            final PortStreamCodec<? super B, T6> codec6,
             final Function<C, T6> getter6,
-            final StreamCodec<? super B, T7> codec7,
+            final PortStreamCodec<? super B, T7> codec7,
             final Function<C, T7> getter7,
             final Function7<T1, T2, T3, T4, T5, T6, T7, C> factory
     ) {
-        return new StreamCodec<>() {
+        return new PortStreamCodec<>() {
             @Override
             public C decode(B buffer) {
                 T1 t1 = codec1.decode(buffer);
@@ -254,26 +254,26 @@ public final class LibStreamCodecUtils {
         };
     }
 
-    public static <B, C, T1, T2, T3, T4, T5, T6, T7, T8> StreamCodec<B, C> composite(
-            final StreamCodec<? super B, T1> codec1,
+    public static <B, C, T1, T2, T3, T4, T5, T6, T7, T8> PortStreamCodec<B, C> composite(
+            final PortStreamCodec<? super B, T1> codec1,
             final Function<C, T1> getter1,
-            final StreamCodec<? super B, T2> codec2,
+            final PortStreamCodec<? super B, T2> codec2,
             final Function<C, T2> getter2,
-            final StreamCodec<? super B, T3> codec3,
+            final PortStreamCodec<? super B, T3> codec3,
             final Function<C, T3> getter3,
-            final StreamCodec<? super B, T4> codec4,
+            final PortStreamCodec<? super B, T4> codec4,
             final Function<C, T4> getter4,
-            final StreamCodec<? super B, T5> codec5,
+            final PortStreamCodec<? super B, T5> codec5,
             final Function<C, T5> getter5,
-            final StreamCodec<? super B, T6> codec6,
+            final PortStreamCodec<? super B, T6> codec6,
             final Function<C, T6> getter6,
-            final StreamCodec<? super B, T7> codec7,
+            final PortStreamCodec<? super B, T7> codec7,
             final Function<C, T7> getter7,
-            final StreamCodec<? super B, T8> codec8,
+            final PortStreamCodec<? super B, T8> codec8,
             final Function<C, T8> getter8,
             final Function8<T1, T2, T3, T4, T5, T6, T7, T8, C> factory
     ) {
-        return new StreamCodec<>() {
+        return new PortStreamCodec<>() {
             @Override
             public C decode(B buffer) {
                 T1 t1 = codec1.decode(buffer);

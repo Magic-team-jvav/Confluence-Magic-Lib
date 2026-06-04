@@ -8,7 +8,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.structure.Structure;
-import org.joml.Vector3d;
+import org.joml.Vector3f;
 
 import java.util.List;
 import java.util.Map;
@@ -227,7 +227,7 @@ public final class StructureUtils {
     }
 
     /// 任意角度圆台填充
-    public static void frustumSet(Vector3d startPos, Vector3d endPos, double startRadius, double endRadius, int blockstate, Object2IntMap<BlockPos> blockMap) {
+    public static void frustumSet(Vector3f startPos, Vector3f endPos, double startRadius, double endRadius, int blockstate, Object2IntMap<BlockPos> blockMap) {
         int xStart0 = (int) (startPos.x + startRadius + 1);
         int xStart1 = (int) (startPos.x - startRadius - 1);
         int xEnd0 = (int) (endPos.x + endRadius + 1);
@@ -253,9 +253,9 @@ public final class StructureUtils {
         for (int x = setStartX; x <= setEndX; x++) {
             for (int y = setStartY; y <= setEndY; y++) {
                 for (int z = setStartZ; z <= setEndZ; z++) {
-                    Vector3d pointP = new Vector3d(x, y, z);
+                    Vector3f pointP = new Vector3f(x, y, z);
                     if (!isProjectionBetweenPoints(startPos, endPos, pointP)) continue;
-                    Vector3d pointP2 = getProjectionOnLineSegment(startPos, endPos, pointP);
+                    Vector3f pointP2 = getProjectionOnLineSegment(startPos, endPos, pointP);
                     double lengthGet = pointP2.distance(endPos);//0;//Math.sqrt(y2 + Mth.square(endPos.z - z) - getDistanceToLineSegment(startPos, endPos, pointP));
                     double lengthP = lengthGet / length;
                     if (pointP.distance(pointP2) <= (startRadius * lengthP + endRadius * (1.0D - lengthP))) {
@@ -274,12 +274,12 @@ public final class StructureUtils {
     }
 
     /// 迷宫填充
-    public static void mazeSet(BlockPos centerPos, double distance, int layer, int blockstate, int width, int height, WorldgenRandom random, float difficulty, Object2IntMap<BlockPos> blockMap) {
-        Map<Vector3d, BooleanStorage4> mazePos = mazePos(VectorUtils.toVector3d(centerPos), distance, layer, random, difficulty);
+    public static void mazeSet(BlockPos centerPos, float distance, int layer, int blockstate, int width, int height, WorldgenRandom random, float difficulty, Object2IntMap<BlockPos> blockMap) {
+        Map<Vector3f, BooleanStorage4> mazePos = mazePos(VectorUtils.toVector3f(centerPos), distance, layer, random, difficulty);
         int length = Mth.ceil(distance * 0.5);
 
-        for (Map.Entry<Vector3d, BooleanStorage4> entry : mazePos.entrySet()) {
-            BlockPos keySet = VectorUtils.fromVector3d(entry.getKey());
+        for (Map.Entry<Vector3f, BooleanStorage4> entry : mazePos.entrySet()) {
+            BlockPos keySet = VectorUtils.fromVector3f(entry.getKey());
             BooleanStorage4 value = entry.getValue();
             if (value.get(0)) {
                 rectangular(keySet.offset(-width, 0, -width), keySet.offset(length, height, width), blockstate, blockMap, 0);
@@ -299,50 +299,50 @@ public final class StructureUtils {
     /// 列表快捷填充
     ///
     /// 在整个坐标列表上填充球体，带有半径渐变
-    public static void lineSet(List<Vector3d> VctList, double rStart, double rEnd, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap) {
+    public static void lineSet(List<Vector3f> VctList, double rStart, double rEnd, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap) {
         double step = (rEnd - rStart) / VctList.size();
         int i = 0;
-        for (Vector3d posPoint : VctList) {
-            ball(rStart + step * i++, VectorUtils.fromVector3d(posPoint), blockstate, replace, blockMap);
+        for (Vector3f posPoint : VctList) {
+            ball(rStart + step * i++, VectorUtils.fromVector3f(posPoint), blockstate, replace, blockMap);
         }
     }
 
     /// 在整个坐标列表上填充球体，带有指定y坐标上下不同种方块填充
-    public static void lineSet(List<Vector3d> VctList, double rStart, double rEnd, int blockstate1, int blockstate2, boolean replace, Object2IntMap<BlockPos> blockMap, int checkY) {
+    public static void lineSet(List<Vector3f> VctList, double rStart, double rEnd, int blockstate1, int blockstate2, boolean replace, Object2IntMap<BlockPos> blockMap, int checkY) {
         double step = (rEnd - rStart) / VctList.size();
         int i = 0;
-        for (Vector3d posPoint : VctList) {
-            ball(rStart + step * i++, VectorUtils.fromVector3d(posPoint), blockstate1, blockstate2, replace, blockMap, checkY);
+        for (Vector3f posPoint : VctList) {
+            ball(rStart + step * i++, VectorUtils.fromVector3f(posPoint), blockstate1, blockstate2, replace, blockMap, checkY);
         }
     }
 
     /// 在整个坐标列表上填充椭球体
-    public static void lineSetEllipsoid(List<Vector3d> VctList, double radiusDX, double radiusDY, double radiusDZ, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap) {
-        for (Vector3d posPoint : VctList) {
-            ellipsoid(radiusDX, radiusDY, radiusDZ, VectorUtils.fromVector3d(posPoint), blockstate, replace, blockMap);
+    public static void lineSetEllipsoid(List<Vector3f> VctList, double radiusDX, double radiusDY, double radiusDZ, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap) {
+        for (Vector3f posPoint : VctList) {
+            ellipsoid(radiusDX, radiusDY, radiusDZ, VectorUtils.fromVector3f(posPoint), blockstate, replace, blockMap);
         }
     }
 
     /// 在整个坐标列表上填充球体，带有半径渐变、随机比例
-    public static void lineSet(List<Vector3d> VctList, double rStart, double rEnd, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
+    public static void lineSet(List<Vector3f> VctList, double rStart, double rEnd, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
         double step = (rEnd - rStart) / VctList.size();
         int i = 0;
-        for (Vector3d posPoint : VctList) {
-            ball(rStart + step * i++, VectorUtils.fromVector3d(posPoint), blockstate, replace, blockMap, placePer, random);
+        for (Vector3f posPoint : VctList) {
+            ball(rStart + step * i++, VectorUtils.fromVector3f(posPoint), blockstate, replace, blockMap, placePer, random);
         }
     }
 
     /// 在整个坐标列表上填充椭球体，带有随机比例
-    public static void lineSetEllipsoid(List<Vector3d> VctList, double radiusDX, double radiusDY, double radiusDZ, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
-        for (Vector3d posPoint : VctList) {
-            ellipsoid(radiusDX, radiusDY, radiusDZ, VectorUtils.fromVector3d(posPoint), blockstate, replace, blockMap, placePer, random);
+    public static void lineSetEllipsoid(List<Vector3f> VctList, double radiusDX, double radiusDY, double radiusDZ, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
+        for (Vector3f posPoint : VctList) {
+            ellipsoid(radiusDX, radiusDY, radiusDZ, VectorUtils.fromVector3f(posPoint), blockstate, replace, blockMap, placePer, random);
         }
     }
 
     /// 在整个坐标列表上放置地物
-    public static void lineSetFeature(List<Vector3d> list, Map<BlockPos, ResourceLocation> featureMap, ResourceLocation[] feature, WorldgenRandom random) {
-        for (Vector3d vctPos : list) {
-            featureMap.put(VectorUtils.fromVector3d(vctPos), Util.getRandom(feature, random));
+    public static void lineSetFeature(List<Vector3f> list, Map<BlockPos, ResourceLocation> featureMap, ResourceLocation[] feature, WorldgenRandom random) {
+        for (Vector3f vctPos : list) {
+            featureMap.put(VectorUtils.fromVector3f(vctPos), Util.getRandom(feature, random));
         }
     }
 
@@ -350,14 +350,14 @@ public final class StructureUtils {
     ///
     /// 不规则球体填充，带有壁厚、随机比例
     public static void ball(int radius, int wall, BlockPos centerPos, Object2IntMap<BlockPos> blockMap, float chance, WorldgenRandom random, int wallBlock, int airBlock) {
-        List<Vector3d> list = ballPos(radius, centerPos, chance, random);
+        List<Vector3f> list = ballPos(radius, centerPos, chance, random);
         lineSet(list, radius, radius, wallBlock, true, blockMap);
         lineSet(list, radius - wall, radius - wall, airBlock, true, blockMap);
     }
 
     /// 不规则球体填充，带有壁厚、随机比例、指定y坐标上下不同种方块填充
     public static void ball(int radius, int wall, BlockPos centerPos, Object2IntMap<BlockPos> blockMap, float chance, WorldgenRandom random, int wallBlock, int airBlock1, int airBlock2, int checkY) {
-        List<Vector3d> list = ballPos(radius, centerPos, chance, random);
+        List<Vector3f> list = ballPos(radius, centerPos, chance, random);
         lineSet(list, radius, radius, wallBlock, true, blockMap);
         lineSet(list, radius - wall, radius - wall, airBlock1, airBlock2, true, blockMap, checkY);
     }

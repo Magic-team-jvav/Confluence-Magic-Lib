@@ -3,7 +3,6 @@ package org.confluence.lib.util;
 import com.google.common.collect.ImmutableListMultimap;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.booleans.BooleanObjectMutablePair;
 import it.unimi.dsi.fastutil.booleans.BooleanObjectPair;
@@ -53,7 +52,7 @@ public final class LibCodecUtils {
         Codec<List<A>> listCodec = codec.listOf();
         return disallowInline ? listCodec : Codec.either(listCodec, codec).xmap(
                 either -> either.map(Function.identity(), List::of),
-                list -> list.size() == 1 ? Either.right(list.getFirst()) : Either.left(list)
+                list -> list.size() == 1 ? Either.right(list.get(0)) : Either.left(list)
         );
     }
 
@@ -74,10 +73,7 @@ public final class LibCodecUtils {
     }
 
     public static Codec<Float> floatRange(float min, float max) {
-        return Codec.FLOAT.validate(value -> value.compareTo(min) >= 0 && value.compareTo(max) <= 0
-                ? DataResult.success(value)
-                : DataResult.error(() -> "Value must be within range [" + min + ";" + max + "]: " + value)
-        );
+        return Codec.floatRange(min, max);
     }
 
     public static <O> Codec<BooleanObjectPair<O>> booleanObjectPair(String boolKey, String objKey, Codec<O> objCodec) {

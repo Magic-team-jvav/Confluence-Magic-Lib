@@ -10,7 +10,6 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.TemplateStructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
-import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import org.confluence.lib.ConfluenceMagicLib;
@@ -39,11 +38,10 @@ public class SimpleTemplatePiece extends TemplateStructurePiece {
     }
 
     private static StructurePlaceSettings makeSettings(boolean overwrite, boolean ignoreEntities, boolean appleWaterlogging, Rotation rotation) {
-        LiquidSettings liquidSettings = appleWaterlogging ? LiquidSettings.APPLY_WATERLOGGING : LiquidSettings.IGNORE_WATERLOGGING;
         BlockIgnoreProcessor blockignoreprocessor = overwrite ? BlockIgnoreProcessor.STRUCTURE_BLOCK : BlockIgnoreProcessor.STRUCTURE_AND_AIR;
         return new StructurePlaceSettings()
                 .setIgnoreEntities(ignoreEntities)
-                .setLiquidSettings(liquidSettings)
+                .setKeepLiquids(appleWaterlogging)
                 .addProcessor(blockignoreprocessor)
                 .setRotation(rotation);
     }
@@ -51,9 +49,9 @@ public class SimpleTemplatePiece extends TemplateStructurePiece {
     @Override
     protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
         super.addAdditionalSaveData(context, tag);
-        tag.putBoolean("OW", placeSettings.getProcessors().getFirst() == BlockIgnoreProcessor.STRUCTURE_BLOCK);
+        tag.putBoolean("OW", placeSettings.getProcessors().get(0) == BlockIgnoreProcessor.STRUCTURE_BLOCK);
         tag.putBoolean("IE", placeSettings.isIgnoreEntities());
-        tag.putBoolean("AW", placeSettings.shouldApplyWaterlogging());
+        tag.putBoolean("AW", placeSettings.shouldKeepLiquids());
         tag.putString("Rot", placeSettings.getRotation().name());
     }
 

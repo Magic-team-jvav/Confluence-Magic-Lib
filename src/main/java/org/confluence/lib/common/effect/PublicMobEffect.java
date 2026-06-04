@@ -1,10 +1,10 @@
 package org.confluence.lib.common.effect;
 
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
+import org.mesdag.portlib.wrapper.world.effect.PortMobEffect;
 
-public class PublicMobEffect extends MobEffect {
+public class PublicMobEffect extends PortMobEffect {
     public PublicMobEffect(MobEffectCategory category, int color, ParticleOptions particle) {
         super(category, color, particle);
     }

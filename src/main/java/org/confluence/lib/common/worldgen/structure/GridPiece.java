@@ -1,5 +1,6 @@
 package org.confluence.lib.common.worldgen.structure;
 
+import PortLib.extensions.com.mojang.serialization.DataResult.PortDataResultExtension;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -68,9 +69,10 @@ public class GridPiece extends StructurePiece {
         super(ConfluenceMagicLib.GRID_PIECE.get(), tag);
         this.startPos = new ChunkPos(tag.getLong("StartPos"));
         if (tag.contains("BlockMap")) {
-            this.blockMap = BLOCK_MAP_CODEC.parse(NbtOps.INSTANCE, tag.get("BlockMap")).getOrThrow();
-            this.blockList = BlockState.CODEC.listOf().parse(NbtOps.INSTANCE, tag.get("BlockList")).getOrThrow();
-            this.features = FEATURES_CODEC.parse(NbtOps.INSTANCE, tag.get("Features")).getOrThrow();
+            this.blockMap = PortDataResultExtension.getOrThrow(BLOCK_MAP_CODEC.parse(NbtOps.INSTANCE, tag.get("BlockMap")));
+
+            this.blockList = PortDataResultExtension.getOrThrow(BlockState.CODEC.listOf().parse(NbtOps.INSTANCE, tag.get("BlockList")));
+            this.features = PortDataResultExtension.getOrThrow(FEATURES_CODEC.parse(NbtOps.INSTANCE, tag.get("Features")));
         } else {
             this.blockMap = List.of();
             this.features = List.of();
@@ -81,9 +83,9 @@ public class GridPiece extends StructurePiece {
     protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
         tag.putLong("StartPos", startPos.toLong());
         if (blockMap.stream().anyMatch(tuple -> !tuple.getB().isEmpty())) {
-            tag.put("BlockMap", BLOCK_MAP_CODEC.encodeStart(NbtOps.INSTANCE, blockMap).getOrThrow());
-            tag.put("BlockList", BlockState.CODEC.listOf().encodeStart(NbtOps.INSTANCE, blockList).getOrThrow());
-            tag.put("Features", FEATURES_CODEC.encodeStart(NbtOps.INSTANCE, features).getOrThrow());
+            tag.put("BlockMap", PortDataResultExtension.getOrThrow(BLOCK_MAP_CODEC.encodeStart(NbtOps.INSTANCE, blockMap)));
+            tag.put("BlockList", PortDataResultExtension.getOrThrow(BlockState.CODEC.listOf().encodeStart(NbtOps.INSTANCE, blockList)));
+            tag.put("Features", PortDataResultExtension.getOrThrow(FEATURES_CODEC.encodeStart(NbtOps.INSTANCE, features)));
         }
     }
 
@@ -99,8 +101,8 @@ public class GridPiece extends StructurePiece {
         }
         Registry<ConfiguredFeature<?, ?>> configuredFeatures = level.registryAccess().registryOrThrow(Registries.CONFIGURED_FEATURE);
         for (Tuple<BlockPos, ResourceLocation> pair : features) {
-            configuredFeatures.getHolder(pair.getB())
-                    .ifPresent(feature -> feature.value().place(level, generator, random, pair.getA()));
+            configuredFeatures.getOptional(pair.getB())
+                    .ifPresent(feature -> feature.place(level, generator, random, pair.getA()));
         }
     }
 

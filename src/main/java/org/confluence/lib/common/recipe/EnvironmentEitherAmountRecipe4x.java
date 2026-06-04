@@ -7,11 +7,11 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.Level;
+import org.mesdag.portlib.network.codec.PortStreamCodec;
 
 public abstract class EnvironmentEitherAmountRecipe4x extends EitherAmountRecipe4x<EnvironmentRecipeInput> {
     protected final EnvironmentLevelAccess.Matcher environment;
@@ -48,8 +48,8 @@ public abstract class EnvironmentEitherAmountRecipe4x extends EitherAmountRecipe
         ).apply(instance, factory));
     }
 
-    public static <R extends EnvironmentEitherAmountRecipe4x> StreamCodec<RegistryFriendlyByteBuf, R> environmentShapedSerializerSteamCodec(Function3<ItemStack, ShapedRecipePattern, EnvironmentLevelAccess.Matcher, R> factory) {
-        return StreamCodec.composite(
+    public static <R extends EnvironmentEitherAmountRecipe4x> PortStreamCodec<RegistryFriendlyByteBuf, R> environmentShapedSerializerSteamCodec(Function3<ItemStack, ShapedRecipePattern, EnvironmentLevelAccess.Matcher, R> factory) {
+        return PortPortStreamCodec.composite(
                 ItemStack.STREAM_CODEC, r -> r.result,
                 ShapedRecipePattern.STREAM_CODEC, r -> r.either.left().orElseThrow(),
                 EnvironmentLevelAccess.Matcher.STREAM_CODEC, EnvironmentEitherAmountRecipe4x::getEnvironment,
@@ -65,8 +65,8 @@ public abstract class EnvironmentEitherAmountRecipe4x extends EitherAmountRecipe
         ).apply(instance, factory));
     }
 
-    public static <R extends EnvironmentEitherAmountRecipe4x> StreamCodec<RegistryFriendlyByteBuf, R> environmentEitherSerializerStreamCodec(Function3<ItemStack, Either<ShapedRecipePattern, NonNullList<Ingredient>>, EnvironmentLevelAccess.Matcher, R> factory) {
-        return StreamCodec.composite(
+    public static <R extends EnvironmentEitherAmountRecipe4x> PortStreamCodec<RegistryFriendlyByteBuf, R> environmentEitherSerializerStreamCodec(Function3<ItemStack, Either<ShapedRecipePattern, NonNullList<Ingredient>>, EnvironmentLevelAccess.Matcher, R> factory) {
+        return PortPortStreamCodec.composite(
                 ItemStack.STREAM_CODEC, r -> r.result,
                 EITHER_CODEC, r -> r.either,
                 EnvironmentLevelAccess.Matcher.STREAM_CODEC, EnvironmentEitherAmountRecipe4x::getEnvironment,

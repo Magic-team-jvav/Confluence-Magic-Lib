@@ -38,7 +38,7 @@ public record FloatRGB(float red, float green, float blue) {
     @Override
     public boolean equals(Object o) {
         if (o == this) return true;
-        return o instanceof FloatRGB(float red1, float green1, float blue1) && red == red1 && blue == blue1 && green == green1;
+        return o instanceof FloatRGB f && red == f.red() && green == f.green() && blue == f.blue();
     }
 
     @Override

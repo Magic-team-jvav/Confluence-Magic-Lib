@@ -1,32 +1,19 @@
 package org.confluence.lib.util;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.blaze3d.pipeline.TextureTarget;
-import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexSorting;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.datafixers.util.Function4;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.item.ClampedItemPropertyFunction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
-import org.joml.Quaternionf;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -35,40 +22,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class LibClientUtils {
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static final float HALF_SQRT_3 = LibMathUtils.HALF_SQRT_3;
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static final Quaternionf ANGLE_45 = LibRenderUtils.ANGLE_45;
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static final Quaternionf ANGLE_180 = LibRenderUtils.ANGLE_180;
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static final Quaternionf ANGLE_N90 = LibRenderUtils.ANGLE_N90;
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static final int[] FULL_BRIGHT = LibRenderUtils.FULL_BRIGHT;
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static final float INV_255 = LibMathUtils.INV_255;
     public static final ClampedItemPropertyFunction COULD_ENABLE_PROPERTY_FUNCTION = (stack, level, living, seed) -> {
         CompoundTag tag = LibUtils.getItemStackNbtIfPresent(stack);
         return tag != null && tag.getBoolean(IFunctionCouldEnable.DISABLE_KEY) ? 0 : 1;
     };
-
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static void setupOverlayRenderState(boolean blend, boolean depthTest) {
-        LibRenderUtils.setupOverlayRenderState(blend, depthTest);
-    }
-
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static boolean shouldDrawSurvivalElements(Minecraft minecraft) {
-        return LibRenderUtils.shouldDrawSurvivalElements(minecraft);
-    }
 
     /// 将游戏缓存的贴图写入文件
     ///
@@ -172,51 +129,12 @@ public final class LibClientUtils {
         return blueWhite;
     }
 
-    public static NativeImage getGuiItem(Item item, int size) {
-        return getGuiItem(item.getDefaultInstance(), size);
-    }
-
-    public static NativeImage getGuiItem(ItemStack stack, int size) {
-        TextureTarget target = new TextureTarget(size, size, true, Minecraft.ON_OSX);
-        target.setClearColor(0, 0, 0, 0);
-        Minecraft minecraft = Minecraft.getInstance();
-        MultiBufferSource.BufferSource bufferSource = minecraft.renderBuffers().bufferSource();
-        target.clear(Minecraft.ON_OSX);
-        target.bindWrite(true);
-        RenderSystem.setProjectionMatrix(new Matrix4f().setOrtho(0, size, size, 0, -1000F, 1000F), VertexSorting.ORTHOGRAPHIC_Z);
-
-        Matrix4fStack view = RenderSystem.getModelViewStack();
-        view.pushMatrix();
-        view.setTranslation(0F, 0F, 0F);
-        RenderSystem.applyModelViewMatrix();
-
-        Lighting.setupNetherLevel();
-        GuiGraphics guiGraphics = new GuiGraphics(minecraft, bufferSource);
-        PoseStack pose = guiGraphics.pose();
-        pose.pushPose();
-        float scale = size / 16F;
-        pose.scale(scale, scale, 1);
-        guiGraphics.renderItem(stack, 0, 0, 251017);
-        pose.popPose();
-
-        target.bindRead();
-        RenderSystem.bindTexture(target.getColorTextureId());
-        NativeImage image = new NativeImage(size, size, false);
-        image.downloadTexture(0, false);
-        image.flipY();
-        target.unbindRead();
-        target.unbindWrite();
-        view.popMatrix();
-        RenderSystem.applyModelViewMatrix();
-        return image;
-    }
-
     public static @Nullable Player getPlayer() {
         return Minecraft.getInstance().player;
     }
 
     public static GameProfile getGameProfile() {
-        return Minecraft.getInstance().getGameProfile();
+        return Minecraft.getInstance().getUser().getGameProfile();
     }
 
     public static DataFixer getDataFixer() {

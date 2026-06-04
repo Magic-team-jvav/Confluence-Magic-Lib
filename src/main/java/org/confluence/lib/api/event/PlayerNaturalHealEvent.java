@@ -1,10 +1,11 @@
 package org.confluence.lib.api.event;
 
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.bus.api.ICancellableEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.Cancelable;
 
-public class PlayerNaturalHealEvent extends PlayerEvent implements ICancellableEvent {
+@Cancelable
+public class PlayerNaturalHealEvent extends PlayerEvent {
     private final float originalAmount;
     private float amount;
 

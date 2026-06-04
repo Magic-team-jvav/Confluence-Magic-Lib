@@ -1,20 +1,17 @@
 package org.confluence.lib.common.item;
 
+import PortLib.extensions.net.minecraft.resources.ResourceLocation.PortResourceLocationExtension;
+import PortLib.extensions.net.minecraft.world.item.ItemStack.PortItemStackExtension;
 import com.google.common.collect.AbstractIterator;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenCustomHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
-import net.neoforged.fml.ModLoader;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.LibStartupConfig;
 import org.confluence.lib.api.event.AddGroupInvalidCreativeModeTabEvent;
@@ -23,6 +20,8 @@ import org.confluence.lib.mixed.ILibClientItemStack;
 import org.confluence.lib.util.LibUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Unmodifiable;
+import org.mesdag.portlib.event.PortEventHandler;
+import org.mesdag.portlib.network.codec.PortStreamCodec;
 
 import javax.annotation.CheckForNull;
 import java.util.*;
@@ -40,7 +39,7 @@ public class GroupItem extends Item {
         }
         instance = this;
         INVALID_CREATIVE_MODE_TABS.add(CreativeModeTabs.SEARCH);
-        ModLoader.postEvent(new AddGroupInvalidCreativeModeTabEvent(INVALID_CREATIVE_MODE_TABS::add));
+        PortEventHandler.postEvent(new AddGroupInvalidCreativeModeTabEvent(INVALID_CREATIVE_MODE_TABS::add));
     }
 
     public static GroupItem getInstance() {
@@ -60,23 +59,23 @@ public class GroupItem extends Item {
     }
 
     public static ItemStack of(ResourceLocation name, List<ItemStack> stacks) {
-        ItemStack itemStack = getInstance().getDefaultInstance();
-        itemStack.set(ConfluenceMagicLib.GROUP_STACKS, Stacks.of(name, false, stacks));
-        itemStack.set(DataComponents.CUSTOM_NAME, Component.translatable("itemGroup." + name.getNamespace() + "." + name.getPath()));
-        return itemStack;
+        ItemStack stack = getInstance().getDefaultInstance();
+        PortItemStackExtension.setData(stack, ConfluenceMagicLib.GROUP_STACKS, Stacks.of(name, false, stacks));
+        PortItemStackExtension.setCustomName(stack, Component.translatable("itemGroup." + name.getNamespace() + "." + name.getPath()));
+        return stack;
     }
 
     @ApiStatus.Internal
     public static void toggleVisibility(ItemStack group) {
-        Stacks stacks = group.get(ConfluenceMagicLib.GROUP_STACKS);
+        Stacks stacks = PortItemStackExtension.getData(group, ConfluenceMagicLib.GROUP_STACKS);
         if (stacks == null) throw new NullPointerException("Stacks must non-null!");
-        group.set(ConfluenceMagicLib.GROUP_STACKS, stacks.toggleVisibility());
+        PortItemStackExtension.setData(group, ConfluenceMagicLib.GROUP_STACKS, stacks.toggleVisibility());
     }
 
-    public static class Stacks implements DataComponentType<Stacks> {
+    public static class Stacks {
         public static final Stacks EMPTY = new Stacks(ConfluenceMagicLib.asResource("empty"), false, new ItemStack[0], -1);
         public static final Codec<Stacks> CODEC = Codec.unit(EMPTY);
-        public static final StreamCodec<ByteBuf, Stacks> STREAM_CODEC = StreamCodec.unit(EMPTY);
+        public static final PortStreamCodec<ByteBuf, Stacks> STREAM_CODEC = PortStreamCodec.unit(EMPTY);
         private static final AtomicInteger cachedId = new AtomicInteger();
 
         private transient ObjectLinkedOpenCustomHashSet<ItemStack> duplicateChecker;
@@ -140,18 +139,8 @@ public class GroupItem extends Item {
         }
 
         @Override
-        public Codec<Stacks> codec() {
-            return CODEC;
-        }
-
-        @Override
-        public StreamCodec<ByteBuf, Stacks> streamCodec() {
-            return STREAM_CODEC;
-        }
-
-        @Override
         public final boolean equals(Object o) {
-            return o == this || (o instanceof Stacks stacks && stacks.visible == visible && stacks.id == id && stacks.name.equals(name) && stacks.values.equals(values));
+            return o == this || (o instanceof Stacks stacks && stacks.visible == visible && stacks.id == id && stacks.name.equals(name) && Arrays.equals(stacks.values, values));
         }
 
         @Override
@@ -211,7 +200,7 @@ public class GroupItem extends Item {
 
         public static Stacks of(ResourceLocation name, boolean visible, List<ItemStack> stacks) {
             int id = cachedId.getAndIncrement();
-            Set<ItemStack> set = ItemStackLinkedSet.createTypeAndComponentsSet();
+            Set<ItemStack> set = ItemStackLinkedSet.createTypeAndTagSet();
             for (ItemStack stack : stacks) {
                 if (LibUtils.isPhysicalClient()) {
                     ILibClientItemStack.of(stack).confluence$setGroupId(id);
@@ -236,30 +225,20 @@ public class GroupItem extends Item {
     public static CreativeModeTab.Output belongsTo(BelongsTo belongsTo, CreativeModeTab.Output output) {
         if (LibStartupConfig.itemGroups()) {
             return (stack, tabVisibility) -> {
-                stack.set(ConfluenceMagicLib.BELONGS_TO_GROUP, belongsTo);
+                PortItemStackExtension.setData(stack, ConfluenceMagicLib.BELONGS_TO_GROUP, belongsTo);
                 output.accept(stack, tabVisibility);
             };
         }
         return output;
     }
 
-    public record BelongsTo(ResourceLocation name) implements DataComponentType<BelongsTo> {
+    public record BelongsTo(ResourceLocation name) {
         public static final Codec<BelongsTo> CODEC = ResourceLocation.CODEC.xmap(BelongsTo::new, BelongsTo::name);
-        public static final StreamCodec<ByteBuf, BelongsTo> STREAM_CODEC = ResourceLocation.STREAM_CODEC.map(BelongsTo::new, BelongsTo::name);
-
-        @Override
-        public Codec<BelongsTo> codec() {
-            return CODEC;
-        }
-
-        @Override
-        public StreamCodec<? super RegistryFriendlyByteBuf, BelongsTo> streamCodec() {
-            return STREAM_CODEC;
-        }
+        public static final PortStreamCodec<ByteBuf, BelongsTo> STREAM_CODEC = PortResourceLocationExtension.streamCodec().map(BelongsTo::new, BelongsTo::name);
 
         @Override
         public boolean equals(Object o) {
-            return o == this || (o instanceof BelongsTo(ResourceLocation rl) && rl.equals(name));
+            return o == this || (o instanceof BelongsTo b && b.name().equals(name));
         }
 
         @Override
@@ -301,7 +280,7 @@ public class GroupItem extends Item {
                         ItemStack element = unfiltered.next();
                         if (element.is(getInstance())) {
                             index = 0;
-                            Stacks stacks = element.getOrDefault(ConfluenceMagicLib.GROUP_STACKS, Stacks.EMPTY);
+                            Stacks stacks = PortItemStackExtension.getDataOrDefault(element, ConfluenceMagicLib.GROUP_STACKS, Stacks.EMPTY);
                             values = stacks.visible ? stacks.values : new ItemStack[0];
                             return element;
                         }

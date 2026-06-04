@@ -1,76 +1,64 @@
 package org.confluence.lib.network;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.minecraft.world.entity.player.Player;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.mixed.ILibExtraSyncedData;
+import org.mesdag.portlib.network.IPortPacket;
+import org.mesdag.portlib.network.PortRegistryFriendlyByteBuf;
+import org.mesdag.portlib.network.codec.PortStreamCodec;
 
-/// @see ILibExtraSyncedData
-public record SetEntityDataPacketS2C(int entityId, Entry... entries) implements CustomPacketPayload {
+public record SetEntityDataPacketS2C(int entityId, Entry... entries) implements IPortPacket.S2C {
     public static final byte DATA_BOOLEAN = 0;
-    public static final Type<SetEntityDataPacketS2C> TYPE = new Type<>(ConfluenceMagicLib.asResource("set_entity_data"));
-    public static final StreamCodec<RegistryFriendlyByteBuf, SetEntityDataPacketS2C> STREAM_CODEC = new StreamCodec<>() {
+    public static final ResourceLocation ID = ConfluenceMagicLib.asResource("set_entity_data");
+    public static final PortStreamCodec<PortRegistryFriendlyByteBuf, SetEntityDataPacketS2C> STREAM_CODEC = new PortStreamCodec<>() {
         @Override
-        public SetEntityDataPacketS2C decode(RegistryFriendlyByteBuf buffer) {
+        public SetEntityDataPacketS2C decode(PortRegistryFriendlyByteBuf buffer) {
             int entityId = buffer.readVarInt();
             int size = buffer.readVarInt();
             Entry[] entries = new Entry[size];
             for (int i = 0; i < size; i++) {
                 byte dataId = buffer.readByte();
-                entries[i] = new Entry(dataId, SetEntityDataPacketS2C.decode(buffer, dataId));
+                entries[i] = new Entry(dataId, decodeData(buffer, dataId));
             }
             return new SetEntityDataPacketS2C(entityId, entries);
         }
 
         @Override
-        public void encode(RegistryFriendlyByteBuf buffer, SetEntityDataPacketS2C value) {
+        public void encode(PortRegistryFriendlyByteBuf buffer, SetEntityDataPacketS2C value) {
             buffer.writeVarInt(value.entityId);
             buffer.writeVarInt(value.entries.length);
             for (Entry entry : value.entries) {
                 buffer.writeByte(entry.dataId);
-                SetEntityDataPacketS2C.encode(buffer, entry.dataId, entry.data);
+                encodeData(buffer, entry.dataId, entry.data);
             }
         }
     };
 
     @Override
-    public Type<SetEntityDataPacketS2C> type() {
-        return TYPE;
+    public ResourceLocation identifier() {
+        return ID;
     }
 
-    public void handle(IPayloadContext context) {
-        context.enqueueWork(() -> {
-            if (context.player().isLocalPlayer()) {
-                Entity entity = context.player().level().getEntity(entityId);
-                if (entity instanceof ILibExtraSyncedData<?> extraSyncedData) {
-                    for (Entry entry : entries) {
-                        extraSyncedData.confluence$setData(entry.dataId, entry.data);
-                    }
-                }
+    @Override
+    public void work(Player player) {
+        Entity entity = player.level().getEntity(entityId);
+        if (entity instanceof ILibExtraSyncedData<?> extraSyncedData) {
+            for (Entry entry : entries) {
+                extraSyncedData.confluence$setData(entry.dataId, entry.data);
             }
-        }).exceptionally(e -> {
-            context.disconnect(Component.translatable("neoforge.network.invalid_flow", e.getMessage()));
-            return null;
-        });
+        }
     }
 
-    private static Object decode(RegistryFriendlyByteBuf buffer, byte dataId) {
-        if (dataId == DATA_BOOLEAN) {
-            return buffer.readBoolean();
-        }
+    private static Object decodeData(PortRegistryFriendlyByteBuf buffer, byte dataId) {
+        if (dataId == DATA_BOOLEAN) return buffer.readBoolean();
         throw new IllegalArgumentException("Unregistered data serializer id " + dataId + "!");
     }
 
-    private static void encode(RegistryFriendlyByteBuf buffer, byte dataId, Object o) {
-        if (dataId == DATA_BOOLEAN) {
-            buffer.writeBoolean((boolean) o);
-        } else {
-            throw new IllegalArgumentException("Unregistered data serializer id " + dataId + "!");
-        }
+    private static void encodeData(PortRegistryFriendlyByteBuf buffer, byte dataId, Object o) {
+        if (dataId == DATA_BOOLEAN) buffer.writeBoolean((boolean) o);
+        else throw new IllegalArgumentException("Unregistered data serializer id " + dataId + "!");
     }
 
     public record Entry(byte dataId, Object data) {}

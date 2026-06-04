@@ -1,7 +1,7 @@
 package org.confluence.lib.mixed;
 
 import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.network.PacketDistributor;
+import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.network.SetEntityDataPacketS2C;
 
 /// @see SetEntityDataPacketS2C
@@ -9,7 +9,7 @@ public interface ILibExtraSyncedData<T extends Entity> extends SelfGetter<T> {
     default void confluence$setData(byte dataId, Object o) {
         T self = confluence$self();
         if (!self.level().isClientSide) {
-            PacketDistributor.sendToPlayersTrackingEntity(self, new SetEntityDataPacketS2C(self.getId(), new SetEntityDataPacketS2C.Entry(dataId, o)));
+            ConfluenceMagicLib.NETWORK_HANDLER.sendToPlayersTrackingEntity(self, new SetEntityDataPacketS2C(self.getId(), new SetEntityDataPacketS2C.Entry(dataId, o)));
         }
     }
 

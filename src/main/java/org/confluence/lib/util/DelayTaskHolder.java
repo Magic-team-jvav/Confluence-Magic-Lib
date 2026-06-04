@@ -4,18 +4,16 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.neoforge.attachment.AttachmentHolder;
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.jetbrains.annotations.Nullable;
+import org.mesdag.portlib.attachment.IPortAttachmentHolder;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 /// 延迟任务
 ///
-/// 更倾向与玩家或实体的自身任务的类，以[AttachmentType]的形式存储
+/// 更倾向与玩家或实体的自身任务的类，以[org.mesdag.portlib.attachment.PortAttachmentType]的形式存储
 ///
 /// 目前仅有在[LivingEntity]中能正常运行
 ///
@@ -25,14 +23,14 @@ import java.util.stream.Collectors;
 ///
 /// 注：实体死亡时会移除所有任务
 public class DelayTaskHolder {
-    private final IAttachmentHolder attachmentHolder;
+    private final IPortAttachmentHolder attachmentHolder;
     private final Map<ResourceLocation, ITask> runList = new LinkedHashMap<>();
 
-    public DelayTaskHolder(IAttachmentHolder attachmentHolder) {
+    public DelayTaskHolder(IPortAttachmentHolder attachmentHolder) {
         this.attachmentHolder = attachmentHolder;
     }
 
-    public IAttachmentHolder getAttachmentHolder() {
+    public IPortAttachmentHolder getAttachmentHolder() {
         return attachmentHolder;
     }
 
@@ -140,8 +138,8 @@ public class DelayTaskHolder {
         runList.clear();
     }
 
-    public static DelayTaskHolder of(AttachmentHolder attachmentHolder) {
-        return attachmentHolder.getData(ConfluenceMagicLib.DELAY_TASK_HOLDER);
+    public static DelayTaskHolder of(IPortAttachmentHolder holder) {
+        return holder.getAttach(ConfluenceMagicLib.DELAY_TASK_HOLDER.get());
     }
 
     public static ITask.Builder createTaskBilder() {

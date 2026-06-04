@@ -13,7 +13,6 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -21,10 +20,11 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.crafting.ICustomIngredient;
+import net.minecraftforge.common.crafting.ICustomIngredient;
 import org.confluence.lib.util.LibStreamCodecUtils;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
+import org.mesdag.portlib.network.codec.PortStreamCodec;
 
 import java.util.HashSet;
 import java.util.List;
@@ -142,11 +142,11 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
             for (int i = 0; i < pContainerSize; i++) {
                 ItemStack itemStack = getItemStackCallback.apply(i);
                 if (itemStack.isEmpty()) continue;
-                if (ingredient.getCustomIngredient() instanceof AmountIngredient(Ingredient ingredient1, int amount)) {
-                    if (amount == requires2Slots.computeIfAbsent(ingredient, FUNCTION).getB().size()) {
+                if (ingredient.getCustomIngredient() instanceof AmountIngredient a) {
+                    if (a.amount() == requires2Slots.computeIfAbsent(ingredient, FUNCTION).getB().size()) {
                         continue outer;
                     }
-                    if (ingredient1.test(itemStack)) {
+                    if (a.ingredient().test(itemStack)) {
                         requires2Slots.computeIfAbsent(ingredient, FUNCTION).getB().add(i);
                     }
                 } else if (ingredient.test(itemStack)) {
@@ -229,8 +229,8 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
         ).apply(instance, factory));
     }
 
-    public static <R extends AbstractAmountRecipe<?>> StreamCodec<RegistryFriendlyByteBuf, R> shapelessSerializerSteamCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
-        return StreamCodec.composite(
+    public static <R extends AbstractAmountRecipe<?>> PortStreamCodec<RegistryFriendlyByteBuf, R> shapelessSerializerSteamCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
+        return PortPortStreamCodec.composite(
                 ItemStack.STREAM_CODEC, r -> r.result,
                 LibStreamCodecUtils.INGREDIENTS, r -> r.getIngredients(),
                 factory

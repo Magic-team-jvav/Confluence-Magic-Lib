@@ -1,5 +1,6 @@
 package org.confluence.lib.common.item;
 
+import PortLib.extensions.net.minecraft.world.item.ItemStack.PortItemStackExtension;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
@@ -23,12 +24,12 @@ public class ColoredItem extends CustomRarityItem {
         return false;
     }
 
-    public static void setRGBA(ItemStack itemStack, int rgba) {
-        LibUtils.updateItemStackNbt(itemStack, tag -> tag.putInt("color", rgba));
+    public static void setRGBA(ItemStack stack, int rgba) {
+        LibUtils.updateItemStackNbt(stack, tag -> tag.putInt("color", rgba));
     }
 
-    public static int getRGBA(ItemStack itemStack) {
-        NbtComponent nbtComponent = itemStack.get(ConfluenceMagicLib.NBT);
+    public static int getRGBA(ItemStack stack) {
+        NbtComponent nbtComponent = PortItemStackExtension.getData(stack, ConfluenceMagicLib.NBT);
         if (nbtComponent == null) {
             return 0xFF66CCFF;
         }

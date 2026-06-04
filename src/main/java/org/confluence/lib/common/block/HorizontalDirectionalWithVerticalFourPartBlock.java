@@ -1,6 +1,5 @@
 package org.confluence.lib.common.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.LivingEntity;
@@ -16,17 +15,11 @@ import net.minecraft.world.level.material.PushReaction;
 import org.jetbrains.annotations.Nullable;
 
 public class HorizontalDirectionalWithVerticalFourPartBlock extends HorizontalDirectionalBlock {
-    public static final MapCodec<HorizontalDirectionalWithVerticalFourPartBlock> CODEC = simpleCodec(HorizontalDirectionalWithVerticalFourPartBlock::new);
     public static final EnumProperty<StateProperties.VerticalFourPart> PART = StateProperties.VERTICAL_FOUR_PART;
 
     public HorizontalDirectionalWithVerticalFourPartBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(PART, StateProperties.VerticalFourPart.BASE).setValue(FACING, Direction.NORTH));
-    }
-
-    @Override
-    protected MapCodec<? extends HorizontalDirectionalWithVerticalFourPartBlock> codec() {
-        return CODEC;
     }
 
     @Override

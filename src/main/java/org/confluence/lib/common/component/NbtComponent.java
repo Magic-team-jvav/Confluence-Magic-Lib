@@ -1,36 +1,23 @@
 package org.confluence.lib.common.component;
 
+import PortLib.extensions.com.mojang.serialization.Codec.PortCodecExtension;
+import PortLib.extensions.net.minecraft.nbt.TagParser.PortTagParserExtension;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.TagParser;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import org.jetbrains.annotations.Nullable;
+import org.mesdag.portlib.network.codec.PortByteBufCodecs;
+import org.mesdag.portlib.network.codec.PortStreamCodec;
 
 import java.util.function.Consumer;
 
-public record NbtComponent(CompoundTag nbt) implements DataComponentType<NbtComponent> {
-    public static final Codec<NbtComponent> CODEC = Codec.withAlternative(CompoundTag.CODEC, TagParser.AS_CODEC).xmap(NbtComponent::new, NbtComponent::nbt);
-    public static final StreamCodec<ByteBuf, NbtComponent> STREAM_CODEC = ByteBufCodecs.COMPOUND_TAG.map(NbtComponent::new, NbtComponent::nbt);
+public record NbtComponent(CompoundTag nbt) {
+    public static final Codec<NbtComponent> CODEC = PortCodecExtension.withAlternative(CompoundTag.CODEC, PortTagParserExtension.asCodec()).xmap(NbtComponent::new, NbtComponent::nbt);
+    public static final PortStreamCodec<ByteBuf, NbtComponent> STREAM_CODEC = PortByteBufCodecs.COMPOUND_TAG.map(NbtComponent::new, NbtComponent::nbt);
 
-    @Override
-    public @Nullable Codec<NbtComponent> codec() {
-        return CODEC;
-    }
-
-    @Override
-    public StreamCodec<ByteBuf, NbtComponent> streamCodec() {
-        return STREAM_CODEC;
-    }
-
-    @Override
     public boolean equals(Object o) {
-        return o == this || (o instanceof NbtComponent(CompoundTag nbt1) && nbt.equals(nbt1));
+        return o == this || (o instanceof NbtComponent n && nbt.equals(n.nbt()));
     }
 
-    @Override
     public int hashCode() {
         return nbt.hashCode();
     }

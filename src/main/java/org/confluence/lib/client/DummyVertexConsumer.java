@@ -1,39 +1,46 @@
 package org.confluence.lib.client;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.MethodsReturnNonnullByDefault;
 
-@MethodsReturnNonnullByDefault
 public class DummyVertexConsumer implements VertexConsumer {
     public static final VertexConsumer INSTANCE = new DummyVertexConsumer();
 
     @Override
-    public VertexConsumer addVertex(float x, float y, float z){
+    public VertexConsumer vertex(double v, double v1, double v2) {
         return this;
     }
 
     @Override
-    public VertexConsumer setColor(int red, int green, int blue, int alpha){
+    public VertexConsumer color(int i, int i1, int i2, int i3) {
         return this;
     }
 
     @Override
-    public VertexConsumer setUv(float u, float v){
+    public VertexConsumer uv(float v, float v1) {
         return this;
     }
 
     @Override
-    public VertexConsumer setUv1(int u, int v){
+    public VertexConsumer overlayCoords(int i, int i1) {
         return this;
     }
 
     @Override
-    public VertexConsumer setUv2(int u, int v){
+    public VertexConsumer uv2(int i, int i1) {
         return this;
     }
 
     @Override
-    public VertexConsumer setNormal(float normalX, float normalY, float normalZ){
+    public VertexConsumer normal(float v, float v1, float v2) {
         return this;
     }
+
+    @Override
+    public void endVertex() {}
+
+    @Override
+    public void defaultColor(int i, int i1, int i2, int i3) {}
+
+    @Override
+    public void unsetDefaultColor() {}
 }

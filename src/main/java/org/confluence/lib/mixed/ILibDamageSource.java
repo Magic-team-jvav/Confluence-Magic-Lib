@@ -5,7 +5,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.neoforged.neoforge.common.NeoForge;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.api.event.ProcessCriticalDamageEvent;
@@ -13,6 +12,7 @@ import org.confluence.lib.common.LibAttributes;
 import org.confluence.lib.util.LibMathUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import org.mesdag.portlib.event.PortEventHandler;
 
 public interface ILibDamageSource {
     void confluence$setCritical(boolean critical);
@@ -39,14 +39,14 @@ public interface ILibDamageSource {
         ProcessCriticalDamageEvent event;
         ILibDamageSource lds = of(damageSource);
         if (lds == null) {
-            event = NeoForge.EVENT_BUS.post(new ProcessCriticalDamageEvent(victim, damageSource, amount, crit));
+            event = PortEventHandler.postEventWithReturn(new ProcessCriticalDamageEvent(victim, damageSource, amount, crit));
             if (WARNED.isFalse()) {
                 WARNED.setTrue();
                 ConfluenceMagicLib.LOGGER.warn("DamageSource had remodified by unknown mod, so critical damage indicator expired now");
             }
         } else {
             crit |= lds.confluence$isCritical();
-            event = NeoForge.EVENT_BUS.post(new ProcessCriticalDamageEvent(victim, damageSource, amount, crit));
+            event = PortEventHandler.postEventWithReturn(new ProcessCriticalDamageEvent(victim, damageSource, amount, crit));
             lds.confluence$setCritical(event.isCritical());
         }
         amount = event.getAmount();

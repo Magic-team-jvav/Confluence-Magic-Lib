@@ -7,20 +7,20 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.Level;
 import org.confluence.lib.mixed.ILibShapedRecipePattern;
 import org.confluence.lib.util.LibStreamCodecUtils;
+import org.mesdag.portlib.network.codec.PortByteBufCodecs;
+import org.mesdag.portlib.network.codec.PortStreamCodec;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public abstract class EitherAmountRecipe4x<I extends MenuRecipeInput> extends AbstractAmountRecipe<I> {
-    public static final StreamCodec<RegistryFriendlyByteBuf, Either<ShapedRecipePattern, NonNullList<Ingredient>>> EITHER_CODEC = ByteBufCodecs.either(ShapedRecipePattern.STREAM_CODEC, LibStreamCodecUtils.INGREDIENTS);
+    public static final PortStreamCodec<RegistryFriendlyByteBuf, Either<ShapedRecipePattern, NonNullList<Ingredient>>> EITHER_CODEC = PortByteBufCodecs.either(ShapedRecipePattern.STREAM_CODEC, LibStreamCodecUtils.INGREDIENTS);
     public final Either<ShapedRecipePattern, NonNullList<Ingredient>> either;
 
     public EitherAmountRecipe4x(ItemStack result, ShapedRecipePattern pattern) {
@@ -81,8 +81,8 @@ public abstract class EitherAmountRecipe4x<I extends MenuRecipeInput> extends Ab
         ).apply(instance, factory));
     }
 
-    public static <R extends EitherAmountRecipe4x<?>> StreamCodec<RegistryFriendlyByteBuf, R> shapedSerializerSteamCodec(BiFunction<ItemStack, ShapedRecipePattern, R> factory) {
-        return StreamCodec.composite(
+    public static <R extends EitherAmountRecipe4x<?>> PortStreamCodec<RegistryFriendlyByteBuf, R> shapedSerializerSteamCodec(BiFunction<ItemStack, ShapedRecipePattern, R> factory) {
+        return PortPortStreamCodec.composite(
                 ItemStack.STREAM_CODEC, r -> r.result,
                 ShapedRecipePattern.STREAM_CODEC, r -> r.either.left().orElseThrow(),
                 factory
@@ -96,8 +96,8 @@ public abstract class EitherAmountRecipe4x<I extends MenuRecipeInput> extends Ab
         ).apply(instance, factory));
     }
 
-    public static <R extends EitherAmountRecipe4x<?>> StreamCodec<RegistryFriendlyByteBuf, R> eitherSerializerStreamCodec(BiFunction<ItemStack, Either<ShapedRecipePattern, NonNullList<Ingredient>>, R> factory) {
-        return StreamCodec.composite(
+    public static <R extends EitherAmountRecipe4x<?>> PortStreamCodec<RegistryFriendlyByteBuf, R> eitherSerializerStreamCodec(BiFunction<ItemStack, Either<ShapedRecipePattern, NonNullList<Ingredient>>, R> factory) {
+        return PortPortStreamCodec.composite(
                 ItemStack.STREAM_CODEC, r -> r.result,
                 EITHER_CODEC, r -> r.either,
                 factory

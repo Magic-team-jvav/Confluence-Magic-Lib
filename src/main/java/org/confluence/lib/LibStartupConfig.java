@@ -2,13 +2,11 @@ package org.confluence.lib;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.ModList;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.neoforge.common.ModConfigSpec;
-import net.neoforged.neoforgespi.language.IModFileInfo;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.forgespi.language.IModFileInfo;
 import org.apache.commons.codec.digest.Md5Crypt;
 import org.confluence.lib.util.LibUtils;
+import org.mesdag.portlib.config.PortConfigSpec;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -16,34 +14,30 @@ import java.nio.file.Path;
 import java.util.List;
 
 public final class LibStartupConfig {
-    public static ModConfigSpec.ConfigValue<List<? extends String>> ATTRIBUTE_REPLACE;
-    private static ModConfigSpec.LongValue modifyTime;
-    private static ModConfigSpec.ConfigValue<String> version;
-    private static ModConfigSpec.ConfigValue<String> messageDigest;
-    private static ModConfigSpec.IntValue alarmTimes;
+    public static PortConfigSpec.ListValue<String> ATTRIBUTE_REPLACE;
+    private static PortConfigSpec.LongValue modifyTime;
+    private static PortConfigSpec.StringValue version;
+    private static PortConfigSpec.StringValue messageDigest;
+    private static PortConfigSpec.IntValue alarmTimes;
+    private static PortConfigSpec.BooleanValue ITEM_GROUPS;
+    private static PortConfigSpec SPEC;
 
-    private static ModConfigSpec.BooleanValue ITEM_GROUPS;
-
-    private static ModConfigSpec spec;
-
-    static void register(ModContainer container) {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
-        ATTRIBUTE_REPLACE = builder.defineListAllowEmpty("attributeReplacements", () -> List.of(
+    static void register() {
+        PortConfigSpec.Builder builder = PortConfigSpec.builder(ConfluenceMagicLib.LIB_ID);
+        ATTRIBUTE_REPLACE = builder.defineList("attributeReplacements", List.of(
                 "crit_chance = confluence_magic_lib:generic.critical_chance",
                 "ranged_damage = confluence_magic_lib:generic.ranged_damage",
                 "dodge_chance = confluence_magic_lib:generic.dodge_chance",
                 "magic_damage = confluence_magic_lib:generic.magic_damage",
                 "armor_penetration = confluence_magic_lib:generic.armor_penetration"
-        ), () -> "", o -> true);
-        modifyTime = builder.defineInRange("modifyTime", -1, Long.MIN_VALUE, Long.MAX_VALUE);
-        version = builder.define("version", "");
-        messageDigest = builder.define("messageDigest", "");
-        alarmTimes = builder.defineInRange("alarmTimes", -1, Integer.MIN_VALUE, Integer.MAX_VALUE);
-
-        ITEM_GROUPS = builder.define("itemGroups", true);
-
-        spec = builder.build();
-        container.registerConfig(ModConfig.Type.STARTUP, spec);
+        ));
+        modifyTime = builder.defineInRange("modifyTime", -1L, Long.MIN_VALUE, Long.MAX_VALUE, null);
+        version = builder.define("version", "", null);
+        messageDigest = builder.define("messageDigest", "", null);
+        alarmTimes = builder.defineInRange("alarmTimes", -1, Integer.MIN_VALUE, Integer.MAX_VALUE, null);
+        ITEM_GROUPS = builder.define("itemGroups", true, null);
+        SPEC = builder.build();
+        SPEC.load();
     }
 
     private static boolean shouldAlarmInThisJVM = true;
@@ -86,7 +80,7 @@ public final class LibStartupConfig {
             ConfluenceMagicLib.LOGGER.debug(e.getMessage());
         } finally {
             if (shouldSave) {
-                spec.save();
+                SPEC.save();
             }
             shouldAlarmInThisJVM = false;
         }

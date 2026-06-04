@@ -6,10 +6,10 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.bus.api.Event;
-import net.neoforged.fml.ModLoader;
-import net.neoforged.fml.event.IModBusEvent;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.fml.event.IModBusEvent;
 import org.jetbrains.annotations.Nullable;
+import org.mesdag.portlib.event.PortEventHandler;
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -42,7 +42,7 @@ public class CustomGroupItemIconEvent extends Event implements IModBusEvent {
     public static void post() {
         if (registered) return;
         registered = true;
-        ModLoader.postEvent(new CustomGroupItemIconEvent());
+        PortEventHandler.postEvent(new CustomGroupItemIconEvent());
     }
 
     public static @Nullable ItemStack getIcon(ResourceKey<CreativeModeTab> tabKey, ResourceLocation groupName) {

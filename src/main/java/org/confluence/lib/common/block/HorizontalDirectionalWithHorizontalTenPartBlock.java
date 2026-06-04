@@ -1,6 +1,5 @@
 package org.confluence.lib.common.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.LivingEntity;
@@ -17,15 +16,11 @@ import net.minecraft.world.level.material.PushReaction;
 import org.jetbrains.annotations.Nullable;
 
 public class HorizontalDirectionalWithHorizontalTenPartBlock extends HorizontalDirectionalBlock {
-    public static final MapCodec<HorizontalDirectionalWithHorizontalTenPartBlock> CODEC = simpleCodec(HorizontalDirectionalWithHorizontalTenPartBlock::new);
     public static final EnumProperty<StateProperties.HorizontalTenPart> PART = StateProperties.HORIZONTAL_TEN_PART;
+
     public HorizontalDirectionalWithHorizontalTenPartBlock(Properties properties) {
         super(properties);
         registerDefaultState(this.getStateDefinition().any().setValue(PART, StateProperties.HorizontalTenPart.UP).setValue(FACING, Direction.NORTH));
-    }
-    @Override
-    public MapCodec<? extends HorizontalDirectionalBlock> codec() {
-        return CODEC;
     }
 
     @Override
@@ -50,14 +45,15 @@ public class HorizontalDirectionalWithHorizontalTenPartBlock extends HorizontalD
         if (check(pos, facing, level, context)) {
             return defaultBlockState().setValue(PART, StateProperties.HorizontalTenPart.UP).setValue(FACING, facing);
         }
-        
+
         return null;
     }
 
     private boolean check(BlockPos probableCenter, Direction facing, Level level, BlockPlaceContext context) {
         return StateProperties.HorizontalTenPart.getAllExcept(facing, probableCenter, null).entrySet().stream()
                 .allMatch(entry -> {
-                    if (!canSurvive(defaultBlockState().setValue(PART, entry.getKey()).setValue(FACING, facing), level, entry.getValue())) return false;
+                    if (!canSurvive(defaultBlockState().setValue(PART, entry.getKey()).setValue(FACING, facing), level, entry.getValue()))
+                        return false;
                     if (!level.getBlockState(entry.getValue()).canBeReplaced(context)) return false;
                     return level.getWorldBorder().isWithinBounds(entry.getValue());
                 });
@@ -82,7 +78,6 @@ public class HorizontalDirectionalWithHorizontalTenPartBlock extends HorizontalD
         if (state.getValue(PART).equals(StateProperties.HorizontalTenPart.UP)) {
             BlockPos suspendingPos = pos.above();
             return level.getBlockState(suspendingPos).isFaceSturdy(level, suspendingPos, Direction.DOWN);
-        }
-        else return super.canSurvive(state, level, pos);
+        } else return super.canSurvive(state, level, pos);
     }
 }

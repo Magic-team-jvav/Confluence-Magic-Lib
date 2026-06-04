@@ -1,19 +1,23 @@
 package org.confluence.lib.util;
 
+import PortLib.extensions.net.minecraft.core.HolderLookup.PortHolderLookupExtension;
+import PortLib.extensions.net.minecraft.world.item.ItemStack.PortItemStackExtension;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.mojang.datafixers.util.Either;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.QuartPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.*;
+import net.minecraft.server.level.ChunkHolder;
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
@@ -30,7 +34,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
@@ -39,19 +42,20 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.fml.loading.LoadingModList;
-import net.neoforged.neoforge.common.EffectCure;
-import net.neoforged.neoforge.entity.PartEntity;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
+import net.minecraftforge.entity.PartEntity;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.fml.loading.LoadingModList;
+import net.minecraftforge.server.ServerLifecycleHooks;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.component.NbtComponent;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
+import org.mesdag.portlib.component.PortDataComponentType;
+import org.mesdag.portlib.wrapper.common.PortEffectCure;
 
 import java.util.Arrays;
 import java.util.List;
@@ -59,6 +63,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -67,7 +72,7 @@ public final class LibUtils {
     public static final Direction[] DIRECTIONS = Direction.values();
     public static final int MAX_STACK_SIZE = 9999;
     public static final String NO_DROPS_TAG = "confluence:no_drops";
-    public static final EffectCure DENY_HEAL = EffectCure.get("confluence:deny_heal");
+    public static final PortEffectCure DENY_HEAL = PortEffectCure.get("confluence:deny_heal");
 
     @ApiStatus.Internal
     public static void forMixin$Inject() {}
@@ -189,12 +194,13 @@ public final class LibUtils {
     }
 
     public static int getSlotIndex(@Nullable EquipmentSlot slot) {
+        if (slot == null) return -1;
         return switch (slot) {
             case HEAD -> 0;
             case CHEST -> 1;
             case LEGS -> 2;
             case FEET -> 3;
-            case null, default -> -1;
+            default -> -1;
         };
     }
 
@@ -239,26 +245,26 @@ public final class LibUtils {
     }
 
     public static CompoundTag getItemStackNbtNoCopy(ItemStack stack) {
-        NbtComponent nbtComponent = stack.get(ConfluenceMagicLib.NBT);
+        NbtComponent nbtComponent = PortItemStackExtension.getData(stack, ConfluenceMagicLib.NBT);
         if (nbtComponent == null) {
             CompoundTag nbt = new CompoundTag();
-            stack.set(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
+            PortItemStackExtension.setData(stack, ConfluenceMagicLib.NBT, new NbtComponent(nbt));
             return nbt;
         }
         return nbtComponent.nbt();
     }
 
     public static @Nullable CompoundTag getItemStackNbtIfPresent(ItemStack stack) {
-        NbtComponent component = stack.get(ConfluenceMagicLib.NBT);
+        NbtComponent component = PortItemStackExtension.getData(stack, ConfluenceMagicLib.NBT);
         if (component == null) return null;
         return component.nbt();
     }
 
     public static void updateItemStackNbt(ItemStack stack, Consumer<CompoundTag> consumer) {
-        NbtComponent nbtComponent = stack.get(ConfluenceMagicLib.NBT);
+        NbtComponent nbtComponent = PortItemStackExtension.getData(stack, ConfluenceMagicLib.NBT);
         CompoundTag nbt = nbtComponent == null ? new CompoundTag() : nbtComponent.nbt().copy();
         consumer.accept(nbt);
-        stack.set(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
+        PortItemStackExtension.setData(stack, ConfluenceMagicLib.NBT, new NbtComponent(nbt));
     }
 
     public static String toTitleCase(String raw) {
@@ -311,31 +317,13 @@ public final class LibUtils {
         return ServerLifecycleHooks.getCurrentServer() != null && ServerLifecycleHooks.getCurrentServer().isSameThread();
     }
 
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static float cubicBezier(float t, float p0, float p1, float p2, float p3) {
-        return LibMathUtils.cubicBezier(t, p0, p1, p2, p3);
-    }
-
-    public static <T> void resetDataComponent(ItemStack itemStack, DataComponentType<T> type) {
-        T value = itemStack.getPrototype().get(type);
+    public static <T> void resetDataComponent(ItemStack stack, PortDataComponentType<T> type) {
+        T value = PortItemStackExtension.getPrototypeData(stack).get(type);
         if (value == null) {
-            itemStack.remove(type);
+            PortItemStackExtension.removeData(stack, type);
         } else {
-            itemStack.set(type, value);
+            PortItemStackExtension.setData(stack, type, value);
         }
-    }
-
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static boolean checkChance(float value, RandomSource random) {
-        return LibMathUtils.checkChance(value, random);
-    }
-
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static boolean checkChance(double value, RandomSource random) {
-        return LibMathUtils.checkChance(value, random);
     }
 
     public static <K, V> Map<K, V> convertTupleListToMap(List<Tuple<K, V>> list) {
@@ -380,7 +368,7 @@ public final class LibUtils {
             case PartEntity<?> partEntity -> partEntity.getParent();
             case OwnableEntity ownableEntity -> ownableEntity.getOwner();
             case TraceableEntity traceableEntity -> traceableEntity.getOwner();
-            case null, default -> entity;
+            default -> entity;
         };
         return owner == null ? entity : owner;
     }
@@ -412,9 +400,9 @@ public final class LibUtils {
 
     /// 较大程度地减小开销，切记要在服务器线程调用！
     public static @Nullable ChunkAccess getChunkIfLoaded(ServerChunkCache chunkSource, int cx, int cz) {
-        CompletableFuture<ChunkResult<ChunkAccess>> future = chunkSource.getChunkFutureMainThread(cx, cz, ChunkStatus.FULL, false);
-        if (future != GenerationChunkHolder.UNLOADED_CHUNK_FUTURE && future.isDone()) {
-            return future.join().orElse(null);
+        CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> future = chunkSource.getChunkFutureMainThread(cx, cz, ChunkStatus.FULL, false);
+        if (future != ChunkHolder.UNLOADED_CHUNK_FUTURE && future.isDone()) {
+            return future.join().map(Function.identity(), failure -> null);
         }
         return null;
     }
@@ -428,21 +416,11 @@ public final class LibUtils {
     public static BiomeManager getBiomeManagerThatChunkMustBeLoaded(ServerLevel level) {
         return level.getBiomeManager().withDifferentSource((qx, qy, qz) -> {
             ChunkAccess access = LibUtils.getChunkIfLoaded(level, QuartPos.toSection(qx), QuartPos.toSection(qz));
-            if (access == null) return level.registryAccess().holderOrThrow(Biomes.THE_VOID);
+            if (access == null) {
+                return PortHolderLookupExtension.Provider.holderOrThrow(level.registryAccess(), Biomes.THE_VOID);
+            }
             return access.getNoiseBiome(qx, qy, qz);
         });
-    }
-
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static int multiplyInt(int original, float factor, RandomSource random) {
-        return LibMathUtils.multiplyInt(original, factor, random);
-    }
-
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static int divideInt(int original, float factor, RandomSource random) {
-        return LibMathUtils.divideInt(original, factor, random);
     }
 
     public static boolean canHitEntity(@Nullable Entity target, @Nullable Entity owner) {

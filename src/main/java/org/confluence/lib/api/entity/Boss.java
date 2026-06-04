@@ -1,5 +1,7 @@
 package org.confluence.lib.api.entity;
 
+import PortLib.extensions.net.minecraft.network.chat.MutableComponent.PortMutableComponentExtension;
+import com.google.common.collect.Streams;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -7,7 +9,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import org.apache.commons.lang3.stream.Streams;
 import org.confluence.lib.color.GlobalColors;
 
 /// All bosses should implement this interface
@@ -37,8 +38,8 @@ public interface Boss extends Enemy, IDiscardWhenRespawnEntity {
         Level level = entity.level();
         if (!level.isClientSide && entity instanceof Boss boss) {
             if (boss.shouldShowMessage()) {
-                Component mes = Component.translatable("message.confluence.boss_spawn",
-                        entity.getDisplayName()).withColor(GlobalColors.EVENT.get()).withStyle(ChatFormatting.BOLD);
+                Component mes = PortMutableComponentExtension.withColor(Component.translatable("message.confluence.boss_spawn",
+                        entity.getDisplayName()), GlobalColors.EVENT.get()).withStyle(ChatFormatting.BOLD);
 
                 for (Player player : level.players()) {
                     player.sendSystemMessage(mes);
@@ -51,8 +52,8 @@ public interface Boss extends Enemy, IDiscardWhenRespawnEntity {
         Level level = entity.level();
         if (!level.isClientSide && entity instanceof Boss boss) {
             if (boss.shouldShowMessage()) {
-                Component mes = Component.translatable("message.confluence.boss_leave",
-                        entity.getDisplayName()).withColor(GlobalColors.EVENT.get()).withStyle(ChatFormatting.BOLD);
+                Component mes = PortMutableComponentExtension.withColor(Component.translatable("message.confluence.boss_leave",
+                        entity.getDisplayName()), GlobalColors.EVENT.get()).withStyle(ChatFormatting.BOLD);
 
                 for (Player player : level.players()) {
                     player.sendSystemMessage(mes);
@@ -62,6 +63,6 @@ public interface Boss extends Enemy, IDiscardWhenRespawnEntity {
     }
 
     static boolean noBossInWorld(ServerLevel level) {
-        return Streams.of(level.getAllEntities()).noneMatch(entity -> entity instanceof Boss);
+        return Streams.stream(level.getAllEntities()).noneMatch(entity -> entity instanceof Boss);
     }
 }

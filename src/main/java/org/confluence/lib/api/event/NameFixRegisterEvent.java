@@ -2,8 +2,8 @@ package org.confluence.lib.api.event;
 
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.bus.api.Event;
-import net.neoforged.fml.event.IModBusEvent;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.fml.event.IModBusEvent;
 
 public abstract class NameFixRegisterEvent extends Event implements IModBusEvent {
     private final ImmutableMap.Builder<String, String> builder;

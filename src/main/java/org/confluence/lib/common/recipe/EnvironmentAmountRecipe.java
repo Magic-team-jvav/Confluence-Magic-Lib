@@ -5,11 +5,11 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import org.confluence.lib.util.LibStreamCodecUtils;
+import org.mesdag.portlib.network.codec.PortStreamCodec;
 
 public abstract class EnvironmentAmountRecipe extends AbstractAmountRecipe<EnvironmentRecipeInput> {
     protected final EnvironmentLevelAccess.Matcher environment;
@@ -36,8 +36,8 @@ public abstract class EnvironmentAmountRecipe extends AbstractAmountRecipe<Envir
         ).apply(instance, factory));
     }
 
-    public static <R extends EnvironmentAmountRecipe> StreamCodec<RegistryFriendlyByteBuf, R> environmentShapelessSerializerSteamCodec(Function3<ItemStack, NonNullList<Ingredient>, EnvironmentLevelAccess.Matcher, R> factory) {
-        return StreamCodec.composite(
+    public static <R extends EnvironmentAmountRecipe> PortStreamCodec<RegistryFriendlyByteBuf, R> environmentShapelessSerializerSteamCodec(Function3<ItemStack, NonNullList<Ingredient>, EnvironmentLevelAccess.Matcher, R> factory) {
+        return PortPortStreamCodec.composite(
                 ItemStack.STREAM_CODEC, r -> r.result,
                 LibStreamCodecUtils.INGREDIENTS, AbstractAmountRecipe::getIngredients,
                 EnvironmentLevelAccess.Matcher.STREAM_CODEC, EnvironmentAmountRecipe::getEnvironment,

@@ -2,7 +2,7 @@ package org.confluence.lib.api.event;
 
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.neoforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 
 public class ProcessCriticalDamageEvent extends LivingEvent {
     private final DamageSource damageSource;

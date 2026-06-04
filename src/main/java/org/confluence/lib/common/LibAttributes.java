@@ -1,10 +1,11 @@
 package org.confluence.lib.common;
 
+import PortLib.extensions.net.minecraft.world.entity.ai.attributes.Attribute.PortAttributeExtension;
+import cpw.mods.util.Lazy;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import it.unimi.dsi.fastutil.objects.ObjectDoublePair;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
@@ -20,16 +21,16 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.Tags;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.LibStartupConfig;
 import org.confluence.lib.api.event.ArmorPenetrationEvent;
 import org.confluence.lib.api.event.CustomPickupRangeEvent;
-import org.confluence.lib.integration.apothic.ApothicHelper;
 import org.confluence.lib.util.LibMathUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import org.mesdag.portlib.event.PortEventHandler;
+import org.mesdag.portlib.wrapper.common.PortTags;
 
 import java.util.HashMap;
 import java.util.List;
@@ -64,7 +65,7 @@ public final class LibAttributes {
                 "armor_penetration", ConfluenceMagicLib.ARMOR_PENETRATION
         );
 
-        ApothicHelper.preset(MAP);
+//        ApothicHelper.preset(MAP);
 
         List<? extends String> attributes = LibStartupConfig.ATTRIBUTE_REPLACE.get();
         for (String attribute : attributes) {
@@ -78,7 +79,7 @@ public final class LibAttributes {
                 ConfluenceMagicLib.LOGGER.warn("Unsupported attribute: {}", split[0].strip());
                 continue;
             }
-            Optional<Holder.Reference<Attribute>> optional = BuiltInRegistries.ATTRIBUTE.getHolder(ResourceLocation.parse(split[1].strip()));
+            Optional<Holder<Attribute>> optional = ForgeRegistries.ATTRIBUTES.getHolder(ResourceLocation.parse(split[1].strip()));
             if (optional.isEmpty()) {
                 ConfluenceMagicLib.LOGGER.warn("Unknown attribute: {}", split[1].strip());
             } else {
@@ -91,13 +92,13 @@ public final class LibAttributes {
     public static void applyToArrow(LivingEntity living, AbstractArrow abstractArrow) {
         AttributeInstance instance;
         if (!hasCustomAttribute(ConfluenceMagicLib.RANGED_VELOCITY)) {
-            instance = living.getAttribute(ConfluenceMagicLib.RANGED_VELOCITY);
+            instance = living.getAttribute(ConfluenceMagicLib.RANGED_VELOCITY.get());
             if (instance != null) {
                 abstractArrow.setDeltaMovement(abstractArrow.getDeltaMovement().scale(instance.getValue()));
             }
         }
         if (!abstractArrow.isCritArrow() && !hasCustomAttribute(ConfluenceMagicLib.CRITICAL_CHANCE)) {
-            instance = living.getAttribute(ConfluenceMagicLib.CRITICAL_CHANCE);
+            instance = living.getAttribute(ConfluenceMagicLib.CRITICAL_CHANCE.get());
             if (instance != null) {
                 abstractArrow.setCritArrow(LibMathUtils.checkChance(instance.getValue(), living.getRandom()));
             }
@@ -118,7 +119,7 @@ public final class LibAttributes {
     @ApiStatus.Internal
     public static boolean applyDodge(LivingEntity victim) {
         if (hasCustomAttribute(ConfluenceMagicLib.DODGE_CHANCE)) return false;
-        AttributeInstance instance = victim.getAttribute(ConfluenceMagicLib.DODGE_CHANCE);
+        AttributeInstance instance = victim.getAttribute(ConfluenceMagicLib.DODGE_CHANCE.get());
         if (instance == null) return false;
         return LibMathUtils.checkChance(instance.getValue(), victim.getRandom());
     }
@@ -129,7 +130,7 @@ public final class LibAttributes {
                 damageSource.is(DamageTypeTags.IS_PROJECTILE) &&
                 hasCustomAttribute(ConfluenceMagicLib.RANGED_DAMAGE)
         ) {
-            AttributeInstance instance = living.getAttribute(ConfluenceMagicLib.RANGED_DAMAGE);
+            AttributeInstance instance = living.getAttribute(ConfluenceMagicLib.RANGED_DAMAGE.get());
             if (instance != null) {
                 return amount * (float) instance.getValue();
             }
@@ -140,10 +141,10 @@ public final class LibAttributes {
     @ApiStatus.Internal
     public static float applyMagicDamage(@Nullable Entity attacker, DamageSource damageSource, float amount) {
         if (attacker instanceof LivingEntity living &&
-                damageSource.is(Tags.DamageTypes.IS_MAGIC) &&
+                damageSource.is(PortTags.DamageTypes.IS_MAGIC) &&
                 hasCustomAttribute(ConfluenceMagicLib.MAGIC_DAMAGE)
         ) {
-            AttributeInstance instance = living.getAttribute(ConfluenceMagicLib.MAGIC_DAMAGE);
+            AttributeInstance instance = living.getAttribute(ConfluenceMagicLib.MAGIC_DAMAGE.get());
             if (instance != null) {
                 return amount * (float) instance.getValue();
             }
@@ -155,10 +156,10 @@ public final class LibAttributes {
     public static float applyArmorPenetration(LivingEntity victim, DamageSource damageSource, float armorValue) {
         if (damageSource.getEntity() instanceof LivingEntity attacker) {
             if (!hasCustomAttribute(ConfluenceMagicLib.ARMOR_PENETRATION)) {
-                AttributeInstance instance = attacker.getAttribute(ConfluenceMagicLib.ARMOR_PENETRATION);
+                AttributeInstance instance = attacker.getAttribute(ConfluenceMagicLib.ARMOR_PENETRATION.get());
                 if (instance != null) armorValue -= (float) instance.getValue();
             }
-            float penetration = NeoForge.EVENT_BUS.post(new ArmorPenetrationEvent(victim, damageSource, armorValue)).getPenetration();
+            float penetration = PortEventHandler.postEventWithReturn(new ArmorPenetrationEvent(victim, damageSource, armorValue)).getPenetration();
             return Math.max(armorValue - penetration, 0.0F);
         }
         return armorValue;
@@ -167,7 +168,7 @@ public final class LibAttributes {
     @ApiStatus.Internal
     public static void applyPickupRange(Player player) {
         CustomPickupRangeEvent event = new CustomPickupRangeEvent(player);
-        NeoForge.EVENT_BUS.post(event);
+        PortEventHandler.postEvent(event);
         if (event.getRanges() == null) return;
         ObjectCollection<ObjectDoublePair<Predicate<ItemStack>>> values = event.getRanges().values();
         double maxRange = values.stream().mapToDouble(ObjectDoublePair::rightDouble).max().orElse(0.0);
@@ -216,9 +217,11 @@ public final class LibAttributes {
         return getCustomAttribute(ConfluenceMagicLib.ARMOR_PENETRATION);
     }
 
+    private static final Lazy<Holder<Attribute>> ATTACK_DAMAGE = Lazy.of(() -> PortAttributeExtension.wrap(Attributes.ATTACK_DAMAGE));
+
     /// 近战伤害
     public static Holder<Attribute> getAttackDamage() {
-        return Attributes.ATTACK_DAMAGE;
+        return ATTACK_DAMAGE.get();
     }
 
     /// 远程伤害

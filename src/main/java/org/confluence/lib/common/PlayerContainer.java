@@ -8,11 +8,12 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.common.util.INBTSerializable;
+import org.mesdag.portlib.diff.mixin.SimpleContainerAccessor;
+import org.mesdag.portlib.wrapper.IPortNBTSerializable;
 
 import javax.annotation.Nullable;
 
-public class PlayerContainer<C extends BlockEntity & PlayerContainer.ValidEntity> extends SimpleContainer implements INBTSerializable<ListTag> {
+public class PlayerContainer<C extends BlockEntity & PlayerContainer.ValidEntity> extends SimpleContainer implements IPortNBTSerializable<ListTag> {
     @Nullable
     protected C activeContainer;
 
@@ -29,12 +30,14 @@ public class PlayerContainer<C extends BlockEntity & PlayerContainer.ValidEntity
     }
 
     public void setItemNoUpdate(int index, ItemStack stack) {
-        getItems().set(index, stack);
-        stack.limitSize(this.getMaxStackSize(stack));
+        ((SimpleContainerAccessor) this).getItems().set(index, stack);
+        if (!stack.isEmpty() && stack.getCount() > getMaxStackSize()) {
+            stack.setCount(getMaxStackSize());
+        }
     }
 
     @Override
-    public void fromTag(ListTag tag, HolderLookup.Provider levelRegistry) {
+    public void fromTag(ListTag tag) {
         for (int i = 0; i < this.getContainerSize(); i++) {
             setItemNoUpdate(i, ItemStack.EMPTY);
         }
@@ -43,7 +46,7 @@ public class PlayerContainer<C extends BlockEntity & PlayerContainer.ValidEntity
             CompoundTag compoundtag = tag.getCompound(k);
             int j = compoundtag.getByte("Slot") & 255;
             if (j < getContainerSize()) {
-                setItemNoUpdate(j, ItemStack.parse(levelRegistry, compoundtag).orElse(ItemStack.EMPTY));
+                setItemNoUpdate(j, ItemStack.of(compoundtag));
             }
         }
 
@@ -51,7 +54,7 @@ public class PlayerContainer<C extends BlockEntity & PlayerContainer.ValidEntity
     }
 
     @Override
-    public ListTag createTag(HolderLookup.Provider levelRegistry) {
+    public ListTag createTag() {
         ListTag listtag = new ListTag();
 
         for (int i = 0; i < getContainerSize(); i++) {
@@ -59,7 +62,7 @@ public class PlayerContainer<C extends BlockEntity & PlayerContainer.ValidEntity
             if (!itemstack.isEmpty()) {
                 CompoundTag compoundtag = new CompoundTag();
                 compoundtag.putByte("Slot", (byte) i);
-                listtag.add(itemstack.save(levelRegistry, compoundtag));
+                listtag.add(itemstack.save(compoundtag));
             }
         }
 
@@ -79,12 +82,12 @@ public class PlayerContainer<C extends BlockEntity & PlayerContainer.ValidEntity
 
     @Override
     public ListTag serializeNBT(HolderLookup.Provider provider) {
-        return createTag(provider);
+        return createTag();
     }
 
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, ListTag nbt) {
-        fromTag(nbt, provider);
+        fromTag(nbt);
     }
 
     public interface ValidEntity {

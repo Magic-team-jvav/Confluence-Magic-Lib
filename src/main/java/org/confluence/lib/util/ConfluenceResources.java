@@ -1,7 +1,7 @@
 package org.confluence.lib.util;
 
 import net.minecraft.server.packs.PathPackResources;
-import net.neoforged.neoforgespi.locating.IModFile;
+import net.minecraftforge.forgespi.locating.IModFile;
 
 public final class ConfluenceResources extends PathPackResources.PathResourcesSupplier {
     public ConfluenceResources(IModFile modFile, String sourcePath) {

@@ -13,8 +13,6 @@ import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
@@ -31,6 +29,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import org.mesdag.portlib.network.codec.PortByteBufCodecs;
+import org.mesdag.portlib.network.codec.PortStreamCodec;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -131,10 +131,10 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
                 Codec.BOOL.lenientOptionalFieldOf("graveyard", false).forGetter(Matcher::graveyard)
         ).apply(instance, Matcher::new));
         public static final MapCodec<Matcher> MAP_CODEC = CODEC.lenientOptionalFieldOf("environment", EMPTY);
-        public static final StreamCodec<RegistryFriendlyByteBuf, Matcher> STREAM_CODEC = StreamCodec.composite(
-                ByteBufCodecs.optional(ByteBufCodecs.holderSet(Registries.BIOME)), Matcher::biome,
-                ByteBufCodecs.optional(SearchContext.STREAM_CODEC), Matcher::block,
-                ByteBufCodecs.BOOL, Matcher::graveyard,
+        public static final PortStreamCodec<RegistryFriendlyByteBuf, Matcher> STREAM_CODEC = PortPortStreamCodec.composite(
+                PortByteBufCodecs.optional(PortByteBufCodecs.holderSet(Registries.BIOME)), Matcher::biome,
+                PortByteBufCodecs.optional(SearchContext.STREAM_CODEC), Matcher::block,
+                PortByteBufCodecs.BOOL, Matcher::graveyard,
                 Matcher::new
         );
 
@@ -164,11 +164,7 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
 
         @Override
         public boolean equals(Object o) {
-            return o == this || (o instanceof Matcher(
-                    Optional<HolderSet<Biome>> biome1,
-                    Optional<SearchContext> block1,
-                    boolean ectoMist1
-            ) && graveyard == ectoMist1 && Objects.equals(block, block1) && Objects.equals(biome, biome1));
+            return o == this || (o instanceof Matcher m && graveyard == m.graveyard() && Objects.equals(block, m.block()) && Objects.equals(biome, m.biome()));
         }
 
         @Override
@@ -214,11 +210,11 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
                 StatePropertiesPredicate.CODEC.listOf().lenientOptionalFieldOf("state_predicates", List.of()).forGetter(SearchContext::statePredicates),
                 RegistryCodecs.homogeneousList(Registries.FLUID).lenientOptionalFieldOf("fluids").forGetter(SearchContext::fluids)
         ).apply(instance, SearchContext::new));
-        public static final StreamCodec<RegistryFriendlyByteBuf, SearchContext> STREAM_CODEC = StreamCodec.composite(
-                ByteBufCodecs.VAR_INT, SearchContext::inflate,
-                ByteBufCodecs.optional(ByteBufCodecs.holderSet(Registries.BLOCK)), SearchContext::blocks,
-                StatePropertiesPredicate.STREAM_CODEC.apply(ByteBufCodecs.list()), SearchContext::statePredicates,
-                ByteBufCodecs.optional(ByteBufCodecs.holderSet(Registries.FLUID)), SearchContext::fluids,
+        public static final PortStreamCodec<RegistryFriendlyByteBuf, SearchContext> STREAM_CODEC = PortPortStreamCodec.composite(
+                PortByteBufCodecs.VAR_INT, SearchContext::inflate,
+                PortByteBufCodecs.optional(PortByteBufCodecs.holderSet(Registries.BLOCK)), SearchContext::blocks,
+                StatePropertiesPredicate.STREAM_CODEC.apply(PortByteBufCodecs.list()), SearchContext::statePredicates,
+                PortByteBufCodecs.optional(PortByteBufCodecs.holderSet(Registries.FLUID)), SearchContext::fluids,
                 SearchContext::new
         );
 
@@ -248,13 +244,11 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
                 list.add(Component.translatable("jei.tooltip.environment.block.predicates").withStyle(ChatFormatting.GRAY));
                 for (StatePropertiesPredicate.PropertyMatcher property : predicate.properties()) {
                     String s = property.name() + '=';
-                    if (property.valueMatcher() instanceof StatePropertiesPredicate.ExactMatcher(
-                            String value
-                    )) {
-                        s += value;
-                    } else if (property.valueMatcher() instanceof StatePropertiesPredicate.RangedMatcher(
-                            Optional<String> minValue, Optional<String> maxValue
-                    )) {
+                    if (property.valueMatcher() instanceof StatePropertiesPredicate.ExactMatcher exact) {
+                        s += exact.value();
+                    } else if (property.valueMatcher() instanceof StatePropertiesPredicate.RangedMatcher ranged) {
+                        Optional<String> minValue = ranged.minValue();
+                        Optional<String> maxValue = ranged.maxValue();
                         if (minValue.isPresent()) {
                             if (maxValue.isPresent()) {
                                 s += '[' + minValue.get() + ", " + maxValue.get() + ']';

@@ -1,5 +1,6 @@
 package org.confluence.lib.util;
 
+import PortLib.extensions.java.util.List.PortListExtension;
 import it.unimi.dsi.fastutil.longs.LongArraySet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.BlockPos;
@@ -13,7 +14,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3d;
+import org.joml.Vector3f;
 import org.joml.Vector3i;
 
 import java.util.ArrayList;
@@ -287,32 +288,31 @@ public final class VectorUtils {
         return new Vec3(x, y, z);
     }
 
-    public static Vector3d toVector3d(BlockPos blockPos) {
-        Vec3 center = blockPos.getCenter();
-        return new Vector3d(center.x, center.y, center.z);
+    public static Vector3f toVector3f(BlockPos pos) {
+        return new Vector3f(pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F);
     }
 
-    public static BlockPos fromVector3d(Vector3d vector3d) {
+    public static BlockPos fromVector3f(Vector3f vector3d) {
         return new BlockPos(Mth.floor(vector3d.x), Mth.floor(vector3d.y), Mth.floor(vector3d.z));
     }
 
-    public static void lightningPathList(List<Vector3d> locationList, double dist, float move, RandomSource random) {
-        double distSqr = dist * dist;
+    public static void lightningPathList(List<Vector3f> locationList, float dist, float move, RandomSource random) {
+        float distSqr = dist * dist;
         boolean refined;
         do {
             refined = false;
             for (int i = 0; i < locationList.size() - 1; i++) {
-                Vector3d point1 = locationList.get(i);
-                Vector3d point2 = locationList.get(i + 1);
-                double distanceSqr = point2.distanceSquared(point1);
+                Vector3f point1 = locationList.get(i);
+                Vector3f point2 = locationList.get(i + 1);
+                float distanceSqr = point2.distanceSquared(point1);
                 if (distanceSqr > distSqr) {
-                    Vector3d midpoint = new Vector3d();
-                    point1.add(point2, midpoint).mul(0.5);
-                    double offset = Math.sqrt(distanceSqr) * move;
-                    double twoOffset = offset * 2;
-                    midpoint.x = midpoint.x + (random.nextDouble() - 0.5) * twoOffset;
-                    midpoint.y = midpoint.y + (random.nextDouble() - 0.5) * twoOffset;
-                    midpoint.z = midpoint.z + (random.nextDouble() - 0.5) * twoOffset;
+                    Vector3f midpoint = new Vector3f();
+                    point1.add(point2, midpoint).mul(0.5F);
+                    float offset = Mth.sqrt(distanceSqr) * move;
+                    float twoOffset = offset * 2;
+                    midpoint.x = midpoint.x + (random.nextFloat() - 0.5F) * twoOffset;
+                    midpoint.y = midpoint.y + (random.nextFloat() - 0.5F) * twoOffset;
+                    midpoint.z = midpoint.z + (random.nextFloat() - 0.5F) * twoOffset;
                     locationList.add(i + 1, midpoint);
                     refined = true;
                 }
@@ -320,50 +320,48 @@ public final class VectorUtils {
         } while (refined);
     }
 
-    /**
-     * 生成多層次、帶有隨機分支的閃電路徑列表
-     *
-     * @param initialLocationList 初始的閃電路徑節點列表（起點和終點即可）
-     * @param dist                相鄰兩個閃電節點之間的基礎間距（用於細分折線，決定閃電的顆粒度/鋸齒密度）
-     * @param move                節點細分時的偏移係數（控制閃電主幹的「抖動」幅度或彎曲程度，值越大越扭曲，超過0.4容易陷入不可控循環，推薦0.125比較寫實）
-     * @param random              隨機數生成器實例
-     * @param layer               閃電的遞迴/分裂層數（控制分支的層級深度，例如 1 只有主幹分出的一次分支，2 會有二級分支）
-     * @param branchPercent       分支長度係數（控制分支相對於主幹的基礎長度比例，結合隨機值決定分支到底有多長）
-     * @return 包含所有生成閃電路徑的列表（外層 List 是不同的閃電鏈，內層 List 是單條閃電的軌跡點坐標）
-     */
-    public static List<List<Vector3d>> lightningPathList(List<Vector3d> initialLocationList, double dist, float move, RandomSource random, int layer, float branchPercent) {
-        List<List<Vector3d>> listOfLightning = new ArrayList<>();
+    /// 生成多層次、帶有隨機分支的閃電路徑列表
+    ///
+    /// @param initialLocationList 初始的閃電路徑節點列表（起點和終點即可）
+    /// @param dist                相鄰兩個閃電節點之間的基礎間距（用於細分折線，決定閃電的顆粒度/鋸齒密度）
+    /// @param move                節點細分時的偏移係數（控制閃電主幹的「抖動」幅度或彎曲程度，值越大越扭曲，超過0.4容易陷入不可控循環，推薦0.125比較寫實）
+    /// @param random              隨機數生成器實例
+    /// @param layer               閃電的遞迴/分裂層數（控制分支的層級深度，例如 1 只有主幹分出的一次分支，2 會有二級分支）
+    /// @param branchPercent       分支長度係數（控制分支相對於主幹的基礎長度比例，結合隨機值決定分支到底有多長）
+    /// @return 包含所有生成閃電路徑的列表（外層 List 是不同的閃電鏈，內層 List 是單條閃電的軌跡點坐標）
+    public static List<List<Vector3f>> lightningPathList(List<Vector3f> initialLocationList, float dist, float move, RandomSource random, int layer, float branchPercent) {
+        List<List<Vector3f>> listOfLightning = new ArrayList<>();
 
-        List<List<Vector3d>> currentLayerPaths = new ArrayList<>();
+        List<List<Vector3f>> currentLayerPaths = new ArrayList<>();
         currentLayerPaths.add(new ArrayList<>(initialLocationList));
 
         for (int i = 0; i < layer; i++) {
-            List<List<Vector3d>> nextLayerPaths = new ArrayList<>();
+            List<List<Vector3f>> nextLayerPaths = new ArrayList<>();
 
-            for (List<Vector3d> path : currentLayerPaths) {
-                List<Vector3d> refinedPath = new ArrayList<>(path);
+            for (List<Vector3f> path : currentLayerPaths) {
+                List<Vector3f> refinedPath = new ArrayList<>(path);
                 lightningPathList(refinedPath, dist, move, random);
                 listOfLightning.add(refinedPath);
 
                 if (refinedPath.size() < 2) continue;
 
-                Vector3d vctBefore = refinedPath.getFirst();
-                Vector3d lastVct = refinedPath.getLast();
+                Vector3f vctBefore = PortListExtension.getFirst(refinedPath);
+                Vector3f lastVct = PortListExtension.getLast(refinedPath);
 
                 for (int j = 1; j < refinedPath.size(); j++) {
-                    Vector3d vct = refinedPath.get(j);
+                    Vector3f vct = refinedPath.get(j);
 
-                    double percent = 0.02 * (1 - ((double) j / refinedPath.size()));
-                    if (random.nextDouble() < percent) {
-                        Vector3d branchDirection = new Vector3d(vct).sub(vctBefore).normalize().mul(vctBefore.distance(lastVct) * (branchPercent + random.nextDouble() * 0.1));
+                    float percent = 0.02F * (1 - ((float) j / refinedPath.size()));
+                    if (random.nextFloat() < percent) {
+                        Vector3f branchDirection = new Vector3f(vct).sub(vctBefore).normalize().mul(vctBefore.distance(lastVct) * (branchPercent + random.nextFloat() * 0.1F));
 
-                        Vector3d randomOffset = new Vector3d(random.nextDouble() - 0.5, random.nextDouble() - 0.5, random.nextDouble() - 0.5)
-                                .normalize().mul(branchDirection.length() * 0.5);
+                        Vector3f randomOffset = new Vector3f(random.nextFloat() - 0.5F, random.nextFloat() - 0.5F, random.nextFloat() - 0.5F)
+                                .normalize().mul(branchDirection.length() * 0.5F);
 
-                        Vector3d branchEnd = new Vector3d(vctBefore).add(branchDirection).add(randomOffset);
+                        Vector3f branchEnd = new Vector3f(vctBefore).add(branchDirection).add(randomOffset);
 
-                        List<Vector3d> newBranch = new ArrayList<>();
-                        newBranch.add(new Vector3d(vctBefore));
+                        List<Vector3f> newBranch = new ArrayList<>();
+                        newBranch.add(new Vector3f(vctBefore));
                         newBranch.add(branchEnd);
                         nextLayerPaths.add(newBranch);
                     }
@@ -379,11 +377,11 @@ public final class VectorUtils {
         return listOfLightning;
     }
 
-    public static Map<Vector3d, BooleanStorage4> mazePos(Vector3d centerPos, double distance, int layer, RandomSource random, float difficulty) {
+    public static Map<Vector3f, BooleanStorage4> mazePos(Vector3f centerPos, float distance, int layer, RandomSource random, float difficulty) {
         Map<Vector3i, BooleanStorage4> nowMap = new HashMap<>();
         Map<Vector3i, BooleanStorage4> thanMap = new HashMap<>();
         Map<Vector3i, BooleanStorage4> setMap = new HashMap<>();
-        Map<Vector3d, BooleanStorage4> outMap = new HashMap<>();
+        Map<Vector3f, BooleanStorage4> outMap = new HashMap<>();
         thanMap.put(new Vector3i(), new BooleanStorage4());
         int maxCount = Mth.square(layer * 2 + 1);
         while (setMap.size() < maxCount) {
@@ -416,10 +414,10 @@ public final class VectorUtils {
             Vector3i key = entry.getKey();
             int x = key.x;
             int z = key.z;
-            double dX = x * distance + centerPos.x;
-            double dZ = z * distance + centerPos.z;
+            float dX = x * distance + centerPos.x;
+            float dZ = z * distance + centerPos.z;
             BooleanStorage4 outList = entry.getValue().copy();
-            outMap.put(new Vector3d(dX, centerPos.y, dZ), outList);
+            outMap.put(new Vector3f(dX, centerPos.y, dZ), outList);
         }
         return outMap;
     }
@@ -434,17 +432,17 @@ public final class VectorUtils {
         return 0;
     }
 
-    public static void list8(List<Vector3d> list, BlockPos centerPos, int x, int y, int z, RandomSource random) {
+    public static void list8(List<Vector3f> list, BlockPos centerPos, int x, int y, int z, RandomSource random) {
         for (int i = 0; i < 8; i++) {
             if (!LibMathUtils.checkChance(0.125F, random)) continue;
-            list.add(new Vector3d(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1))));
+            list.add(new Vector3f(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1))));
         }
     }
 
-    public static void list8(List<Vector3d> list, BlockPos centerPos, int x, int y, int z, RandomSource random, int checkY) {
+    public static void list8(List<Vector3f> list, BlockPos centerPos, int x, int y, int z, RandomSource random, int checkY) {
         for (int i = 0; i < 8; i++) {
             if (!LibMathUtils.checkChance(0.125F, random)) continue;
-            Vector3d pos = new Vector3d(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1)));
+            Vector3f pos = new Vector3f(centerPos.getX() + (x * ((i < 4) ? 1 : -1)), centerPos.getY() + (y * ((i % 4 < 2) ? 1 : -1)), centerPos.getZ() + (z * ((i % 2 < 1) ? 1 : -1)));
             if (pos.y < checkY) {
                 list.add(pos);
             }
@@ -452,52 +450,52 @@ public final class VectorUtils {
     }
 
     /// 计算点到线段的投影位置
-    public static Vector3d getProjectionOnLineSegment(Vector3d pointA, Vector3d pointB, Vector3d pointP) {
-        Vector3d direction = new Vector3d(pointB);
+    public static Vector3f getProjectionOnLineSegment(Vector3f pointA, Vector3f pointB, Vector3f pointP) {
+        Vector3f direction = new Vector3f(pointB);
         direction.sub(pointA);
 
-        Vector3d pointToP = new Vector3d(pointP);
+        Vector3f pointToP = new Vector3f(pointP);
         pointToP.sub(pointA);
 
-        double dotProduct = pointToP.dot(direction);
-        double directionLengthSquared = direction.dot(direction);
+        float dotProduct = pointToP.dot(direction);
+        float directionLengthSquared = direction.dot(direction);
 
-        double t = dotProduct / directionLengthSquared;
+        float t = dotProduct / directionLengthSquared;
 
-        Vector3d projection = new Vector3d(direction);
-        projection = new Vector3d(projection.x * t, projection.y * t, projection.z * t);
+        Vector3f projection = new Vector3f(direction);
+        projection = new Vector3f(projection.x * t, projection.y * t, projection.z * t);
         projection.add(pointA);
 
         return projection;
     }
 
     /// 计算点到线段的距离
-    public static double getDistanceToLineSegment(Vector3d pointA, Vector3d pointB, Vector3d pointP) {
-        Vector3d projection = getProjectionOnLineSegment(pointA, pointB, pointP);
-        Vector3d distanceVector = new Vector3d(pointP);
+    public static float getDistanceToLineSegment(Vector3f pointA, Vector3f pointB, Vector3f pointP) {
+        Vector3f projection = getProjectionOnLineSegment(pointA, pointB, pointP);
+        Vector3f distanceVector = new Vector3f(pointP);
         distanceVector.sub(projection);
         return distanceVector.length();
     }
 
     /// 判断垂足是否在线段上
-    public static boolean isProjectionBetweenPoints(Vector3d pointA, Vector3d pointB, Vector3d projection) {
-        Vector3d point2 = getProjectionOnLineSegment(pointA, pointB, projection);
-        double xMax = Math.max(pointA.x, pointB.x) + 0.5;
-        double xMin = Math.min(pointA.x, pointB.x) - 0.5;
-        double yMax = Math.max(pointA.y, pointB.y) + 0.5;
-        double yMin = Math.min(pointA.y, pointB.y) - 0.5;
-        double zMax = Math.max(pointA.z, pointB.z) + 0.5;
-        double zMin = Math.min(pointA.z, pointB.z) - 0.5;
+    public static boolean isProjectionBetweenPoints(Vector3f pointA, Vector3f pointB, Vector3f projection) {
+        Vector3f point2 = getProjectionOnLineSegment(pointA, pointB, projection);
+        float xMax = Math.max(pointA.x, pointB.x) + 0.5F;
+        float xMin = Math.min(pointA.x, pointB.x) - 0.5F;
+        float yMax = Math.max(pointA.y, pointB.y) + 0.5F;
+        float yMin = Math.min(pointA.y, pointB.y) - 0.5F;
+        float zMax = Math.max(pointA.z, pointB.z) + 0.5F;
+        float zMin = Math.min(pointA.z, pointB.z) - 0.5F;
         return point2.x < xMax && point2.x > xMin && point2.y < yMax && point2.y > yMin && point2.z < zMax && point2.z > zMin;
     }
 
     /// 生成坐标列表
     ///
     /// 生成球体坐标列表，带有随机比例
-    public static List<Vector3d> ballPos(double radiusD, BlockPos centerPos, float chance, RandomSource random) {
-        List<Vector3d> list = new ArrayList<>();
+    public static List<Vector3f> ballPos(float radiusD, BlockPos centerPos, float chance, RandomSource random) {
+        List<Vector3f> list = new ArrayList<>();
         int radius = (int) radiusD + 1;
-        double radius2 = radiusD * radiusD;
+        float radius2 = radiusD * radiusD;
         int x2;
         int y2;
         float chance8 = chance * 8;
@@ -516,14 +514,14 @@ public final class VectorUtils {
     }
 
     /// 生成椭球体坐标列表，带有随机比例
-    public static List<Vector3d> ellipsoidPos(double radiusDX, double radiusDY, double radiusDZ, BlockPos centerPos, float chance, RandomSource random) {
-        List<Vector3d> list = new ArrayList<>();
+    public static List<Vector3f> ellipsoidPos(float radiusDX, float radiusDY, float radiusDZ, BlockPos centerPos, float chance, RandomSource random) {
+        List<Vector3f> list = new ArrayList<>();
         int radiusX = Mth.ceil(radiusDX);
         int radiusY = Mth.ceil(radiusDY);
         int radiusZ = Mth.ceil(radiusDZ);
-        double inv_rX = LibMathUtils.invertSquare(radiusDX);
-        double inv_rY = LibMathUtils.invertSquare(radiusDY);
-        double inv_rZ = LibMathUtils.invertSquare(radiusDZ);
+        float inv_rX = LibMathUtils.invertSquare(radiusDX);
+        float inv_rY = LibMathUtils.invertSquare(radiusDY);
+        float inv_rZ = LibMathUtils.invertSquare(radiusDZ);
         float chance8 = chance * 8;
         for (int x = 0; x < radiusX; x++) {
             int x2 = x * x;
@@ -540,17 +538,17 @@ public final class VectorUtils {
     }
 
     /// 生成椭球体坐标列表，带有内径、随机比例、最大y坐标
-    public static List<Vector3d> ellipsoidPos(double radiusDXIn, double radiusDYIn, double radiusDZIn, double radiusDXOut, double radiusDYOut, double radiusDZOut, BlockPos centerPos, float chance, RandomSource random, int checkY) {
-        List<Vector3d> list = new ArrayList<>();
+    public static List<Vector3f> ellipsoidPos(float radiusDXIn, float radiusDYIn, float radiusDZIn, float radiusDXOut, float radiusDYOut, float radiusDZOut, BlockPos centerPos, float chance, RandomSource random, int checkY) {
+        List<Vector3f> list = new ArrayList<>();
         int radiusX = Mth.ceil(radiusDXOut);
         int radiusY = Mth.ceil(radiusDYOut);
         int radiusZ = Mth.ceil(radiusDZOut);
-        double inv_rXOut = LibMathUtils.invertSquare(radiusDXOut);
-        double inv_rYOut = LibMathUtils.invertSquare(radiusDYOut);
-        double inv_rZOut = LibMathUtils.invertSquare(radiusDZOut);
-        double inv_rXIn = LibMathUtils.invertSquare(radiusDXIn);
-        double inv_rYIn = LibMathUtils.invertSquare(radiusDYIn);
-        double inv_rZIn = LibMathUtils.invertSquare(radiusDZIn);
+        float inv_rXOut = LibMathUtils.invertSquare(radiusDXOut);
+        float inv_rYOut = LibMathUtils.invertSquare(radiusDYOut);
+        float inv_rZOut = LibMathUtils.invertSquare(radiusDZOut);
+        float inv_rXIn = LibMathUtils.invertSquare(radiusDXIn);
+        float inv_rYIn = LibMathUtils.invertSquare(radiusDYIn);
+        float inv_rZIn = LibMathUtils.invertSquare(radiusDZIn);
         float chance8 = chance * 8;
         for (int x = 0; x < radiusX; x++) {
             int x2 = x * x;
@@ -571,10 +569,10 @@ public final class VectorUtils {
     }
 
     /// 生成螺旋形坐标列表
-    public static List<Vector3d> rotateCloudPos(float rotate, float rotateStep, double length, double lengthStep, int count, BlockPos centerPos) {
-        List<Vector3d> poses = new ArrayList<>();
+    public static List<Vector3f> rotateCloudPos(float rotate, float rotateStep, float length, float lengthStep, int count, BlockPos centerPos) {
+        List<Vector3f> poses = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            poses.add(new Vector3d(
+            poses.add(new Vector3f(
                     centerPos.getX() + (length + lengthStep * i) * Mth.cos(rotate + rotateStep * i),
                     centerPos.getY(),
                     centerPos.getZ() + (length + lengthStep * i) * Mth.sin(rotate + rotateStep * i)
@@ -584,10 +582,10 @@ public final class VectorUtils {
     }
 
     /// 生成环形坐标列表
-    public static void roundPos(BlockPos centerPos, double radius, RandomSource random, List<Vector3d> list, int offset, int rotate, float start) {
+    public static void roundPos(BlockPos centerPos, float radius, RandomSource random, List<Vector3f> list, int offset, int rotate, float start) {
         float rStep = Mth.TWO_PI / rotate;
         for (int i = 0; i < rotate; i++) {
-            list.add(VectorUtils.toVector3d(centerPos.offset(
+            list.add(VectorUtils.toVector3f(centerPos.offset(
                     Mth.floor(Mth.cos(rStep * i + start) * radius) + random.nextInt(-offset, offset + 1),
                     0,
                     Mth.floor(Mth.sin(rStep * i + start) * radius) + random.nextInt(-offset, offset + 1)
@@ -596,7 +594,7 @@ public final class VectorUtils {
     }
 
     /// 生成任意角度圆台坐标列表
-    public static List<Vector3d> frustumSetPos(Vector3d startPos, Vector3d endPos, double startRadius, double endRadius, float chance, RandomSource random) {
+    public static List<Vector3f> frustumSetPos(Vector3f startPos, Vector3f endPos, float startRadius, float endRadius, float chance, RandomSource random) {
         int xStart0 = (int) (startPos.x + startRadius + 1);
         int xStart1 = (int) (startPos.x - startRadius - 1);
         int xEnd0 = (int) (endPos.x + endRadius + 1);
@@ -617,19 +615,19 @@ public final class VectorUtils {
         int setStartZ = Math.min(zStart1, zEnd1);
         int setEndZ = Math.max(zStart0, zEnd0);
 
-        double inv_length = 1 / startPos.distance(endPos);
+        float inv_length = 1 / startPos.distance(endPos);
 
-        List<Vector3d> list = new ArrayList<>();
+        List<Vector3f> list = new ArrayList<>();
 
         for (int x = setStartX; x <= setEndX; x++) {
             for (int y = setStartY; y <= setEndY; y++) {
                 for (int z = setStartZ; z <= setEndZ; z++) {
                     if (chance > random.nextFloat()) {
-                        Vector3d pointP = new Vector3d(x, y, z);
+                        Vector3f pointP = new Vector3f(x, y, z);
                         if (!isProjectionBetweenPoints(startPos, endPos, pointP)) continue;
-                        Vector3d pointP2 = getProjectionOnLineSegment(startPos, endPos, pointP);
-                        double lengthGet = pointP2.distance(endPos);//0;//Math.sqrt(y2 + Mth.square(endPos.z - z) - getDistanceToLineSegment(startPos, endPos, pointP));
-                        double lengthP = lengthGet * inv_length;
+                        Vector3f pointP2 = getProjectionOnLineSegment(startPos, endPos, pointP);
+                        float lengthGet = pointP2.distance(endPos);//0;//Math.sqrt(y2 + Mth.square(endPos.z - z) - getDistanceToLineSegment(startPos, endPos, pointP));
+                        float lengthP = lengthGet * inv_length;
                         if (pointP.distance(pointP2) <= startRadius * lengthP + endRadius * (1.0D - lengthP)) {
                             list.add(pointP);
                         }
@@ -641,7 +639,7 @@ public final class VectorUtils {
     }
 
     /// 立方体坐标列表，带有随机比例
-    public static List<Vector3d> rectangularPos(BlockPos startPos, BlockPos endPos, float chance, RandomSource random) {
+    public static List<Vector3f> rectangularPos(BlockPos startPos, BlockPos endPos, float chance, RandomSource random) {
         int startX = Math.min(endPos.getX(), startPos.getX());
         int startY = Math.min(endPos.getY(), startPos.getY());
         int startZ = Math.min(endPos.getZ(), startPos.getZ());
@@ -651,111 +649,111 @@ public final class VectorUtils {
         int xLength = endX - startX;
         int yLength = endY - startY;
         int zLength = endZ - startZ;
-        List<Vector3d> list = new ArrayList<>();
+        List<Vector3f> list = new ArrayList<>();
         for (int x = 0; x <= xLength; x++) {
             for (int y = 0; y <= yLength; y++) {
                 for (int z = 0; z <= zLength; z++) {
                     if (!LibMathUtils.checkChance(chance, random)) continue;
-                    list.add(new Vector3d(startX + x, startY + y, startZ + z));
+                    list.add(new Vector3f(startX + x, startY + y, startZ + z));
                 }
             }
         }
         return list;
     }
 
-    public static void findVerticalPlane(Vector3d point, Vector3d before, Vector3d after, double side, List<Vector3d> returnList) {
-        double l = point.distance(after) / point.distance(before);
+    public static void findVerticalPlane(Vector3f point, Vector3f before, Vector3f after, float side, List<Vector3f> returnList) {
+        float l = point.distance(after) / point.distance(before);
 
-        double hSide = side * 0.5;
+        float hSide = side * 0.5F;
 
-        double x0 = ((point.x - before.x) * l + (after.x - point.x)) * 0.5;
-        double y0 = ((point.y - before.y) * l + (after.y - point.y)) * 0.5;
-        double z0 = ((point.z - before.z) * l + (after.z - point.z)) * 0.5;
+        float x0 = ((point.x - before.x) * l + (after.x - point.x)) * 0.5F;
+        float y0 = ((point.y - before.y) * l + (after.y - point.y)) * 0.5F;
+        float z0 = ((point.z - before.z) * l + (after.z - point.z)) * 0.5F;
 
-        double[] nX = new double[3];
-        double[] nZ = new double[3];
-        double lToY2 = Mth.length(x0, y0);
+        float[] nX = new float[3];
+        float[] nZ = new float[3];
+        float lToY2 = (float) Mth.length(x0, y0);
 
         if (x0 != 0) {
-            nX = new double[]{y0 / lToY2, -x0 / lToY2, 0};
-            double inv_lX = 1 / LibMathUtils.length(nX);
+            nX = new float[]{y0 / lToY2, -x0 / lToY2, 0};
+            float inv_lX = 1 / LibMathUtils.length(nX);
             nX[0] = nX[0] * inv_lX;
             nX[1] = nX[1] * inv_lX;
             nX[2] = nX[2] * inv_lX;
         }
         if (z0 != 0) {
-            double inv_l2 = 1 / Mth.length(x0, y0, z0);
-            nZ = new double[]{-z0 * x0 * inv_l2 / lToY2, -z0 * y0 * inv_l2 / lToY2, lToY2 * inv_l2};
-            double inv_lZ = 1 / LibMathUtils.length(nZ);
+            float inv_l2 = (float) (1 / Mth.length(x0, y0, z0));
+            nZ = new float[]{-z0 * x0 * inv_l2 / lToY2, -z0 * y0 * inv_l2 / lToY2, lToY2 * inv_l2};
+            float inv_lZ = 1 / LibMathUtils.length(nZ);
             nZ[0] *= inv_lZ;
             nZ[1] *= inv_lZ;
             nZ[2] *= inv_lZ;
         }
 
-        returnList.add(new Vector3d((nX[0] + nZ[0]) * hSide + point.x, (nX[1] + nZ[1]) * hSide + point.y, (nX[2] + nZ[2]) * hSide + point.z));
-        returnList.add(new Vector3d((nX[0] - nZ[0]) * hSide + point.x, (nX[1] - nZ[1]) * hSide + point.y, (nX[2] - nZ[2]) * hSide + point.z));
-        returnList.add(new Vector3d((-nX[0] - nZ[0]) * hSide + point.x, (-nX[1] - nZ[1]) * hSide + point.y, (-nX[2] - nZ[2]) * hSide + point.z));
-        returnList.add(new Vector3d((-nX[0] + nZ[0]) * hSide + point.x, (-nX[1] + nZ[1]) * hSide + point.y, (-nX[2] + nZ[2]) * hSide + point.z));
+        returnList.add(new Vector3f((nX[0] + nZ[0]) * hSide + point.x, (nX[1] + nZ[1]) * hSide + point.y, (nX[2] + nZ[2]) * hSide + point.z));
+        returnList.add(new Vector3f((nX[0] - nZ[0]) * hSide + point.x, (nX[1] - nZ[1]) * hSide + point.y, (nX[2] - nZ[2]) * hSide + point.z));
+        returnList.add(new Vector3f((-nX[0] - nZ[0]) * hSide + point.x, (-nX[1] - nZ[1]) * hSide + point.y, (-nX[2] - nZ[2]) * hSide + point.z));
+        returnList.add(new Vector3f((-nX[0] + nZ[0]) * hSide + point.x, (-nX[1] + nZ[1]) * hSide + point.y, (-nX[2] + nZ[2]) * hSide + point.z));
     }
 
     /// 凸包的内部點集采樣
-    public static List<BlockPos> getBlocksInConvexHull(@Nullable List<Vector3d> points) {
+    public static List<BlockPos> getBlocksInConvexHull(@Nullable List<Vector3f> points) {
         List<BlockPos> result = new ArrayList<>();
         if (points == null || points.size() < 4) return result;
 
-        double cx = 0, cy = 0, cz = 0;
-        for (Vector3d p : points) {
+        float cx = 0, cy = 0, cz = 0;
+        for (Vector3f p : points) {
             cx += p.x;
             cy += p.y;
             cz += p.z;
         }
-        double inv_size = 1.0 / points.size();
+        float inv_size = (float) (1.0 / points.size());
         cx *= inv_size;
         cy *= inv_size;
         cz *= inv_size;
 
         int pivotIdx = 0;
-        double maxDistSq = 0;
+        float maxDistSq = 0;
         for (int i = 0; i < points.size(); i++) {
-            double d = points.get(i).distanceSquared(cx, cy, cz);
+            float d = points.get(i).distanceSquared(cx, cy, cz);
             if (d > maxDistSq) {
                 maxDistSq = d;
                 pivotIdx = i;
             }
         }
-        Vector3d pivot = points.get(pivotIdx);
+        Vector3f pivot = points.get(pivotIdx);
 
         int p1Idx = -1;
         maxDistSq = 0;
         for (int i = 0; i < points.size(); i++) {
             if (i == pivotIdx) continue;
-            double d = points.get(i).distanceSquared(pivot);
+            float d = points.get(i).distanceSquared(pivot);
             if (d > maxDistSq) {
                 maxDistSq = d;
                 p1Idx = i;
             }
         }
         if (p1Idx == -1) return result;
-        Vector3d p1 = points.get(p1Idx);
+        Vector3f p1 = points.get(p1Idx);
 
         int p2Idx = -1;
-        double maxArea = 0;
+        float maxArea = 0;
         for (int i = 0; i < points.size(); i++) {
             if (i == pivotIdx || i == p1Idx) continue;
-            double area = triArea(pivot, p1, points.get(i));
+            float area = triArea(pivot, p1, points.get(i));
             if (area > maxArea) {
                 maxArea = area;
                 p2Idx = i;
             }
         }
         if (p2Idx == -1) return result;
-        Vector3d p2 = points.get(p2Idx);
+        Vector3f p2 = points.get(p2Idx);
 
         int p3Idx = -1;
-        double maxDist = 0;
+        float maxDist = 0;
         for (int i = 0; i < points.size(); i++) {
             if (i == pivotIdx || i == p1Idx || i == p2Idx) continue;
-            double d = pointToPlaneDist(points.get(i), pivot, p1, p2);
+            float d = pointToPlaneDist(points.get(i), pivot, p1, p2);
             if (Math.abs(d) > Math.abs(maxDist)) {
                 maxDist = d;
                 p3Idx = i;
@@ -763,11 +761,11 @@ public final class VectorUtils {
         }
         if (p3Idx == -1) return result;
         if (Math.abs(maxDist) < 1e-7) return result;
-        Vector3d p3 = points.get(p3Idx);
+        Vector3f p3 = points.get(p3Idx);
 
-        cx = (pivot.x + p1.x + p2.x + p3.x) * 0.25;
-        cy = (pivot.y + p1.y + p2.y + p3.y) * 0.25;
-        cz = (pivot.z + p1.z + p2.z + p3.z) * 0.25;
+        cx = (pivot.x + p1.x + p2.x + p3.x) * 0.25F;
+        cy = (pivot.y + p1.y + p2.y + p3.y) * 0.25F;
+        cz = (pivot.z + p1.z + p2.z + p3.z) * 0.25F;
 
         int[][] faces = maxDist > 0 ? new int[][]{
                 {pivotIdx, p1Idx, p2Idx},
@@ -784,7 +782,7 @@ public final class VectorUtils {
         for (int i = 0; i < points.size(); i++) {
             if (i == pivotIdx || i == p1Idx || i == p2Idx || i == p3Idx) continue;
 
-            Vector3d point = points.get(i);
+            Vector3f point = points.get(i);
             List<int[]> newFaces = new ArrayList<>();
             LongSet boundaryEdges = new LongArraySet();
 
@@ -808,9 +806,9 @@ public final class VectorUtils {
             faces = newFaces.toArray(int[][]::new);
         }
 
-        double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, minZ = Double.MAX_VALUE;
-        double maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE, maxZ = -Double.MAX_VALUE;
-        for (Vector3d p : points) {
+        float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, minZ = Float.MAX_VALUE;
+        float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE, maxZ = -Float.MAX_VALUE;
+        for (Vector3f p : points) {
             minX = Math.min(minX, p.x);
             maxX = Math.max(maxX, p.x);
             minY = Math.min(minY, p.y);
@@ -829,16 +827,16 @@ public final class VectorUtils {
                 mPos.setY(y);
                 label:
                 for (int z = Mth.floor(minZ); z <= ceilZ; z++) {
-                    double px = x + 0.5, py = y + 0.5, pz = z + 0.5;
+                    float px = x + 0.5F, py = y + 0.5F, pz = z + 0.5F;
                     for (int[] face : faces) {
-                        Vector3d a = points.get(face[0]), b = points.get(face[1]), c = points.get(face[2]);
+                        Vector3f a = points.get(face[0]), b = points.get(face[1]), c = points.get(face[2]);
 
-                        double[] normal = getNormal(a, b, c);
-                        double nx = normal[0], ny = normal[1], nz = normal[2];
+                        float[] normal = getNormal(a, b, c);
+                        float nx = normal[0], ny = normal[1], nz = normal[2];
 
-                        double fcx = (a.x + b.x + c.x) * 0.3333333;
-                        double fcy = (a.y + b.y + c.y) * 0.3333333;
-                        double fcz = (a.z + b.z + c.z) * 0.3333333;
+                        float fcx = (a.x + b.x + c.x) * 0.3333333F;
+                        float fcy = (a.y + b.y + c.y) * 0.3333333F;
+                        float fcz = (a.z + b.z + c.z) * 0.3333333F;
                         if (nx * (cx - fcx) + ny * (cy - fcy) + nz * (cz - fcz) > 0) {
                             nx = -nx;
                             ny = -ny;
@@ -856,13 +854,13 @@ public final class VectorUtils {
         return result;
     }
 
-    private static double[] getNormal(Vector3d a, Vector3d b, Vector3d c) {
-        double abx = b.x - a.x, aby = b.y - a.y, abz = b.z - a.z;
-        double acx = c.x - a.x, acy = c.y - a.y, acz = c.z - a.z;
-        double nx = aby * acz - abz * acy;
-        double ny = abz * acx - abx * acz;
-        double nz = abx * acy - aby * acx;
-        return new double[]{nx, ny, nz};
+    private static float[] getNormal(Vector3f a, Vector3f b, Vector3f c) {
+        float abx = b.x - a.x, aby = b.y - a.y, abz = b.z - a.z;
+        float acx = c.x - a.x, acy = c.y - a.y, acz = c.z - a.z;
+        float nx = aby * acz - abz * acy;
+        float ny = abz * acx - abx * acz;
+        float nz = abx * acy - aby * acx;
+        return new float[]{nx, ny, nz};
     }
 
     private static void addEdge(LongSet boundary, int a, int b) {
@@ -875,27 +873,27 @@ public final class VectorUtils {
         }
     }
 
-    private static double triArea(Vector3d a, Vector3d b, Vector3d c) {
-        double abx = b.x - a.x, aby = b.y - a.y, abz = b.z - a.z;
-        double acx = c.x - a.x, acy = c.y - a.y, acz = c.z - a.z;
-        double nx = aby * acz - abz * acy;
-        double ny = abz * acx - abx * acz;
-        double nz = abx * acy - aby * acx;
-        return Mth.length(nx, ny, nz);
+    private static float triArea(Vector3f a, Vector3f b, Vector3f c) {
+        float abx = b.x - a.x, aby = b.y - a.y, abz = b.z - a.z;
+        float acx = c.x - a.x, acy = c.y - a.y, acz = c.z - a.z;
+        float nx = aby * acz - abz * acy;
+        float ny = abz * acx - abx * acz;
+        float nz = abx * acy - aby * acx;
+        return (float) Mth.length(nx, ny, nz);
     }
 
-    private static double pointToPlaneDist(Vector3d p, Vector3d a, Vector3d b, Vector3d c) {
-        double[] normal = getNormal(a, b, c);
+    private static float pointToPlaneDist(Vector3f p, Vector3f a, Vector3f b, Vector3f c) {
+        float[] normal = getNormal(a, b, c);
         return (p.x - a.x) * normal[0] + (p.y - a.y) * normal[1] + (p.z - a.z) * normal[2];
     }
 
-    private static boolean isPointOutside(Vector3d p, Vector3d a, Vector3d b, Vector3d c, double cx, double cy, double cz) {
-        double[] normal = getNormal(a, b, c);
-        double nx = normal[0], ny = normal[1], nz = normal[2];
+    private static boolean isPointOutside(Vector3f p, Vector3f a, Vector3f b, Vector3f c, float cx, float cy, float cz) {
+        float[] normal = getNormal(a, b, c);
+        float nx = normal[0], ny = normal[1], nz = normal[2];
 
-        double fcx = (a.x + b.x + c.x) * 0.3333333;
-        double fcy = (a.y + b.y + c.y) * 0.3333333;
-        double fcz = (a.z + b.z + c.z) * 0.3333333;
+        float fcx = (a.x + b.x + c.x) * 0.3333333F;
+        float fcy = (a.y + b.y + c.y) * 0.3333333F;
+        float fcz = (a.z + b.z + c.z) * 0.3333333F;
 
         if (nx * (cx - fcx) + ny * (cy - fcy) + nz * (cz - fcz) > 0) {
             nx = -nx;

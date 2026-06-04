@@ -27,7 +27,7 @@ public abstract class AbstractContainerScreenMixin implements ILibAbstractContai
         return confluence$shouldRenderGroupBackground;
     }
 
-    @WrapOperation(method = "renderSlotContents", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;renderItem(Lnet/minecraft/world/item/ItemStack;III)V"))
+    @WrapOperation(method = "renderSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;renderItem(Lnet/minecraft/world/item/ItemStack;III)V"))
     private void renderGroupBackground(GuiGraphics instance, ItemStack stack, int x, int y, int seed, Operation<Void> original, @Local(argsOnly = true) Slot slot) {
         if (confluence$shouldRenderGroupBackground) {
             ILibAbstractContainerScreen.renderGroupBackground(instance, stack, x, y, slot);

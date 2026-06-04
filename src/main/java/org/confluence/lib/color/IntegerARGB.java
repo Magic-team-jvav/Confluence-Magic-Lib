@@ -22,9 +22,7 @@ public record IntegerARGB(int alpha, int red, int green, int blue) {
     @Override
     public boolean equals(Object o) {
         if (o == this) return true;
-        return o instanceof IntegerARGB(
-                int a, int r, int g, int b
-        ) && alpha == a && red == r && blue == b && green == g;
+        return o instanceof IntegerARGB i && alpha == i.alpha() && red == i.red() && green == i.green() && blue == i.blue();
     }
 
     @Override

@@ -11,7 +11,6 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.neoforged.neoforge.resource.ContextAwareReloadListener;
 import org.confluence.lib.ConfluenceMagicLib;
 
 import java.io.IOException;
@@ -21,7 +20,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-public abstract class SingleJsonFileReloadListener extends ContextAwareReloadListener {
+public abstract class SingleJsonFileReloadListener implements PreparableReloadListener {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
     @Override

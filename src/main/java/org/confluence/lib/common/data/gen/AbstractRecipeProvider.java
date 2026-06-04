@@ -1,19 +1,16 @@
 package org.confluence.lib.common.data.gen;
 
+import PortLib.extensions.com.mojang.serialization.DataResult.PortDataResultExtension;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.Util;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeProvider;
-import net.minecraft.resources.RegistryOps;
 import org.jetbrains.annotations.ApiStatus;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -22,23 +19,21 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
 public abstract class AbstractRecipeProvider extends RecipeProvider {
     private final List<Appender<?>> appenders = new LinkedList<>();
 
-    public AbstractRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup) {
-        super(output, lookup);
+    public AbstractRecipeProvider(PackOutput output) {
+        super(output);
     }
 
     @Override
-    protected CompletableFuture<?> run(CachedOutput output, HolderLookup.Provider registries) {
-        CompletableFuture<?> future = super.run(output, registries);
+    public CompletableFuture<?> run(CachedOutput output) {
+        CompletableFuture<?> future = super.run(output);
         return CompletableFuture.supplyAsync(() -> {
             List<CompletableFuture<?>> futures = new LinkedList<>();
             futures.add(future);
             for (Appender<?> appender : appenders) {
-                for (Map.Entry<Path, JsonElement> entry : appender.generate(pathProvider(), registries).entrySet()) {
+                for (Map.Entry<Path, JsonElement> entry : appender.generate(pathProvider()).entrySet()) {
                     futures.add(DataProvider.saveStable(output, entry.getValue(), entry.getKey()));
                 }
             }
@@ -76,11 +71,10 @@ public abstract class AbstractRecipeProvider extends RecipeProvider {
         }
 
         @ApiStatus.Internal
-        public Map<Path, JsonElement> generate(PackOutput.PathProvider pathProvider, HolderLookup.Provider registries) {
+        public Map<Path, JsonElement> generate(PackOutput.PathProvider pathProvider) {
             Map<Path, JsonElement> map = new HashMap<>();
-            RegistryOps<JsonElement> registryOps = registries.createSerializationContext(JsonOps.INSTANCE);
             for (T recipe : recipes) {
-                map.put(pathGetter.apply(recipe, pathProvider), codec.encodeStart(registryOps, recipe).getOrThrow());
+                map.put(pathGetter.apply(recipe, pathProvider), PortDataResultExtension.getOrThrow(codec.encodeStart(JsonOps.INSTANCE, recipe)));
             }
             return map;
         }

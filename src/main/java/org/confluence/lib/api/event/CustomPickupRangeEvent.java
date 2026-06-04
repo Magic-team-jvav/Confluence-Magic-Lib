@@ -7,7 +7,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;

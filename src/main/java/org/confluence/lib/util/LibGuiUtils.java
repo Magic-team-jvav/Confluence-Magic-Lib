@@ -6,67 +6,59 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
 import net.minecraft.resources.ResourceLocation;
 
 import static java.lang.Math.min;
 
-/**
- * GUI工具类，提供各种绘制精灵图的方法
- */
+/// GUI工具类，提供各种绘制精灵图的方法
 public final class LibGuiUtils {
-    /**
-     * 绘制精灵图
-     *
-     * @param guiGraphics GUI图形上下文
-     * @param sprite      精灵图资源位置
-     * @param x           绘制位置x坐标
-     * @param y           绘制位置y坐标
-     * @param width       绘制宽度
-     * @param height      绘制高度
-     */
+    /// 绘制精灵图
+    ///
+    /// @param guiGraphics GUI图形上下文
+    /// @param sprite      精灵图资源位置
+    /// @param x           绘制位置x坐标
+    /// @param y           绘制位置y坐标
+    /// @param width       绘制宽度
+    /// @param height      绘制高度
     public static void blitSprite(GuiGraphics guiGraphics, ResourceLocation sprite, float x, float y, float width, float height) {
         blitSprite(guiGraphics, sprite, x, y, 0f, width, height);
     }
 
-    /**
-     * 绘制精灵图
-     *
-     * @param guiGraphics GUI图形上下文
-     * @param sprite      精灵图资源位置
-     * @param x           绘制位置x坐标
-     * @param y           绘制位置y坐标
-     * @param blitOffset  绘制偏移量
-     * @param width       绘制宽度
-     * @param height      绘制高度
-     */
+    /// 绘制精灵图
+    ///
+    /// @param guiGraphics GUI图形上下文
+    /// @param sprite      精灵图资源位置
+    /// @param x           绘制位置x坐标
+    /// @param y           绘制位置y坐标
+    /// @param blitOffset  绘制偏移量
+    /// @param width       绘制宽度
+    /// @param height      绘制高度
     public static void blitSprite(GuiGraphics guiGraphics, ResourceLocation sprite, float x, float y, float blitOffset, float width, float height) {
         TextureAtlasSprite textureAtlasSprite = guiGraphics.sprites.getSprite(sprite);
         GuiSpriteScaling guiSpriteScaling = guiGraphics.sprites.getSpriteScaling(textureAtlasSprite);
 
-        switch (guiSpriteScaling) {
-            case GuiSpriteScaling.Stretch stretch ->
-                    blitSprite(guiGraphics, textureAtlasSprite, x, y, blitOffset, width, height);
-            case GuiSpriteScaling.Tile(int width1, int height1) -> {
-                float spriteWidth = (float) width1;
-                float spriteHeight = (float) height1;
-                blitTiledSprite(
-                        guiGraphics,
-                        textureAtlasSprite,
-                        x,
-                        y,
-                        blitOffset,
-                        width,
-                        height,
-                        0f,
-                        0f,
-                        spriteWidth,
-                        spriteHeight,
-                        spriteWidth,
-                        spriteHeight
-                );
-            }
-            case GuiSpriteScaling.NineSlice nineSlice -> blitNineSlicedSprite(
+        if (guiSpriteScaling instanceof GuiSpriteScaling.Stretch) {
+            blitSprite(guiGraphics, textureAtlasSprite, x, y, blitOffset, width, height);
+        } else if (guiSpriteScaling instanceof GuiSpriteScaling.Tile tile) {
+            float spriteWidth = (float) tile.width();
+            float spriteHeight = (float) tile.height();
+            blitTiledSprite(
+                    guiGraphics,
+                    textureAtlasSprite,
+                    x,
+                    y,
+                    blitOffset,
+                    width,
+                    height,
+                    0f,
+                    0f,
+                    spriteWidth,
+                    spriteHeight,
+                    spriteWidth,
+                    spriteHeight
+            );
+        } else if (guiSpriteScaling instanceof GuiSpriteScaling.NineSlice nineSlice) {
+            blitNineSlicedSprite(
                     guiGraphics,
                     textureAtlasSprite,
                     nineSlice,
@@ -76,23 +68,19 @@ public final class LibGuiUtils {
                     width,
                     height
             );
-            default -> {
-            }
         }
     }
 
-    /**
-     * 绘制九宫格缩放精灵图
-     *
-     * @param guiGraphics GUI图形上下文
-     * @param sprite      纹理图集精灵
-     * @param nineSlice   九宫格缩放信息
-     * @param x           绘制位置x坐标
-     * @param y           绘制位置y坐标
-     * @param blitOffset  绘制偏移量
-     * @param width       绘制宽度
-     * @param height      绘制高度
-     */
+    /// 绘制九宫格缩放精灵图
+    ///
+    /// @param guiGraphics GUI图形上下文
+    /// @param sprite      纹理图集精灵
+    /// @param nineSlice   九宫格缩放信息
+    /// @param x           绘制位置x坐标
+    /// @param y           绘制位置y坐标
+    /// @param blitOffset  绘制偏移量
+    /// @param width       绘制宽度
+    /// @param height      绘制高度
     public static void blitNineSlicedSprite(
             GuiGraphics guiGraphics,
             TextureAtlasSprite sprite,
@@ -348,23 +336,21 @@ public final class LibGuiUtils {
         );
     }
 
-    /**
-     * 平铺绘制精灵图
-     *
-     * @param guiGraphics     GUI图形上下文
-     * @param sprite          纹理图集精灵
-     * @param x               绘制位置x坐标
-     * @param y               绘制位置y坐标
-     * @param blitOffset      绘制偏移量
-     * @param width           绘制宽度
-     * @param height          绘制高度
-     * @param uPosition       UV坐标的u起始位置
-     * @param vPosition       UV坐标的v起始位置
-     * @param spriteWidth     精灵图宽度
-     * @param spriteHeight    精灵图高度
-     * @param nineSliceWidth  九宫格切片宽度
-     * @param nineSliceHeight 九宫格切片高度
-     */
+    /// 平铺绘制精灵图
+    ///
+    /// @param guiGraphics     GUI图形上下文
+    /// @param sprite          纹理图集精灵
+    /// @param x               绘制位置x坐标
+    /// @param y               绘制位置y坐标
+    /// @param blitOffset      绘制偏移量
+    /// @param width           绘制宽度
+    /// @param height          绘制高度
+    /// @param uPosition       UV坐标的u起始位置
+    /// @param vPosition       UV坐标的v起始位置
+    /// @param spriteWidth     精灵图宽度
+    /// @param spriteHeight    精灵图高度
+    /// @param nineSliceWidth  九宫格切片宽度
+    /// @param nineSliceHeight 九宫格切片高度
     public static void blitTiledSprite(
             GuiGraphics guiGraphics,
             TextureAtlasSprite sprite,
@@ -414,20 +400,18 @@ public final class LibGuiUtils {
         }
     }
 
-    /**
-     * 绘制精灵图
-     *
-     * @param guiGraphics   GUI图形上下文
-     * @param sprite        精灵图资源位置
-     * @param textureWidth  纹理宽度
-     * @param textureHeight 纹理高度
-     * @param uPosition     UV坐标的u起始位置
-     * @param vPosition     UV坐标的v起始位置
-     * @param x             绘制位置x坐标
-     * @param y             绘制位置y坐标
-     * @param uWidth        UV坐标的u宽度
-     * @param vHeight       UV坐标的v高度
-     */
+    /// 绘制精灵图
+    ///
+    /// @param guiGraphics   GUI图形上下文
+    /// @param sprite        精灵图资源位置
+    /// @param textureWidth  纹理宽度
+    /// @param textureHeight 纹理高度
+    /// @param uPosition     UV坐标的u起始位置
+    /// @param vPosition     UV坐标的v起始位置
+    /// @param x             绘制位置x坐标
+    /// @param y             绘制位置y坐标
+    /// @param uWidth        UV坐标的u宽度
+    /// @param vHeight       UV坐标的v高度
     public static void blitSprite(
             GuiGraphics guiGraphics,
             ResourceLocation sprite,
@@ -443,21 +427,19 @@ public final class LibGuiUtils {
         blitSprite(guiGraphics, sprite, textureWidth, textureHeight, uPosition, vPosition, x, y, 0f, uWidth, vHeight);
     }
 
-    /**
-     * 绘制精灵图
-     *
-     * @param guiGraphics   GUI图形上下文
-     * @param sprite        精灵图资源位置
-     * @param textureWidth  纹理宽度
-     * @param textureHeight 纹理高度
-     * @param uPosition     UV坐标的u起始位置
-     * @param vPosition     UV坐标的v起始位置
-     * @param x             绘制位置x坐标
-     * @param y             绘制位置y坐标
-     * @param blitOffset    绘制偏移量
-     * @param uWidth        UV坐标的u宽度
-     * @param vHeight       UV坐标的v高度
-     */
+    /// 绘制精灵图
+    ///
+    /// @param guiGraphics   GUI图形上下文
+    /// @param sprite        精灵图资源位置
+    /// @param textureWidth  纹理宽度
+    /// @param textureHeight 纹理高度
+    /// @param uPosition     UV坐标的u起始位置
+    /// @param vPosition     UV坐标的v起始位置
+    /// @param x             绘制位置x坐标
+    /// @param y             绘制位置y坐标
+    /// @param blitOffset    绘制偏移量
+    /// @param uWidth        UV坐标的u宽度
+    /// @param vHeight       UV坐标的v高度
     public static void blitSprite(
             GuiGraphics guiGraphics,
             ResourceLocation sprite,
@@ -494,21 +476,19 @@ public final class LibGuiUtils {
         blitSprite(guiGraphics, textureAtlasSprite, x, y, blitOffset, uWidth, vHeight);
     }
 
-    /**
-     * 绘制精灵图
-     *
-     * @param guiGraphics   GUI图形上下文
-     * @param sprite        纹理图集精灵
-     * @param textureWidth  纹理宽度
-     * @param textureHeight 纹理高度
-     * @param uPosition     UV坐标的u起始位置
-     * @param vPosition     UV坐标的v起始位置
-     * @param x             绘制位置x坐标
-     * @param y             绘制位置y坐标
-     * @param blitOffset    绘制偏移量
-     * @param uWidth        UV坐标的u宽度
-     * @param vHeight       UV坐标的v高度
-     */
+    /// 绘制精灵图
+    ///
+    /// @param guiGraphics   GUI图形上下文
+    /// @param sprite        纹理图集精灵
+    /// @param textureWidth  纹理宽度
+    /// @param textureHeight 纹理高度
+    /// @param uPosition     UV坐标的u起始位置
+    /// @param vPosition     UV坐标的v起始位置
+    /// @param x             绘制位置x坐标
+    /// @param y             绘制位置y坐标
+    /// @param blitOffset    绘制偏移量
+    /// @param uWidth        UV坐标的u宽度
+    /// @param vHeight       UV坐标的v高度
     public static void blitSprite(
             GuiGraphics guiGraphics,
             TextureAtlasSprite sprite,
@@ -540,21 +520,19 @@ public final class LibGuiUtils {
         );
     }
 
-    /**
-     * 内部绘制方法，执行实际的顶点绘制操作
-     *
-     * @param guiGraphics   GUI图形上下文
-     * @param atlasLocation 图集资源位置
-     * @param x1            左侧x坐标
-     * @param x2            右侧x坐标
-     * @param y1            上方y坐标
-     * @param y2            下方y坐标
-     * @param blitOffset    绘制偏移量
-     * @param minU          最小U坐标
-     * @param maxU          最大U坐标
-     * @param minV          最小V坐标
-     * @param maxV          最大V坐标
-     */
+    /// 内部绘制方法，执行实际的顶点绘制操作
+    ///
+    /// @param guiGraphics   GUI图形上下文
+    /// @param atlasLocation 图集资源位置
+    /// @param x1            左侧x坐标
+    /// @param x2            右侧x坐标
+    /// @param y1            上方y坐标
+    /// @param y2            下方y坐标
+    /// @param blitOffset    绘制偏移量
+    /// @param minU          最小U坐标
+    /// @param maxU          最大U坐标
+    /// @param minV          最小V坐标
+    /// @param maxV          最大V坐标
     private static void innerBlit(
             GuiGraphics guiGraphics,
             ResourceLocation atlasLocation,
@@ -579,17 +557,15 @@ public final class LibGuiUtils {
         BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
     }
 
-    /**
-     * 绘制精灵图
-     *
-     * @param guiGraphics GUI图形上下文
-     * @param sprite      纹理图集精灵
-     * @param x           绘制位置x坐标
-     * @param y           绘制位置y坐标
-     * @param blitOffset  绘制偏移量
-     * @param width       绘制宽度
-     * @param height      绘制高度
-     */
+    /// 绘制精灵图
+    ///
+    /// @param guiGraphics GUI图形上下文
+    /// @param sprite      纹理图集精灵
+    /// @param x           绘制位置x坐标
+    /// @param y           绘制位置y坐标
+    /// @param blitOffset  绘制偏移量
+    /// @param width       绘制宽度
+    /// @param height      绘制高度
     public static void blitSprite(
             GuiGraphics guiGraphics,
             TextureAtlasSprite sprite,
@@ -781,18 +757,16 @@ public final class LibGuiUtils {
         guiGraphics.flushIfUnmanaged();
     }
 
-    /**
-     * 使用 Bresenham 直线算法绘制像素线。
-     * 该函数通过计算像素点路径并逐个填充的方式，在两点之间绘制直线。
-     *
-     * @param guiGraphics 用于渲染的 GuiGraphics 上下文对象
-     * @param x0          起点的 X 坐标
-     * @param y0          起点的 Y 坐标
-     * @param x1          终点的 X 坐标
-     * @param y1          终点的 Y 坐标
-     * @param width       线条宽度（当前实现固定为单像素绘制，此参数暂未参与计算）
-     * @param color       线条的颜色值
-     */
+    /// 使用 Bresenham 直线算法绘制像素线。
+    /// 该函数通过计算像素点路径并逐个填充的方式，在两点之间绘制直线。
+    ///
+    /// @param guiGraphics 用于渲染的 GuiGraphics 上下文对象
+    /// @param x0          起点的 X 坐标
+    /// @param y0          起点的 Y 坐标
+    /// @param x1          终点的 X 坐标
+    /// @param y1          终点的 Y 坐标
+    /// @param width       线条宽度（当前实现固定为单像素绘制，此参数暂未参与计算）
+    /// @param color       线条的颜色值
     public static void drawPixelLine(GuiGraphics guiGraphics, int x0, int y0, int x1, int y1, float width, int color) {
         // 初始化 Bresenham 算法所需的差值和步进方向
         int dx = Math.abs(x1 - x0); // 横坐标差
