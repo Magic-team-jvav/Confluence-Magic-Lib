@@ -1,9 +1,9 @@
 package org.confluence.lib.common.recipe;
 
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeInput;
+import org.mesdag.portlib.wrapper.world.item.crafting.PortRecipeInput;
 
-public class ArrayRecipeInput implements RecipeInput {
+public class ArrayRecipeInput implements PortRecipeInput {
     private final ItemStack[] itemStacks;
 
     public ArrayRecipeInput(ItemStack[] itemStacks) {

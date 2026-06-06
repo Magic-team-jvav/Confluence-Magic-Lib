@@ -33,7 +33,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
@@ -232,10 +231,11 @@ public final class LibUtils {
 
     public static void setItemAndDropChance(Mob mob, DifficultyInstance difficulty, EquipmentSlot slot, Item item, float chance) {
         ItemStack itemStack = item.getDefaultInstance();
-        float enchantChance = (slot.getType() == EquipmentSlot.Type.HAND ? 0.25F : 0.5F) * difficulty.getSpecialMultiplier();
-        if (mob.getRandom().nextFloat() < enchantChance) {
-            EnchantmentHelper.enchantItemFromProvider(itemStack, mob.registryAccess(), VanillaEnchantmentProviders.MOB_SPAWN_EQUIPMENT, difficulty, mob.getRandom());
-        }
+        // todo
+//        float enchantChance = (slot.getType() == EquipmentSlot.Type.HAND ? 0.25F : 0.5F) * difficulty.getSpecialMultiplier();
+//        if (mob.getRandom().nextFloat() < enchantChance) {
+//            EnchantmentHelper.enchantItemFromProvider(itemStack, mob.registryAccess(), VanillaEnchantmentProviders.MOB_SPAWN_EQUIPMENT, difficulty, mob.getRandom());
+//        }
         mob.setItemSlot(slot, itemStack);
         mob.setDropChance(slot, chance);
     }
@@ -364,13 +364,14 @@ public final class LibUtils {
     /// @see LibUtils#tryFindBeImpacted(Entity) 适合查询直接受影响的实体的方法
     @Contract("null -> null; !null -> !null")
     public static @Nullable Entity getOwner(@Nullable Entity entity) {
-        Entity owner = switch (entity) {
-            case PartEntity<?> partEntity -> partEntity.getParent();
-            case OwnableEntity ownableEntity -> ownableEntity.getOwner();
-            case TraceableEntity traceableEntity -> traceableEntity.getOwner();
-            default -> entity;
-        };
-        return owner == null ? entity : owner;
+        if (entity instanceof PartEntity<?> partEntity) {
+            return partEntity.getParent();
+        } else if (entity instanceof OwnableEntity ownableEntity) {
+            return ownableEntity.getOwner();
+        } else if (entity instanceof TraceableEntity traceableEntity) {
+            return traceableEntity.getOwner();
+        }
+        return entity;
     }
 
     /// 适合查询直接受影响的实体，如攻击本体

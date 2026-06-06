@@ -2,9 +2,9 @@ package org.confluence.lib.util.damage;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.ExplosionDamageCalculator;
+import org.mesdag.portlib.wrapper.world.level.PortExplosionDamageCalculator;
 
-public class MultiplyExplosionDamageCalculator extends ExplosionDamageCalculator {
+public class MultiplyExplosionDamageCalculator extends PortExplosionDamageCalculator {
     private final float multiplier;
 
     public MultiplyExplosionDamageCalculator(float multiplier) {
@@ -12,7 +12,7 @@ public class MultiplyExplosionDamageCalculator extends ExplosionDamageCalculator
     }
 
     @Override
-    public float getEntityDamageAmount(Explosion explosion, Entity entity) {
-        return super.getEntityDamageAmount(explosion, entity) * multiplier;
+    public float modifyEntityDamage(Explosion explosion, Entity entity, float originalDamage) {
+        return originalDamage * multiplier;
     }
 }

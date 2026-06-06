@@ -1,5 +1,7 @@
 package org.confluence.lib.util;
 
+import PortLib.extensions.net.minecraft.resources.ResourceLocation.PortResourceLocationExtension;
+import PortLib.extensions.net.minecraft.world.item.crafting.Ingredient.PortIngredientExtension;
 import com.mojang.datafixers.util.Function7;
 import com.mojang.datafixers.util.Function8;
 import io.netty.buffer.ByteBuf;
@@ -11,9 +13,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -23,6 +23,7 @@ import net.minecraft.world.phys.Vec2;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import org.confluence.lib.common.recipe.AmountIngredient;
+import org.mesdag.portlib.network.PortRegistryFriendlyByteBuf;
 import org.mesdag.portlib.network.codec.PortByteBufCodecs;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
 
@@ -32,7 +33,7 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 public final class LibStreamCodecUtils {
-    public static final PortStreamCodec<ByteBuf, Vec2> VEC_2 = PortPortStreamCodec.composite(
+    public static final PortStreamCodec<ByteBuf, Vec2> VEC_2 = PortStreamCodec.composite(
             PortByteBufCodecs.FLOAT, vec2 -> vec2.x,
             PortByteBufCodecs.FLOAT, vec2 -> vec2.y,
             Vec2::new
@@ -48,33 +49,33 @@ public final class LibStreamCodecUtils {
             buffer.writeUUID(value);
         }
     };
-    public static final PortStreamCodec<RegistryFriendlyByteBuf, NonNullList<Ingredient>> INGREDIENTS = new PortStreamCodec<>() {
+    public static final PortStreamCodec<PortRegistryFriendlyByteBuf, NonNullList<Ingredient>> INGREDIENTS = new PortStreamCodec<>() {
         @Override
-        public NonNullList<Ingredient> decode(RegistryFriendlyByteBuf buffer) {
+        public NonNullList<Ingredient> decode(PortRegistryFriendlyByteBuf buffer) {
             NonNullList<Ingredient> nonnulllist = NonNullList.withSize(buffer.readVarInt(), AmountIngredient.EMPTY);
-            nonnulllist.replaceAll(ignore -> Ingredient.CONTENTS_STREAM_CODEC.decode(buffer));
+            nonnulllist.replaceAll(ignore -> PortIngredientExtension.contentsStreamCodec().decode(buffer));
             return nonnulllist;
         }
 
         @Override
-        public void encode(RegistryFriendlyByteBuf buffer, NonNullList<Ingredient> value) {
+        public void encode(PortRegistryFriendlyByteBuf buffer, NonNullList<Ingredient> value) {
             buffer.writeVarInt(value.size());
             for (Ingredient ingredient : value) {
-                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, ingredient);
+                PortIngredientExtension.contentsStreamCodec().encode(buffer, ingredient);
             }
         }
     };
-    public static final PortStreamCodec<RegistryFriendlyByteBuf, BlockState> BLOCK_STATE = new PortStreamCodec<>() {
-        private final PortStreamCodec<RegistryFriendlyByteBuf, Block> blockCodec = PortByteBufCodecs.registry(Registries.BLOCK);
+    public static final PortStreamCodec<PortRegistryFriendlyByteBuf, BlockState> BLOCK_STATE = new PortStreamCodec<>() {
+        private final PortStreamCodec<PortRegistryFriendlyByteBuf, Block> blockCodec = PortByteBufCodecs.registry(Registries.BLOCK);
 
         @Override
-        public BlockState decode(RegistryFriendlyByteBuf buffer) {
+        public BlockState decode(PortRegistryFriendlyByteBuf buffer) {
             Block block = blockCodec.decode(buffer);
             return block.getStateDefinition().getPossibleStates().get(buffer.readVarInt());
         }
 
         @Override
-        public void encode(RegistryFriendlyByteBuf buffer, BlockState value) {
+        public void encode(PortRegistryFriendlyByteBuf buffer, BlockState value) {
             Block block = value.getBlock();
             blockCodec.encode(buffer, block);
             buffer.writeVarInt(block.getStateDefinition().getPossibleStates().indexOf(value));
@@ -98,11 +99,11 @@ public final class LibStreamCodecUtils {
     }
 
     public static <B extends ByteBuf, TA, TB> PortStreamCodec<B, Tuple<TA, TB>> tuple(PortStreamCodec<? super B, TA> aCodec, PortStreamCodec<? super B, TB> bCodec) {
-        return PortPortStreamCodec.composite(aCodec, Tuple::getA, bCodec, Tuple::getB, Tuple::new);
+        return PortStreamCodec.composite(aCodec, Tuple::getA, bCodec, Tuple::getB, Tuple::new);
     }
 
     public static <B extends ByteBuf, L, M, R> PortStreamCodec<B, Triple<L, M, R>> triple(PortStreamCodec<? super B, L> lCodec, PortStreamCodec<? super B, M> mCodec, PortStreamCodec<? super B, R> rCodec) {
-        return PortPortStreamCodec.composite(lCodec, Triple::getLeft, mCodec, Triple::getMiddle, rCodec, Triple::getRight, ImmutableTriple::new);
+        return PortStreamCodec.composite(lCodec, Triple::getLeft, mCodec, Triple::getMiddle, rCodec, Triple::getRight, ImmutableTriple::new);
     }
 
     public static <B extends ByteBuf, K, V> PortStreamCodec<B, Map<K, V>> map(IntFunction<Map<K, V>> factory, PortStreamCodec<? super B, K> keyCodec, PortStreamCodec<? super B, V> valueCodec) {
@@ -116,11 +117,11 @@ public final class LibStreamCodecUtils {
     public static <B extends ByteBuf, V> PortStreamCodec<B, TagKey<V>> tagKey(ResourceKey<Registry<V>> resourceKey) {
         return new PortStreamCodec<>() {
             public TagKey<V> decode(B buffer) {
-                return TagKey.create(resourceKey, ResourceLocation.STREAM_CODEC.decode(buffer));
+                return TagKey.create(resourceKey, PortResourceLocationExtension.streamCodec().decode(buffer));
             }
 
             public void encode(B buffer, TagKey<V> tagKey) {
-                ResourceLocation.STREAM_CODEC.encode(buffer, tagKey.location());
+                PortResourceLocationExtension.streamCodec().encode(buffer, tagKey.location());
             }
         };
     }

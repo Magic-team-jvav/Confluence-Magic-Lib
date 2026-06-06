@@ -2,12 +2,13 @@ package org.confluence.lib.common.recipe;
 
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.crafting.CraftingInput;
-import net.minecraft.world.item.crafting.RecipeInput;
+import org.mesdag.portlib.diff.mixin.SimpleContainerAccessor;
+import org.mesdag.portlib.wrapper.world.item.crafting.PortCraftingInput;
+import org.mesdag.portlib.wrapper.world.item.crafting.PortRecipeInput;
 
-public class MenuRecipeInput extends SimpleContainer implements RecipeInput {
+public class MenuRecipeInput extends SimpleContainer implements PortRecipeInput {
     private final AbstractContainerMenu menu;
-    private CraftingInput craftingInput;
+    private PortCraftingInput craftingInput;
 
     public MenuRecipeInput(AbstractContainerMenu menu, int size) {
         super(size);
@@ -25,8 +26,10 @@ public class MenuRecipeInput extends SimpleContainer implements RecipeInput {
         menu.slotsChanged(this);
     }
 
-    public CraftingInput asCraftingInput(boolean update) {
-        if (update || craftingInput == null) this.craftingInput = CraftingInput.of(4, 4, getItems());
+    public PortCraftingInput asCraftingInput(boolean update) {
+        if (update || craftingInput == null) {
+            this.craftingInput = PortCraftingInput.of(4, 4, ((SimpleContainerAccessor) this).getItems());
+        }
         return craftingInput;
     }
 }

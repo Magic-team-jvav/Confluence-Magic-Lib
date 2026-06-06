@@ -21,14 +21,14 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(NaturalSpawner.class)
 public abstract class NaturalSpawnerMixin {
-    @ModifyVariable(method = "spawnForChunk", at = @At("STORE"))
+    @ModifyVariable(method = "spawnForChunk", at = @At("STORE"), name = "mobcategory")
     private static MobCategory set(
-            MobCategory category,
+            MobCategory mobcategory,
             @Local(argsOnly = true) ServerLevel level,
             @Local(argsOnly = true) LevelChunk chunk
     ) {
-        ILibChunkSpawnDataAccess.of(category).confluence$setData(NaturalSpawnerUtils.getChunkSpawnData(level.dimension(), chunk.getPos()));
-        return category;
+        ILibChunkSpawnDataAccess.of(mobcategory).confluence$setData(NaturalSpawnerUtils.getChunkSpawnData(level.dimension(), chunk.getPos()));
+        return mobcategory;
     }
 
     @WrapOperation(method = "spawnForChunk", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/NaturalSpawner;spawnCategoryForChunk(Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/LevelChunk;Lnet/minecraft/world/level/NaturalSpawner$SpawnPredicate;Lnet/minecraft/world/level/NaturalSpawner$AfterSpawnCallback;)V"))
@@ -50,7 +50,7 @@ public abstract class NaturalSpawnerMixin {
     private static boolean modify(
             boolean original,
             @Local(argsOnly = true) MobCategory category,
-            @Local(ordinal = 2) int k,
+            @Local(name = "k") int k,
             @Share("frequency") LocalIntRef frequency,
             @Share("obtained") LocalBooleanRef obtained
     ) {

@@ -1,5 +1,8 @@
 package org.confluence.lib.common.recipe;
 
+import PortLib.extensions.java.util.List.PortListExtension;
+import PortLib.extensions.net.minecraft.world.item.ItemStack.PortItemStackExtension;
+import PortLib.extensions.net.minecraft.world.item.crafting.Ingredient.PortIngredientExtension;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
@@ -10,28 +13,29 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectFunction;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeInput;
-import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.crafting.ICustomIngredient;
 import org.confluence.lib.util.LibStreamCodecUtils;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.ApiStatus;
 import org.joml.Vector2i;
+import org.mesdag.portlib.diff.Diff;
+import org.mesdag.portlib.network.PortRegistryFriendlyByteBuf;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
+import org.mesdag.portlib.wrapper.world.item.crafting.PortRecipe;
+import org.mesdag.portlib.wrapper.world.item.crafting.PortRecipeInput;
+import org.mesdag.portlib.wrapper.world.item.crafting.PortShapedRecipePattern;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.function.BiFunction;
 
-public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Recipe<T> {
-    public static final MapCodec<NonNullList<Ingredient>> INGREDIENTS_CODEC = Ingredient.CODEC_NONEMPTY.listOf().fieldOf("ingredients").flatXmap(list -> {
+public abstract class AbstractAmountRecipe<I extends PortRecipeInput> implements PortRecipe<I> {
+    public static final MapCodec<NonNullList<Ingredient>> INGREDIENTS_CODEC = PortIngredientExtension.codecNonempty().listOf().fieldOf("ingredients").flatXmap(list -> {
         Ingredient[] ingredients = list.toArray(new Ingredient[0]);
         if (ingredients.length == 0) {
             return DataResult.error(() -> "No ingredients for recipe");
@@ -39,9 +43,11 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
             return DataResult.success(NonNullList.of(AmountIngredient.EMPTY, ingredients), Lifecycle.stable());
         }
     }, ingredients -> DataResult.success(ingredients, Lifecycle.stable()));
-    private static final Object2ObjectFunction<Ingredient, Tuple<Integer, IntArraySet>> FUNCTION = I -> new Tuple<>(((Ingredient) I).getCustomIngredient() instanceof AmountIngredient ai ? ai.amount() : 1, new IntArraySet());
+    private static final Object2ObjectFunction<Ingredient, Tuple<Integer, IntArraySet>> FUNCTION = I -> new Tuple<>(I instanceof AmountIngredient ai ? ai.amount() : 1, new IntArraySet());
     public final ItemStack result;
     public final NonNullList<Ingredient> ingredients;
+
+    protected ResourceLocation id;
 
     protected AbstractAmountRecipe(ItemStack result, NonNullList<Ingredient> ingredients) {
         if (ingredients.size() > maxIngredientSize()) {
@@ -51,13 +57,27 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
         this.ingredients = ingredients;
     }
 
+    @Diff
+    @ApiStatus.NonExtendable
     @Override
-    public ItemStack getResultItem(HolderLookup.@Nullable Provider registries) {
+    public void setId(ResourceLocation id) {
+        this.id = id;
+    }
+
+    @Diff
+    @ApiStatus.NonExtendable
+    @Override
+    public ResourceLocation getId() {
+        return id;
+    }
+
+    @Override
+    public ItemStack getResultItem(RegistryAccess registryAccess) {
         return result;
     }
 
     @Override
-    public boolean matches(T input, Level pLevel) {
+    public boolean matches(I input, Level pLevel) {
         return matches(input.size(), input::getItem, ingredients);
     }
 
@@ -70,8 +90,8 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
             for (int i = 0; i < size; i++) {
                 ItemStack itemStack = getItemStackCallback.apply(i);
                 if (itemStack.isEmpty()) continue;
-                if (ingredient.getCustomIngredient() instanceof AmountIngredient amountIngredient) {
-                    if (amountIngredient.ingredient().test(itemStack)) {
+                if (ingredient instanceof AmountIngredient ai) {
+                    if (ai.ingredient().test(itemStack)) {
                         requires2Count.addTo(j, itemStack.getCount());
                         matches.add(ingredient);
                     }
@@ -83,9 +103,8 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
         }
         if (matches.size() != ingredients.size()) return false;
         for (Object2IntMap.Entry<Integer> entry : requires2Count.object2IntEntrySet()) {
-            ICustomIngredient customIngredient = ingredients.get(entry.getKey()).getCustomIngredient();
-            if (customIngredient == null) return false;
-            if (((AmountIngredient) customIngredient).amount() > entry.getIntValue()) {
+            Ingredient ingredient = ingredients.get(entry.getKey());
+            if (!(ingredient instanceof AmountIngredient ai) || ai.amount() > entry.getIntValue()) {
                 return false;
             }
         }
@@ -93,24 +112,24 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
     }
 
     @Override
-    public ItemStack assemble(T input, HolderLookup.@Nullable Provider registries) {
-        return getResultItem(registries).copy();
+    public ItemStack assemble(I container, RegistryAccess registryAccess) {
+        return getResultItem(registryAccess).copy();
     }
 
-    public ItemStack assembleAndExtract(T input, HolderLookup.Provider registries) {
+    public ItemStack assembleAndExtract(I input, RegistryAccess registryAccess) {
         consumeShapeless(input, ingredients);
-        return assemble(input, registries);
+        return assemble(input, registryAccess);
     }
 
-    public static void consumeShapeless(RecipeInput input, NonNullList<Ingredient> ingredients) {
+    public static void consumeShapeless(PortRecipeInput input, NonNullList<Ingredient> ingredients) {
         consumeShapeless(input.size(), input::getItem, ingredients);
     }
 
-    public static void consumeShaped(RecipeInput input, int recipeWidth, int recipeHeight, ShapedRecipePattern pattern) {
+    public static void consumeShaped(PortRecipeInput input, int recipeWidth, int recipeHeight, PortShapedRecipePattern pattern) {
         if (pattern.data.isPresent()) {
-            ShapedRecipePattern.Data data = pattern.data.get();
+            PortShapedRecipePattern.Data data = pattern.data.get();
             // 计算顶格
-            int patternWidth = data.pattern().getFirst().length();
+            int patternWidth = PortListExtension.getFirst(data.pattern()).length();
             int patternHeight = data.pattern().size();
             Vector2i patternTopLeft = findPatternTopLeft(data.pattern(), patternWidth, patternHeight);
             Vector2i containerTopLeft = findContainerTopLeft(input, recipeWidth, recipeHeight);
@@ -124,12 +143,8 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
                     char c = row.charAt(j + patternTopLeft.x);
                     if (c == ' ') continue;
                     Ingredient ingredient = data.key().get(c);
-                    ItemStack itemStack = input.getItem(j + containerTopLeft.x + dy);
-                    if (ingredient.getCustomIngredient() instanceof AmountIngredient ai) {
-                        itemStack.shrink(ai.amount());
-                    } else {
-                        itemStack.shrink(1);
-                    }
+                    ItemStack stack = input.getItem(j + containerTopLeft.x + dy);
+                    stack.shrink(AmountIngredient.getAmount(ingredient));
                 }
             }
         }
@@ -142,7 +157,7 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
             for (int i = 0; i < pContainerSize; i++) {
                 ItemStack itemStack = getItemStackCallback.apply(i);
                 if (itemStack.isEmpty()) continue;
-                if (ingredient.getCustomIngredient() instanceof AmountIngredient a) {
+                if (ingredient instanceof AmountIngredient a) {
                     if (a.amount() == requires2Slots.computeIfAbsent(ingredient, FUNCTION).getB().size()) {
                         continue outer;
                     }
@@ -208,7 +223,7 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
         return new Vector2i(x, y);
     }
 
-    public static Vector2i findContainerTopLeft(RecipeInput container, int recipeWidth, int recipeHeight) {
+    public static Vector2i findContainerTopLeft(PortRecipeInput container, int recipeWidth, int recipeHeight) {
         int x = recipeWidth - 1, y = recipeHeight - 1;
         for (int i = 0; i < recipeHeight; i++) {
             int dy = i * recipeWidth;
@@ -224,14 +239,14 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
 
     public static <R extends AbstractAmountRecipe<?>> MapCodec<R> shapelessSerializerMapCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
+                PortItemStackExtension.strictCodec().fieldOf("result").forGetter(recipe -> recipe.result),
                 INGREDIENTS_CODEC.forGetter(recipe -> recipe.ingredients)
         ).apply(instance, factory));
     }
 
-    public static <R extends AbstractAmountRecipe<?>> PortStreamCodec<RegistryFriendlyByteBuf, R> shapelessSerializerSteamCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
-        return PortPortStreamCodec.composite(
-                ItemStack.STREAM_CODEC, r -> r.result,
+    public static <R extends AbstractAmountRecipe<?>> PortStreamCodec<PortRegistryFriendlyByteBuf, R> shapelessSerializerSteamCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
+        return PortStreamCodec.composite(
+                PortItemStackExtension.streamCodec(), r -> r.result,
                 LibStreamCodecUtils.INGREDIENTS, r -> r.getIngredients(),
                 factory
         );

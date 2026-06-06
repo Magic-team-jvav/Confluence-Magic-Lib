@@ -106,7 +106,7 @@ public final class LibAttributes {
     }
 
     @ApiStatus.Internal
-    public static double applyArrowKnockback(Entity attacker, double original) {
+    public static double applyArrowKnockback(@Nullable Entity attacker, double original) {
         if (attacker instanceof LivingEntity living) {
             AttributeInstance instance = living.getAttribute(Attributes.ATTACK_KNOCKBACK);
             if (instance != null) {

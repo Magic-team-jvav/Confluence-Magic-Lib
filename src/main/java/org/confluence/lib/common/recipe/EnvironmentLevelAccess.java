@@ -1,5 +1,9 @@
 package org.confluence.lib.common.recipe;
 
+import PortLib.extensions.com.mojang.serialization.Codec.PortCodecExtension;
+import PortLib.extensions.net.minecraft.advancements.critereon.StatePropertiesPredicate.PortStatePropertiesPredicateExtension;
+import PortLib.extensions.net.minecraft.core.Holder.PortHolderExtension;
+import PortLib.extensions.net.minecraft.world.entity.player.Player.PortPlayerExtension;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -11,7 +15,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.Player;
@@ -26,9 +29,9 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.CollisionContext;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import org.mesdag.portlib.network.PortRegistryFriendlyByteBuf;
 import org.mesdag.portlib.network.codec.PortByteBufCodecs;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
 
@@ -56,9 +59,9 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
         if (pos == null) {
             Vec3 start = player.getEyePosition(0.5F);
             Vec3 lookVector = player.getViewVector(0.5F);
-            double range = Math.max(player.blockInteractionRange(), player.entityInteractionRange());
+            double range = Math.max(PortPlayerExtension.blockInteractionRange(player), PortPlayerExtension.entityInteractionRange(player));
             Vec3 end = start.add(lookVector.x * range, lookVector.y * range, lookVector.z * range);
-            ClipContext context = new ClipContext(start, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, CollisionContext.of(player));
+            ClipContext context = new ClipContext(start, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player);
             BlockHitResult blockResult = player.level().clip(context);
             if (blockResult.getType() == HitResult.Type.BLOCK) {
                 this.pos = blockResult.getBlockPos();
@@ -126,12 +129,12 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
     ) {
         public static final Matcher EMPTY = new Matcher(Optional.empty(), Optional.empty(), false);
         public static final Codec<Matcher> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                RegistryCodecs.homogeneousList(Registries.BIOME).lenientOptionalFieldOf("biome").forGetter(Matcher::biome),
-                SearchContext.CODEC.lenientOptionalFieldOf("block").forGetter(Matcher::block),
-                Codec.BOOL.lenientOptionalFieldOf("graveyard", false).forGetter(Matcher::graveyard)
+                PortCodecExtension.lenientOptionalFieldOf(RegistryCodecs.homogeneousList(Registries.BIOME), "biome").forGetter(Matcher::biome),
+                PortCodecExtension.lenientOptionalFieldOf(SearchContext.CODEC, "block").forGetter(Matcher::block),
+                PortCodecExtension.lenientOptionalFieldOf(Codec.BOOL, "graveyard", false).forGetter(Matcher::graveyard)
         ).apply(instance, Matcher::new));
-        public static final MapCodec<Matcher> MAP_CODEC = CODEC.lenientOptionalFieldOf("environment", EMPTY);
-        public static final PortStreamCodec<RegistryFriendlyByteBuf, Matcher> STREAM_CODEC = PortPortStreamCodec.composite(
+        public static final MapCodec<Matcher> MAP_CODEC = PortCodecExtension.lenientOptionalFieldOf(CODEC, "environment", EMPTY);
+        public static final PortStreamCodec<PortRegistryFriendlyByteBuf, Matcher> STREAM_CODEC = PortStreamCodec.composite(
                 PortByteBufCodecs.optional(PortByteBufCodecs.holderSet(Registries.BIOME)), Matcher::biome,
                 PortByteBufCodecs.optional(SearchContext.STREAM_CODEC), Matcher::block,
                 PortByteBufCodecs.BOOL, Matcher::graveyard,
@@ -184,7 +187,7 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
             biome.ifPresent(biomes -> {
                 list.add(Component.translatable("jei.tooltip.environment.biome").withStyle(ChatFormatting.AQUA));
                 for (Holder<Biome> holder : biomes) {
-                    list.add(Component.translatable(Util.makeDescriptionId("biome", holder.getKey().location())).withStyle(ChatFormatting.GRAY));
+                    list.add(Component.translatable(Util.makeDescriptionId("biome", PortHolderExtension.getKey(holder).location())).withStyle(ChatFormatting.GRAY));
                 }
             });
             block.ifPresent(context -> {
@@ -206,14 +209,14 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
     ) {
         public static final Codec<SearchContext> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 ExtraCodecs.POSITIVE_INT.fieldOf("inflate").forGetter(SearchContext::inflate),
-                RegistryCodecs.homogeneousList(Registries.BLOCK).lenientOptionalFieldOf("blocks").forGetter(SearchContext::blocks),
-                StatePropertiesPredicate.CODEC.listOf().lenientOptionalFieldOf("state_predicates", List.of()).forGetter(SearchContext::statePredicates),
-                RegistryCodecs.homogeneousList(Registries.FLUID).lenientOptionalFieldOf("fluids").forGetter(SearchContext::fluids)
+                PortCodecExtension.lenientOptionalFieldOf(RegistryCodecs.homogeneousList(Registries.BLOCK), "blocks").forGetter(SearchContext::blocks),
+                PortCodecExtension.lenientOptionalFieldOf(PortStatePropertiesPredicateExtension.codec().listOf(), "state_predicates", List.of()).forGetter(SearchContext::statePredicates),
+                PortCodecExtension.lenientOptionalFieldOf(RegistryCodecs.homogeneousList(Registries.FLUID), "fluids").forGetter(SearchContext::fluids)
         ).apply(instance, SearchContext::new));
-        public static final PortStreamCodec<RegistryFriendlyByteBuf, SearchContext> STREAM_CODEC = PortPortStreamCodec.composite(
+        public static final PortStreamCodec<PortRegistryFriendlyByteBuf, SearchContext> STREAM_CODEC = PortStreamCodec.composite(
                 PortByteBufCodecs.VAR_INT, SearchContext::inflate,
                 PortByteBufCodecs.optional(PortByteBufCodecs.holderSet(Registries.BLOCK)), SearchContext::blocks,
-                StatePropertiesPredicate.STREAM_CODEC.apply(PortByteBufCodecs.list()), SearchContext::statePredicates,
+                PortStatePropertiesPredicateExtension.streamCodec().apply(PortByteBufCodecs.list()), SearchContext::statePredicates,
                 PortByteBufCodecs.optional(PortByteBufCodecs.holderSet(Registries.FLUID)), SearchContext::fluids,
                 SearchContext::new
         );
@@ -242,24 +245,24 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
             });
             for (StatePropertiesPredicate predicate : statePredicates) {
                 list.add(Component.translatable("jei.tooltip.environment.block.predicates").withStyle(ChatFormatting.GRAY));
-                for (StatePropertiesPredicate.PropertyMatcher property : predicate.properties()) {
-                    String s = property.name() + '=';
-                    if (property.valueMatcher() instanceof StatePropertiesPredicate.ExactMatcher exact) {
-                        s += exact.value();
-                    } else if (property.valueMatcher() instanceof StatePropertiesPredicate.RangedMatcher ranged) {
-                        Optional<String> minValue = ranged.minValue();
-                        Optional<String> maxValue = ranged.maxValue();
-                        if (minValue.isPresent()) {
-                            if (maxValue.isPresent()) {
-                                s += '[' + minValue.get() + ", " + maxValue.get() + ']';
+                for (StatePropertiesPredicate.PropertyMatcher property : predicate.properties) {
+                    String s = property.getName() + '=';
+                    if (property instanceof StatePropertiesPredicate.ExactPropertyMatcher exact) {
+                        s += exact.value;
+                    } else if (property instanceof StatePropertiesPredicate.RangedPropertyMatcher ranged) {
+                        @Nullable String minValue = ranged.minValue;
+                        @Nullable String maxValue = ranged.maxValue;
+                        if (minValue != null) {
+                            if (maxValue != null) {
+                                s += '[' + minValue + ", " + maxValue + ']';
                             } else {
-                                s += '[' + minValue.get() + ",)";
+                                s += '[' + minValue + ",)";
                             }
-                        } else if (maxValue.isPresent()) {
-                            s += "(," + maxValue.get() + ']';
+                        } else if (maxValue != null) {
+                            s += "(," + maxValue + ']';
                         }
                     } else {
-                        s += property.valueMatcher();
+                        s += property;
                     }
                     list.add(Component.translatable("jei.tooltip.environment.block.predicates.property", s).withStyle(ChatFormatting.DARK_GRAY));
                 }

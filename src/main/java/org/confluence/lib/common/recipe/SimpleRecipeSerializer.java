@@ -1,28 +1,60 @@
 package org.confluence.lib.common.recipe;
 
+import PortLib.extensions.com.mojang.serialization.DataResult.PortDataResultExtension;
+import PortLib.extensions.net.minecraft.network.FriendlyByteBuf.PortFriendlyByteBufExtension;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.world.item.crafting.Recipe;
+import com.mojang.serialization.MapLike;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
+import org.mesdag.portlib.network.PortRegistryFriendlyByteBuf;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
+import org.mesdag.portlib.wrapper.world.item.crafting.PortRecipe;
 
-public abstract class SimpleRecipeSerializer<T extends Recipe<?>> implements RecipeSerializer<T> {
-    private MapCodec<T> codec;
-    private PortStreamCodec<RegistryFriendlyByteBuf, T> streamCodec;
+public abstract class SimpleRecipeSerializer<R extends PortRecipe<?>> implements RecipeSerializer<R> {
+    private MapCodec<R> codec;
+    private PortStreamCodec<PortRegistryFriendlyByteBuf, R> streamCodec;
 
+    @ApiStatus.NonExtendable
     @Override
-    public final MapCodec<T> codec() {
-        if (codec == null) this.codec = getCodec();
-        return codec;
+    public R fromJson(ResourceLocation recipeId, JsonObject serializedRecipe) {
+        if (codec == null) {
+            codec = getCodec();
+        }
+        MapLike<JsonElement> mapLike = PortDataResultExtension.getOrThrow(JsonOps.INSTANCE.getMap(serializedRecipe));
+        R r = PortDataResultExtension.getOrThrow(codec.decode(JsonOps.INSTANCE, mapLike));
+        r.setId(recipeId);
+        return r;
     }
 
-    protected abstract MapCodec<T> getCodec();
-
+    @ApiStatus.NonExtendable
     @Override
-    public final PortStreamCodec<RegistryFriendlyByteBuf, T> streamCodec() {
-        if (streamCodec == null) this.streamCodec = getStreamCodec();
-        return streamCodec;
+    public @Nullable R fromNetwork(ResourceLocation recipeId, FriendlyByteBuf buffer) {
+        if (streamCodec == null) {
+            streamCodec = getStreamCodec();
+        }
+        PortRegistryFriendlyByteBuf buf = PortFriendlyByteBufExtension.wrap(buffer);
+        R r = streamCodec.decode(buf);
+        r.setId(recipeId);
+        return r;
     }
 
-    protected abstract PortStreamCodec<RegistryFriendlyByteBuf, T> getStreamCodec();
+    @ApiStatus.NonExtendable
+    @Override
+    public void toNetwork(FriendlyByteBuf buffer, R recipe) {
+        if (streamCodec == null) {
+            streamCodec = getStreamCodec();
+        }
+        PortRegistryFriendlyByteBuf buf = PortFriendlyByteBufExtension.wrap(buffer);
+        streamCodec.encode(buf, recipe);
+    }
+
+    protected abstract MapCodec<R> getCodec();
+
+    protected abstract PortStreamCodec<PortRegistryFriendlyByteBuf, R> getStreamCodec();
 }

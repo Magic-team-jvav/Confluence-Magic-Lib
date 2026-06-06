@@ -2,11 +2,11 @@ package org.confluence.lib.common.recipe;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.items.ItemStackHandler;
+import org.mesdag.portlib.wrapper.world.item.crafting.PortRecipeInput;
 
-public class ItemStackHandlerRecipeInput extends ItemStackHandler implements RecipeInput {
+public class ItemStackHandlerRecipeInput extends ItemStackHandler implements PortRecipeInput {
     public final BlockEntity blockEntity;
 
     public ItemStackHandlerRecipeInput(BlockEntity blockEntity, int size) {

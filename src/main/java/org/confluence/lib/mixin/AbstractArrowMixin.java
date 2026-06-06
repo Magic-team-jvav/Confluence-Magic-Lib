@@ -9,8 +9,8 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(AbstractArrow.class)
 public abstract class AbstractArrowMixin implements SelfGetter<AbstractArrow> {
-    @ModifyVariable(method = "doKnockback", at = @At(value = "STORE", ordinal = 0), ordinal = 0)
-    private double modify(double original) {
-        return LibAttributes.applyArrowKnockback(confluence$self().getOwner(), original);
+    @ModifyVariable(method = "onHitEntity", at = @At(value = "STORE", ordinal = 0), name = "d0")
+    private double modify(double d0) {
+        return LibAttributes.applyArrowKnockback(confluence$self().getOwner(), d0);
     }
 }

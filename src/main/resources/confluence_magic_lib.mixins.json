@@ -12,7 +12,6 @@
         "LivingEntityMixin",
         "PlayerMixin",
         "PrimaryLevelDataMixin",
-        "ShapedRecipePatternMixin",
         "accessor.LanguageProviderAccessor",
         "fixer.ChestBlockEntityAccessor",
         "fixer.RegistryDataLoader$RegistryDataMixin",

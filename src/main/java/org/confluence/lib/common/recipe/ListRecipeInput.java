@@ -1,11 +1,11 @@
 package org.confluence.lib.common.recipe;
 
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeInput;
+import org.mesdag.portlib.wrapper.world.item.crafting.PortRecipeInput;
 
 import java.util.List;
 
-public class ListRecipeInput implements RecipeInput {
+public class ListRecipeInput implements PortRecipeInput {
     private final List<ItemStack> items;
 
     public ListRecipeInput(List<ItemStack> items) {

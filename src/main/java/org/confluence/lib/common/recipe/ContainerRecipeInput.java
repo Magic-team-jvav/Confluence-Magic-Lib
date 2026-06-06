@@ -2,9 +2,9 @@ package org.confluence.lib.common.recipe;
 
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeInput;
+import org.mesdag.portlib.wrapper.world.item.crafting.PortRecipeInput;
 
-public class ContainerRecipeInput implements RecipeInput {
+public class ContainerRecipeInput implements PortRecipeInput {
     private final Container container;
 
     public ContainerRecipeInput(Container container) {

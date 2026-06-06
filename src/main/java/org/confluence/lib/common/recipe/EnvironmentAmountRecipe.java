@@ -1,14 +1,15 @@
 package org.confluence.lib.common.recipe;
 
+import PortLib.extensions.net.minecraft.world.item.ItemStack.PortItemStackExtension;
 import com.mojang.datafixers.util.Function3;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.NonNullList;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import org.confluence.lib.util.LibStreamCodecUtils;
+import org.mesdag.portlib.network.PortRegistryFriendlyByteBuf;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
 
 public abstract class EnvironmentAmountRecipe extends AbstractAmountRecipe<EnvironmentRecipeInput> {
@@ -30,15 +31,15 @@ public abstract class EnvironmentAmountRecipe extends AbstractAmountRecipe<Envir
 
     public static <R extends EnvironmentAmountRecipe> MapCodec<R> environmentShapelessSerializerMapCodec(Function3<ItemStack, NonNullList<Ingredient>, EnvironmentLevelAccess.Matcher, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
+                PortItemStackExtension.strictCodec().fieldOf("result").forGetter(recipe -> recipe.result),
                 INGREDIENTS_CODEC.forGetter(recipe -> recipe.ingredients),
                 EnvironmentLevelAccess.Matcher.MAP_CODEC.forGetter(EnvironmentAmountRecipe::getEnvironment)
         ).apply(instance, factory));
     }
 
-    public static <R extends EnvironmentAmountRecipe> PortStreamCodec<RegistryFriendlyByteBuf, R> environmentShapelessSerializerSteamCodec(Function3<ItemStack, NonNullList<Ingredient>, EnvironmentLevelAccess.Matcher, R> factory) {
-        return PortPortStreamCodec.composite(
-                ItemStack.STREAM_CODEC, r -> r.result,
+    public static <R extends EnvironmentAmountRecipe> PortStreamCodec<PortRegistryFriendlyByteBuf, R> environmentShapelessSerializerSteamCodec(Function3<ItemStack, NonNullList<Ingredient>, EnvironmentLevelAccess.Matcher, R> factory) {
+        return PortStreamCodec.composite(
+                PortItemStackExtension.streamCodec(), r -> r.result,
                 LibStreamCodecUtils.INGREDIENTS, AbstractAmountRecipe::getIngredients,
                 EnvironmentLevelAccess.Matcher.STREAM_CODEC, EnvironmentAmountRecipe::getEnvironment,
                 factory

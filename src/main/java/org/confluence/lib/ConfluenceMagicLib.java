@@ -24,7 +24,6 @@ import org.confluence.lib.util.DelayTaskHolder;
 import org.confluence.lib.util.LibUtils;
 import org.mesdag.portlib.attachment.PortAttachmentType;
 import org.mesdag.portlib.component.PortDataComponentType;
-import org.mesdag.portlib.network.IPortPacket;
 import org.mesdag.portlib.network.PortNetworkHandler;
 import org.mesdag.portlib.registries.*;
 import org.mesdag.portlib.wrapper.common.PortPercentageAttribute;
@@ -43,7 +42,6 @@ public final class ConfluenceMagicLib {
     public static final PortNetworkHandler NETWORK_HANDLER = new PortNetworkHandler(LIB_ID, "1");
     public static final boolean IS_CONFLUENCE_LOAD = LibUtils.isModLoaded(CONFLUENCE_ID);
 
-    // ===== PortLib 注册: 物品 =====
     private static final PortRegistration<Item> ITEMS = PortRegisterHandler.create(LIB_ID, Registries.ITEM);
     public static final PortRegistryEntry<Item, GroupItem> GROUP_ITEM;
 
@@ -51,7 +49,6 @@ public final class ConfluenceMagicLib {
         GROUP_ITEM = ITEMS.register("group", GroupItem::new);
     }
 
-    // ===== PortLib 注册: 属性 =====
     private static final PortAttributeRegistration ATTRIBUTES = PortRegisterHandler.attribute(LIB_ID);
     public static final PortRegistryEntry<Attribute, PortPercentageAttribute> CRITICAL_CHANCE = registerAttribute("generic.critical_chance", 0.0, 0.0, 10.0, PortPercentageAttribute::new, maker -> maker.setSyncable(true));
     public static final PortRegistryEntry<Attribute, RangedAttribute> RANGED_VELOCITY = registerAttribute("generic.ranged_velocity", 1.0, 0.0, 10.0, RangedAttribute::new, maker -> maker.setSyncable(true));
@@ -74,36 +71,31 @@ public final class ConfluenceMagicLib {
         return ATTRIBUTES.register(name, () -> factory.apply("attribute.name." + name, defaultValue, min, max), consumer);
     }
 
-    // ===== PortLib 注册: 材料类型 =====
     private static final PortIngredientTypeRegistration INGREDIENT_TYPES = PortRegisterHandler.ingredientType(LIB_ID);
     public static final PortRegistryEntry<PortIngredientType<?>, PortIngredientType<AmountIngredient>> AMOUNT_INGREDIENT_TYPE = INGREDIENT_TYPES.register("amount_ingredient", () -> new PortIngredientType<>(AmountIngredient.CODEC, AmountIngredient.STREAM_CODEC));
 
-    // ===== PortLib 注册: 结构 =====
     private static final PortRegistration<StructurePieceType> PIECE_TYPES = PortRegisterHandler.create(LIB_ID, Registries.STRUCTURE_PIECE);
     public static final PortRegistryEntry<StructurePieceType, StructurePieceType.StructureTemplateType> SIMPLE_TEMPLATE_PIECE = PIECE_TYPES.register("simple_template_piece", () -> SimpleTemplatePiece::new);
     public static final PortRegistryEntry<StructurePieceType, StructurePieceType.ContextlessType> GRID_PIECE = PIECE_TYPES.register("grid_piece", () -> GridPiece::new);
 
-    // ===== PortLib 注册: 数据组件 =====
     private static final PortDataComponentRegistration DATA_COMPONENTS = PortRegisterHandler.dataComponent(LIB_ID);
-    public static final PortRegistryEntry<PortDataComponentType<?>, PortDataComponentType<ModRarity>> MOD_RARITY = DATA_COMPONENTS.register("mod_rarity", b -> b.persistent(ModRarity.CODEC).networkSynchronized(ModRarity.STREAM_CODEC));
-    public static final PortRegistryEntry<PortDataComponentType<?>, PortDataComponentType<ToolMode>> TOOL_MODE = DATA_COMPONENTS.register("tool_mode", b -> b.persistent(ToolMode.CODEC).networkSynchronized(ToolMode.STREAM_CODEC));
-    public static final PortRegistryEntry<PortDataComponentType<?>, PortDataComponentType<NbtComponent>> NBT = DATA_COMPONENTS.register("nbt", b -> b.persistent(NbtComponent.CODEC).networkSynchronized(NbtComponent.STREAM_CODEC));
-    public static final PortRegistryEntry<PortDataComponentType<?>, PortDataComponentType<GroupItem.Stacks>> GROUP_STACKS = DATA_COMPONENTS.register("group_stacks", b -> b.persistent(GroupItem.Stacks.CODEC).networkSynchronized(GroupItem.Stacks.STREAM_CODEC));
-    public static final PortRegistryEntry<PortDataComponentType<?>, PortDataComponentType<GroupItem.BelongsTo>> BELONGS_TO_GROUP = DATA_COMPONENTS.register("belongs_to_group", b -> b.persistent(GroupItem.BelongsTo.CODEC).networkSynchronized(GroupItem.BelongsTo.STREAM_CODEC));
+    public static final PortRegistryEntry<PortDataComponentType<?>, PortDataComponentType<ModRarity>> MOD_RARITY = DATA_COMPONENTS.builder("mod_rarity", b -> b.persistent(ModRarity.CODEC).networkSynchronized(ModRarity.STREAM_CODEC));
+    public static final PortRegistryEntry<PortDataComponentType<?>, PortDataComponentType<ToolMode>> TOOL_MODE = DATA_COMPONENTS.builder("tool_mode", b -> b.persistent(ToolMode.CODEC).networkSynchronized(ToolMode.STREAM_CODEC));
+    public static final PortRegistryEntry<PortDataComponentType<?>, PortDataComponentType<NbtComponent>> NBT = DATA_COMPONENTS.builder("nbt", b -> b.persistent(NbtComponent.CODEC).networkSynchronized(NbtComponent.STREAM_CODEC));
+    public static final PortRegistryEntry<PortDataComponentType<?>, PortDataComponentType<GroupItem.Stacks>> GROUP_STACKS = DATA_COMPONENTS.builder("group_stacks", b -> b.persistent(GroupItem.Stacks.CODEC).networkSynchronized(GroupItem.Stacks.STREAM_CODEC));
+    public static final PortRegistryEntry<PortDataComponentType<?>, PortDataComponentType<GroupItem.BelongsTo>> BELONGS_TO_GROUP = DATA_COMPONENTS.builder("belongs_to_group", b -> b.persistent(GroupItem.BelongsTo.CODEC).networkSynchronized(GroupItem.BelongsTo.STREAM_CODEC));
 
-    // ===== PortLib 注册: 粒子 =====
     private static final PortParticleTypeRegistration PARTICLES = PortRegisterHandler.particleType(LIB_ID);
     public static final PortRegistryEntry<ParticleType<?>, ParticleType<CrossDustParticleOptions>> CROSS_DUST_PARTICLE = PARTICLES.register("cross_dust", false, CrossDustParticleOptions.CODEC, CrossDustParticleOptions.STREAM_CODEC);
 
-    // ===== PortLib 注册: 数据附件 =====
     private static final PortAttachmentRegistration ATTACHMENTS = PortRegisterHandler.attachment(LIB_ID);
     public static final PortRegistryEntry<PortAttachmentType<?>, PortAttachmentType<DelayTaskHolder>> DELAY_TASK_HOLDER = ATTACHMENTS.registerSimple("delay_task_holder", () -> PortAttachmentType.builder(DelayTaskHolder::new));
 
     public ConfluenceMagicLib(FMLJavaModLoadingContext context) {
         LibStartupConfig.register();
 
-        NETWORK_HANDLER.registerInGameS2C(AttackDamagePacketS2C.class, AttackDamagePacketS2C.ID, AttackDamagePacketS2C.STREAM_CODEC, IPortPacket.S2C::handle);
-        NETWORK_HANDLER.registerInGameS2C(SetEntityDataPacketS2C.class, SetEntityDataPacketS2C.ID, SetEntityDataPacketS2C.STREAM_CODEC, IPortPacket.S2C::handle);
+        NETWORK_HANDLER.registerInGameS2C(AttackDamagePacketS2C.class, AttackDamagePacketS2C.ID, AttackDamagePacketS2C.STREAM_CODEC);
+        NETWORK_HANDLER.registerInGameS2C(SetEntityDataPacketS2C.class, SetEntityDataPacketS2C.ID, SetEntityDataPacketS2C.STREAM_CODEC);
 
         ATTRIBUTES.addAlias(ResourceLocation.fromNamespaceAndPath("terra_curio", "generic.crit_chance"), CRITICAL_CHANCE.getId());
         ATTRIBUTES.addAlias(ResourceLocation.fromNamespaceAndPath("terra_curio", "generic.ranged_velocity"), RANGED_VELOCITY.getId());

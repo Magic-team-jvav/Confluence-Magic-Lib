@@ -15,7 +15,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class LanguageFixer {
-    /// [net.neoforged.neoforge.server.LanguageHook#loadBuiltinLanguages]
     private static void confluence$fix(Map<String, String> modTable) {
         if (FMLEnvironment.dist.isDedicatedServer()) return;
         LanguageManager languageManager = Minecraft.getInstance().getLanguageManager();
