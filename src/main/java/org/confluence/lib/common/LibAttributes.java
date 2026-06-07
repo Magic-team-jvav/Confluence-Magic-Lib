@@ -1,7 +1,7 @@
 package org.confluence.lib.common;
 
 import PortLib.extensions.net.minecraft.world.entity.ai.attributes.Attribute.PortAttributeExtension;
-import cpw.mods.util.Lazy;
+import com.google.common.base.Suppliers;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import it.unimi.dsi.fastutil.objects.ObjectDoublePair;
 import net.minecraft.Util;
@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public final class LibAttributes {
     private static final Map<Holder<Attribute>, Holder<Attribute>> MAP = Util.make(new HashMap<>(), table -> {
@@ -217,7 +218,7 @@ public final class LibAttributes {
         return getCustomAttribute(ConfluenceMagicLib.ARMOR_PENETRATION);
     }
 
-    private static final Lazy<Holder<Attribute>> ATTACK_DAMAGE = Lazy.of(() -> PortAttributeExtension.wrap(Attributes.ATTACK_DAMAGE));
+    private static final Supplier<Holder<Attribute>> ATTACK_DAMAGE = Suppliers.memoize(() -> PortAttributeExtension.wrap(Attributes.ATTACK_DAMAGE));
 
     /// 近战伤害
     public static Holder<Attribute> getAttackDamage() {

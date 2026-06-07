@@ -14,15 +14,15 @@ import java.nio.file.Path;
 import java.util.List;
 
 public final class LibStartupConfig {
-    public static PortConfigSpec.ListValue<String> ATTRIBUTE_REPLACE;
-    private static PortConfigSpec.LongValue modifyTime;
-    private static PortConfigSpec.StringValue version;
-    private static PortConfigSpec.StringValue messageDigest;
-    private static PortConfigSpec.IntValue alarmTimes;
-    private static PortConfigSpec.BooleanValue ITEM_GROUPS;
-    private static PortConfigSpec SPEC;
+    public static volatile PortConfigSpec.ListValue<String> ATTRIBUTE_REPLACE;
+    private static volatile PortConfigSpec.LongValue modifyTime;
+    private static volatile PortConfigSpec.StringValue version;
+    private static volatile PortConfigSpec.StringValue messageDigest;
+    private static volatile PortConfigSpec.IntValue alarmTimes;
+    private static volatile PortConfigSpec.BooleanValue ITEM_GROUPS;
+    private static volatile PortConfigSpec SPEC;
 
-    static void register() {
+    static synchronized void register() {
         PortConfigSpec.Builder builder = PortConfigSpec.builder(ConfluenceMagicLib.LIB_ID);
         ATTRIBUTE_REPLACE = builder.defineList("attributeReplacements", List.of(
                 "crit_chance = confluence_magic_lib:generic.critical_chance",

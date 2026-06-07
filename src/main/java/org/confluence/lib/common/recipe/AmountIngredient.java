@@ -37,8 +37,13 @@ public final class AmountIngredient extends PortCustomIngredient {
         this.amount = amount;
     }
 
-    public Ingredient ingredient() { return ingredient; }
-    public int amount() { return amount; }
+    public Ingredient ingredient() {
+        return ingredient;
+    }
+
+    public int amount() {
+        return amount;
+    }
 
     @Override
     public Stream<ItemStack> getItemStream() {
@@ -65,7 +70,9 @@ public final class AmountIngredient extends PortCustomIngredient {
     @Override
     public boolean equals(Object o) {
         if (o == this) return true;
-        if (o instanceof AmountIngredient a) return ingredient.equals(a.ingredient) && amount == a.amount;
+        if (o instanceof AmountIngredient a) {
+            return ingredient.equals(a.ingredient) && amount == a.amount;
+        }
         return false;
     }
 
