@@ -449,4 +449,8 @@ public final class LibUtils {
     public static DamageSource damageSource(Level level, ResourceKey<DamageType> key, @Nullable Entity causing, @Nullable Entity direct) {
         return level.damageSources().source(key, direct, causing);
     }
+
+    public static DamageSource damageSource(Level level, ResourceKey<DamageType> key, @Nullable Entity entity) {
+        return level.damageSources().source(key, entity);
+    }
 }
