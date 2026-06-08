@@ -4,11 +4,13 @@ import PortLib.extensions.net.minecraft.world.item.ItemStack.PortItemStackExtens
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -23,7 +25,6 @@ import org.confluence.lib.common.item.GroupItem;
 import org.mesdag.portlib.event.PortEventHandler;
 import org.mesdag.portlib.event.PortEventPriority;
 import org.mesdag.portlib.event.entity.PortEntityAttributeModificationEvent;
-import org.mesdag.portlib.event.lifecycle.PortFMLLoadCompleteEvent;
 import org.mesdag.portlib.event.other.PortBuildCreativeModeTabContentsEvent;
 import org.mesdag.portlib.event.registries.PortRegisterEvent;
 
@@ -35,38 +36,35 @@ import java.util.Map;
 public final class LibModEvents {
     public static void init() {
         PortEventHandler.addListener(PortEventPriority.LOWEST, LibModEvents::register);
-        PortEventHandler.addListener(LibModEvents::fmlLoadComplete);
         PortEventHandler.addListener(LibModEvents::entityAttributeModification);
         PortEventHandler.addListener(PortEventPriority.LOWEST, LibModEvents::buildCreativeModeTabContents);
     }
 
+    private static Map<String, String> blockWithItemMap;
+
     private static void register(PortRegisterEvent event) {
         FluidBuilder.register(event);
-        if (Registries.ATTRIBUTE.equals(event.getRegistryKey())) {
+        ResourceKey<? extends Registry<?>> registryKey = event.getRegistryKey();
+        if (Registries.ATTRIBUTE.equals(registryKey)) {
             LibAttributes.prepareReplacements();
-        }
-    }
-
-    private static void fmlLoadComplete(PortFMLLoadCompleteEvent event) {
-        event.enqueueWork(() -> {
+        } else if (Registries.BLOCK.equals(registryKey)) {
             ImmutableMap.Builder<String, String> blockWithItem = ImmutableMap.builder();
             PortEventHandler.postEvent(new NameFixRegisterEvent.BlockWithItem(blockWithItem));
-            Map<String, String> map = blockWithItem.build();
-
+            blockWithItemMap = blockWithItem.build();
             ImmutableMap.Builder<String, String> block = ImmutableMap.builder();
             PortEventHandler.postEvent(new NameFixRegisterEvent.Block(block));
-            block.putAll(map);
+            block.putAll(blockWithItemMap);
             for (Map.Entry<String, String> entry : block.build().entrySet()) {
                 ((ForgeRegistry<Block>) ForgeRegistries.BLOCKS).addAlias(ResourceLocation.parse(entry.getKey()), ResourceLocation.parse(entry.getValue()));
             }
-
+        } else if (Registries.ITEM.equals(registryKey)) {
             ImmutableMap.Builder<String, String> item = ImmutableMap.builder();
             PortEventHandler.postEvent(new NameFixRegisterEvent.Item(item));
-            item.putAll(map);
+            item.putAll(blockWithItemMap);
             for (Map.Entry<String, String> entry : item.build().entrySet()) {
-                ((ForgeRegistry<Block>) ForgeRegistries.BLOCKS).addAlias(ResourceLocation.parse(entry.getKey()), ResourceLocation.parse(entry.getValue()));
+                ((ForgeRegistry<Item>) ForgeRegistries.ITEMS).addAlias(ResourceLocation.parse(entry.getKey()), ResourceLocation.parse(entry.getValue()));
             }
-        });
+        }
     }
 
     private static void entityAttributeModification(PortEntityAttributeModificationEvent event) {

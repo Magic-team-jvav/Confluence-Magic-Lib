@@ -11,6 +11,7 @@ import net.minecraft.core.QuartPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ServerChunkCache;
@@ -22,6 +23,7 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.WaterAnimal;
@@ -81,26 +83,22 @@ public final class LibUtils {
         return value;
     }
 
-    /**
-     * 获取两个向量的角度（弧度）
-     *
-     * @param a 向量a
-     * @param b 向量b
-     * @return 两个向量的角度（弧度）
-     */
+    /// 获取两个向量的角度（弧度）
+    ///
+    /// @param a 向量a
+    /// @param b 向量b
+    /// @return 两个向量的角度（弧度）
     public static float getAngleRadians(Vec2 a, Vec2 b) {
         return getAngleRadians(a.x, a.y, b.x, b.y);
     }
 
-    /**
-     * 获取两个向量的角度（弧度）
-     *
-     * @param ax 向量a的x坐标
-     * @param ay 向量a的y坐标
-     * @param bx 向量b的x坐标
-     * @param by 向量b的y坐标
-     * @return 角度（弧度）
-     */
+    /// 获取两个向量的角度（弧度）
+    ///
+    /// @param ax 向量a的x坐标
+    /// @param ay 向量a的y坐标
+    /// @param bx 向量b的x坐标
+    /// @param by 向量b的y坐标
+    /// @return 角度（弧度）
     public static float getAngleRadians(double ax, double ay, double bx, double by) {
         return (float) (Math.atan2(by - ay, bx - ax)) + 3.141f;// + (a.x > b.x ? Math.PI : 0));
     }
@@ -446,5 +444,9 @@ public final class LibUtils {
 
     public static void poweringCreeper(Creeper creeper) {
         creeper.getEntityData().set(Creeper.DATA_IS_POWERED, true);
+    }
+
+    public static DamageSource damageSource(Level level, ResourceKey<DamageType> key, @Nullable Entity causing, @Nullable Entity direct) {
+        return level.damageSources().source(key, direct, causing);
     }
 }
