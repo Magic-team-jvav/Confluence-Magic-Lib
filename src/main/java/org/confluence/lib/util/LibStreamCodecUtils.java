@@ -2,8 +2,7 @@ package org.confluence.lib.util;
 
 import PortLib.extensions.net.minecraft.resources.ResourceLocation.PortResourceLocationExtension;
 import PortLib.extensions.net.minecraft.world.item.crafting.Ingredient.PortIngredientExtension;
-import com.mojang.datafixers.util.Function7;
-import com.mojang.datafixers.util.Function8;
+import com.mojang.datafixers.util.*;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.booleans.BooleanObjectMutablePair;
 import it.unimi.dsi.fastutil.booleans.BooleanObjectPair;
@@ -298,6 +297,526 @@ public final class LibStreamCodecUtils {
                 codec6.encode(buffer, getter6.apply(composite));
                 codec7.encode(buffer, getter7.apply(composite));
                 codec8.encode(buffer, getter8.apply(composite));
+            }
+        };
+    }
+
+    public static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9> PortStreamCodec<B, C> composite(
+            final PortStreamCodec<? super B, T1> codec1,
+            final Function<C, T1> getter1,
+            final PortStreamCodec<? super B, T2> codec2,
+            final Function<C, T2> getter2,
+            final PortStreamCodec<? super B, T3> codec3,
+            final Function<C, T3> getter3,
+            final PortStreamCodec<? super B, T4> codec4,
+            final Function<C, T4> getter4,
+            final PortStreamCodec<? super B, T5> codec5,
+            final Function<C, T5> getter5,
+            final PortStreamCodec<? super B, T6> codec6,
+            final Function<C, T6> getter6,
+            final PortStreamCodec<? super B, T7> codec7,
+            final Function<C, T7> getter7,
+            final PortStreamCodec<? super B, T8> codec8,
+            final Function<C, T8> getter8,
+            final PortStreamCodec<? super B, T9> codec9,
+            final Function<C, T9> getter9,
+            final Function9<T1, T2, T3, T4, T5, T6, T7, T8, T9, C> factory
+    ) {
+        return new PortStreamCodec<>() {
+            @Override
+            public C decode(B buffer) {
+                T1 t1 = codec1.decode(buffer);
+                T2 t2 = codec2.decode(buffer);
+                T3 t3 = codec3.decode(buffer);
+                T4 t4 = codec4.decode(buffer);
+                T5 t5 = codec5.decode(buffer);
+                T6 t6 = codec6.decode(buffer);
+                T7 t7 = codec7.decode(buffer);
+                T8 t8 = codec8.decode(buffer);
+                T9 t9 = codec9.decode(buffer);
+                return factory.apply(t1, t2, t3, t4, t5, t6, t7, t8, t9);
+            }
+
+            @Override
+            public void encode(B buffer, C composite) {
+                codec1.encode(buffer, getter1.apply(composite));
+                codec2.encode(buffer, getter2.apply(composite));
+                codec3.encode(buffer, getter3.apply(composite));
+                codec4.encode(buffer, getter4.apply(composite));
+                codec5.encode(buffer, getter5.apply(composite));
+                codec6.encode(buffer, getter6.apply(composite));
+                codec7.encode(buffer, getter7.apply(composite));
+                codec8.encode(buffer, getter8.apply(composite));
+                codec9.encode(buffer, getter9.apply(composite));
+            }
+        };
+    }
+
+    public static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> PortStreamCodec<B, C> composite(
+            final PortStreamCodec<? super B, T1> codec1,
+            final Function<C, T1> getter1,
+            final PortStreamCodec<? super B, T2> codec2,
+            final Function<C, T2> getter2,
+            final PortStreamCodec<? super B, T3> codec3,
+            final Function<C, T3> getter3,
+            final PortStreamCodec<? super B, T4> codec4,
+            final Function<C, T4> getter4,
+            final PortStreamCodec<? super B, T5> codec5,
+            final Function<C, T5> getter5,
+            final PortStreamCodec<? super B, T6> codec6,
+            final Function<C, T6> getter6,
+            final PortStreamCodec<? super B, T7> codec7,
+            final Function<C, T7> getter7,
+            final PortStreamCodec<? super B, T8> codec8,
+            final Function<C, T8> getter8,
+            final PortStreamCodec<? super B, T9> codec9,
+            final Function<C, T9> getter9,
+            final PortStreamCodec<? super B, T10> codec10,
+            final Function<C, T10> getter10,
+            final Function10<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, C> factory
+    ) {
+        return new PortStreamCodec<>() {
+            @Override
+            public C decode(B buffer) {
+                T1 t1 = codec1.decode(buffer);
+                T2 t2 = codec2.decode(buffer);
+                T3 t3 = codec3.decode(buffer);
+                T4 t4 = codec4.decode(buffer);
+                T5 t5 = codec5.decode(buffer);
+                T6 t6 = codec6.decode(buffer);
+                T7 t7 = codec7.decode(buffer);
+                T8 t8 = codec8.decode(buffer);
+                T9 t9 = codec9.decode(buffer);
+                T10 t10 = codec10.decode(buffer);
+                return factory.apply(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10);
+            }
+
+            @Override
+            public void encode(B buffer, C composite) {
+                codec1.encode(buffer, getter1.apply(composite));
+                codec2.encode(buffer, getter2.apply(composite));
+                codec3.encode(buffer, getter3.apply(composite));
+                codec4.encode(buffer, getter4.apply(composite));
+                codec5.encode(buffer, getter5.apply(composite));
+                codec6.encode(buffer, getter6.apply(composite));
+                codec7.encode(buffer, getter7.apply(composite));
+                codec8.encode(buffer, getter8.apply(composite));
+                codec9.encode(buffer, getter9.apply(composite));
+                codec10.encode(buffer, getter10.apply(composite));
+            }
+        };
+    }
+
+    public static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> PortStreamCodec<B, C> composite(
+            final PortStreamCodec<? super B, T1> codec1,
+            final Function<C, T1> getter1,
+            final PortStreamCodec<? super B, T2> codec2,
+            final Function<C, T2> getter2,
+            final PortStreamCodec<? super B, T3> codec3,
+            final Function<C, T3> getter3,
+            final PortStreamCodec<? super B, T4> codec4,
+            final Function<C, T4> getter4,
+            final PortStreamCodec<? super B, T5> codec5,
+            final Function<C, T5> getter5,
+            final PortStreamCodec<? super B, T6> codec6,
+            final Function<C, T6> getter6,
+            final PortStreamCodec<? super B, T7> codec7,
+            final Function<C, T7> getter7,
+            final PortStreamCodec<? super B, T8> codec8,
+            final Function<C, T8> getter8,
+            final PortStreamCodec<? super B, T9> codec9,
+            final Function<C, T9> getter9,
+            final PortStreamCodec<? super B, T10> codec10,
+            final Function<C, T10> getter10,
+            final PortStreamCodec<? super B, T11> codec11,
+            final Function<C, T11> getter11,
+            final Function11<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, C> factory
+    ) {
+        return new PortStreamCodec<>() {
+            @Override
+            public C decode(B buffer) {
+                T1 t1 = codec1.decode(buffer);
+                T2 t2 = codec2.decode(buffer);
+                T3 t3 = codec3.decode(buffer);
+                T4 t4 = codec4.decode(buffer);
+                T5 t5 = codec5.decode(buffer);
+                T6 t6 = codec6.decode(buffer);
+                T7 t7 = codec7.decode(buffer);
+                T8 t8 = codec8.decode(buffer);
+                T9 t9 = codec9.decode(buffer);
+                T10 t10 = codec10.decode(buffer);
+                T11 t11 = codec11.decode(buffer);
+                return factory.apply(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11);
+            }
+
+            @Override
+            public void encode(B buffer, C composite) {
+                codec1.encode(buffer, getter1.apply(composite));
+                codec2.encode(buffer, getter2.apply(composite));
+                codec3.encode(buffer, getter3.apply(composite));
+                codec4.encode(buffer, getter4.apply(composite));
+                codec5.encode(buffer, getter5.apply(composite));
+                codec6.encode(buffer, getter6.apply(composite));
+                codec7.encode(buffer, getter7.apply(composite));
+                codec8.encode(buffer, getter8.apply(composite));
+                codec9.encode(buffer, getter9.apply(composite));
+                codec10.encode(buffer, getter10.apply(composite));
+                codec11.encode(buffer, getter11.apply(composite));
+            }
+        };
+    }
+
+    public static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> PortStreamCodec<B, C> composite(
+            final PortStreamCodec<? super B, T1> codec1,
+            final Function<C, T1> getter1,
+            final PortStreamCodec<? super B, T2> codec2,
+            final Function<C, T2> getter2,
+            final PortStreamCodec<? super B, T3> codec3,
+            final Function<C, T3> getter3,
+            final PortStreamCodec<? super B, T4> codec4,
+            final Function<C, T4> getter4,
+            final PortStreamCodec<? super B, T5> codec5,
+            final Function<C, T5> getter5,
+            final PortStreamCodec<? super B, T6> codec6,
+            final Function<C, T6> getter6,
+            final PortStreamCodec<? super B, T7> codec7,
+            final Function<C, T7> getter7,
+            final PortStreamCodec<? super B, T8> codec8,
+            final Function<C, T8> getter8,
+            final PortStreamCodec<? super B, T9> codec9,
+            final Function<C, T9> getter9,
+            final PortStreamCodec<? super B, T10> codec10,
+            final Function<C, T10> getter10,
+            final PortStreamCodec<? super B, T11> codec11,
+            final Function<C, T11> getter11,
+            final PortStreamCodec<? super B, T12> codec12,
+            final Function<C, T12> getter12,
+            final Function12<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, C> factory
+    ) {
+        return new PortStreamCodec<>() {
+            @Override
+            public C decode(B buffer) {
+                T1 t1 = codec1.decode(buffer);
+                T2 t2 = codec2.decode(buffer);
+                T3 t3 = codec3.decode(buffer);
+                T4 t4 = codec4.decode(buffer);
+                T5 t5 = codec5.decode(buffer);
+                T6 t6 = codec6.decode(buffer);
+                T7 t7 = codec7.decode(buffer);
+                T8 t8 = codec8.decode(buffer);
+                T9 t9 = codec9.decode(buffer);
+                T10 t10 = codec10.decode(buffer);
+                T11 t11 = codec11.decode(buffer);
+                T12 t12 = codec12.decode(buffer);
+                return factory.apply(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12);
+            }
+
+            @Override
+            public void encode(B buffer, C composite) {
+                codec1.encode(buffer, getter1.apply(composite));
+                codec2.encode(buffer, getter2.apply(composite));
+                codec3.encode(buffer, getter3.apply(composite));
+                codec4.encode(buffer, getter4.apply(composite));
+                codec5.encode(buffer, getter5.apply(composite));
+                codec6.encode(buffer, getter6.apply(composite));
+                codec7.encode(buffer, getter7.apply(composite));
+                codec8.encode(buffer, getter8.apply(composite));
+                codec9.encode(buffer, getter9.apply(composite));
+                codec10.encode(buffer, getter10.apply(composite));
+                codec11.encode(buffer, getter11.apply(composite));
+                codec12.encode(buffer, getter12.apply(composite));
+            }
+        };
+    }
+
+    public static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> PortStreamCodec<B, C> composite(
+            final PortStreamCodec<? super B, T1> codec1,
+            final Function<C, T1> getter1,
+            final PortStreamCodec<? super B, T2> codec2,
+            final Function<C, T2> getter2,
+            final PortStreamCodec<? super B, T3> codec3,
+            final Function<C, T3> getter3,
+            final PortStreamCodec<? super B, T4> codec4,
+            final Function<C, T4> getter4,
+            final PortStreamCodec<? super B, T5> codec5,
+            final Function<C, T5> getter5,
+            final PortStreamCodec<? super B, T6> codec6,
+            final Function<C, T6> getter6,
+            final PortStreamCodec<? super B, T7> codec7,
+            final Function<C, T7> getter7,
+            final PortStreamCodec<? super B, T8> codec8,
+            final Function<C, T8> getter8,
+            final PortStreamCodec<? super B, T9> codec9,
+            final Function<C, T9> getter9,
+            final PortStreamCodec<? super B, T10> codec10,
+            final Function<C, T10> getter10,
+            final PortStreamCodec<? super B, T11> codec11,
+            final Function<C, T11> getter11,
+            final PortStreamCodec<? super B, T12> codec12,
+            final Function<C, T12> getter12,
+            final PortStreamCodec<? super B, T13> codec13,
+            final Function<C, T13> getter13,
+            final Function13<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, C> factory
+    ) {
+        return new PortStreamCodec<>() {
+            @Override
+            public C decode(B buffer) {
+                T1 t1 = codec1.decode(buffer);
+                T2 t2 = codec2.decode(buffer);
+                T3 t3 = codec3.decode(buffer);
+                T4 t4 = codec4.decode(buffer);
+                T5 t5 = codec5.decode(buffer);
+                T6 t6 = codec6.decode(buffer);
+                T7 t7 = codec7.decode(buffer);
+                T8 t8 = codec8.decode(buffer);
+                T9 t9 = codec9.decode(buffer);
+                T10 t10 = codec10.decode(buffer);
+                T11 t11 = codec11.decode(buffer);
+                T12 t12 = codec12.decode(buffer);
+                T13 t13 = codec13.decode(buffer);
+                return factory.apply(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13);
+            }
+
+            @Override
+            public void encode(B buffer, C composite) {
+                codec1.encode(buffer, getter1.apply(composite));
+                codec2.encode(buffer, getter2.apply(composite));
+                codec3.encode(buffer, getter3.apply(composite));
+                codec4.encode(buffer, getter4.apply(composite));
+                codec5.encode(buffer, getter5.apply(composite));
+                codec6.encode(buffer, getter6.apply(composite));
+                codec7.encode(buffer, getter7.apply(composite));
+                codec8.encode(buffer, getter8.apply(composite));
+                codec9.encode(buffer, getter9.apply(composite));
+                codec10.encode(buffer, getter10.apply(composite));
+                codec11.encode(buffer, getter11.apply(composite));
+                codec12.encode(buffer, getter12.apply(composite));
+                codec13.encode(buffer, getter13.apply(composite));
+            }
+        };
+    }
+
+    public static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> PortStreamCodec<B, C> composite(
+            final PortStreamCodec<? super B, T1> codec1,
+            final Function<C, T1> getter1,
+            final PortStreamCodec<? super B, T2> codec2,
+            final Function<C, T2> getter2,
+            final PortStreamCodec<? super B, T3> codec3,
+            final Function<C, T3> getter3,
+            final PortStreamCodec<? super B, T4> codec4,
+            final Function<C, T4> getter4,
+            final PortStreamCodec<? super B, T5> codec5,
+            final Function<C, T5> getter5,
+            final PortStreamCodec<? super B, T6> codec6,
+            final Function<C, T6> getter6,
+            final PortStreamCodec<? super B, T7> codec7,
+            final Function<C, T7> getter7,
+            final PortStreamCodec<? super B, T8> codec8,
+            final Function<C, T8> getter8,
+            final PortStreamCodec<? super B, T9> codec9,
+            final Function<C, T9> getter9,
+            final PortStreamCodec<? super B, T10> codec10,
+            final Function<C, T10> getter10,
+            final PortStreamCodec<? super B, T11> codec11,
+            final Function<C, T11> getter11,
+            final PortStreamCodec<? super B, T12> codec12,
+            final Function<C, T12> getter12,
+            final PortStreamCodec<? super B, T13> codec13,
+            final Function<C, T13> getter13,
+            final PortStreamCodec<? super B, T14> codec14,
+            final Function<C, T14> getter14,
+            final Function14<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, C> factory
+    ) {
+        return new PortStreamCodec<>() {
+            @Override
+            public C decode(B buffer) {
+                T1 t1 = codec1.decode(buffer);
+                T2 t2 = codec2.decode(buffer);
+                T3 t3 = codec3.decode(buffer);
+                T4 t4 = codec4.decode(buffer);
+                T5 t5 = codec5.decode(buffer);
+                T6 t6 = codec6.decode(buffer);
+                T7 t7 = codec7.decode(buffer);
+                T8 t8 = codec8.decode(buffer);
+                T9 t9 = codec9.decode(buffer);
+                T10 t10 = codec10.decode(buffer);
+                T11 t11 = codec11.decode(buffer);
+                T12 t12 = codec12.decode(buffer);
+                T13 t13 = codec13.decode(buffer);
+                T14 t14 = codec14.decode(buffer);
+                return factory.apply(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14);
+            }
+
+            @Override
+            public void encode(B buffer, C composite) {
+                codec1.encode(buffer, getter1.apply(composite));
+                codec2.encode(buffer, getter2.apply(composite));
+                codec3.encode(buffer, getter3.apply(composite));
+                codec4.encode(buffer, getter4.apply(composite));
+                codec5.encode(buffer, getter5.apply(composite));
+                codec6.encode(buffer, getter6.apply(composite));
+                codec7.encode(buffer, getter7.apply(composite));
+                codec8.encode(buffer, getter8.apply(composite));
+                codec9.encode(buffer, getter9.apply(composite));
+                codec10.encode(buffer, getter10.apply(composite));
+                codec11.encode(buffer, getter11.apply(composite));
+                codec12.encode(buffer, getter12.apply(composite));
+                codec13.encode(buffer, getter13.apply(composite));
+                codec14.encode(buffer, getter14.apply(composite));
+            }
+        };
+    }
+
+    public static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> PortStreamCodec<B, C> composite(
+            final PortStreamCodec<? super B, T1> codec1,
+            final Function<C, T1> getter1,
+            final PortStreamCodec<? super B, T2> codec2,
+            final Function<C, T2> getter2,
+            final PortStreamCodec<? super B, T3> codec3,
+            final Function<C, T3> getter3,
+            final PortStreamCodec<? super B, T4> codec4,
+            final Function<C, T4> getter4,
+            final PortStreamCodec<? super B, T5> codec5,
+            final Function<C, T5> getter5,
+            final PortStreamCodec<? super B, T6> codec6,
+            final Function<C, T6> getter6,
+            final PortStreamCodec<? super B, T7> codec7,
+            final Function<C, T7> getter7,
+            final PortStreamCodec<? super B, T8> codec8,
+            final Function<C, T8> getter8,
+            final PortStreamCodec<? super B, T9> codec9,
+            final Function<C, T9> getter9,
+            final PortStreamCodec<? super B, T10> codec10,
+            final Function<C, T10> getter10,
+            final PortStreamCodec<? super B, T11> codec11,
+            final Function<C, T11> getter11,
+            final PortStreamCodec<? super B, T12> codec12,
+            final Function<C, T12> getter12,
+            final PortStreamCodec<? super B, T13> codec13,
+            final Function<C, T13> getter13,
+            final PortStreamCodec<? super B, T14> codec14,
+            final Function<C, T14> getter14,
+            final PortStreamCodec<? super B, T15> codec15,
+            final Function<C, T15> getter15,
+            final Function15<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, C> factory
+    ) {
+        return new PortStreamCodec<>() {
+            @Override
+            public C decode(B buffer) {
+                T1 t1 = codec1.decode(buffer);
+                T2 t2 = codec2.decode(buffer);
+                T3 t3 = codec3.decode(buffer);
+                T4 t4 = codec4.decode(buffer);
+                T5 t5 = codec5.decode(buffer);
+                T6 t6 = codec6.decode(buffer);
+                T7 t7 = codec7.decode(buffer);
+                T8 t8 = codec8.decode(buffer);
+                T9 t9 = codec9.decode(buffer);
+                T10 t10 = codec10.decode(buffer);
+                T11 t11 = codec11.decode(buffer);
+                T12 t12 = codec12.decode(buffer);
+                T13 t13 = codec13.decode(buffer);
+                T14 t14 = codec14.decode(buffer);
+                T15 t15 = codec15.decode(buffer);
+                return factory.apply(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15);
+            }
+
+            @Override
+            public void encode(B buffer, C composite) {
+                codec1.encode(buffer, getter1.apply(composite));
+                codec2.encode(buffer, getter2.apply(composite));
+                codec3.encode(buffer, getter3.apply(composite));
+                codec4.encode(buffer, getter4.apply(composite));
+                codec5.encode(buffer, getter5.apply(composite));
+                codec6.encode(buffer, getter6.apply(composite));
+                codec7.encode(buffer, getter7.apply(composite));
+                codec8.encode(buffer, getter8.apply(composite));
+                codec9.encode(buffer, getter9.apply(composite));
+                codec10.encode(buffer, getter10.apply(composite));
+                codec11.encode(buffer, getter11.apply(composite));
+                codec12.encode(buffer, getter12.apply(composite));
+                codec13.encode(buffer, getter13.apply(composite));
+                codec14.encode(buffer, getter14.apply(composite));
+                codec15.encode(buffer, getter15.apply(composite));
+            }
+        };
+    }
+
+    public static <B, C, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> PortStreamCodec<B, C> composite(
+            final PortStreamCodec<? super B, T1> codec1,
+            final Function<C, T1> getter1,
+            final PortStreamCodec<? super B, T2> codec2,
+            final Function<C, T2> getter2,
+            final PortStreamCodec<? super B, T3> codec3,
+            final Function<C, T3> getter3,
+            final PortStreamCodec<? super B, T4> codec4,
+            final Function<C, T4> getter4,
+            final PortStreamCodec<? super B, T5> codec5,
+            final Function<C, T5> getter5,
+            final PortStreamCodec<? super B, T6> codec6,
+            final Function<C, T6> getter6,
+            final PortStreamCodec<? super B, T7> codec7,
+            final Function<C, T7> getter7,
+            final PortStreamCodec<? super B, T8> codec8,
+            final Function<C, T8> getter8,
+            final PortStreamCodec<? super B, T9> codec9,
+            final Function<C, T9> getter9,
+            final PortStreamCodec<? super B, T10> codec10,
+            final Function<C, T10> getter10,
+            final PortStreamCodec<? super B, T11> codec11,
+            final Function<C, T11> getter11,
+            final PortStreamCodec<? super B, T12> codec12,
+            final Function<C, T12> getter12,
+            final PortStreamCodec<? super B, T13> codec13,
+            final Function<C, T13> getter13,
+            final PortStreamCodec<? super B, T14> codec14,
+            final Function<C, T14> getter14,
+            final PortStreamCodec<? super B, T15> codec15,
+            final Function<C, T15> getter15,
+            final PortStreamCodec<? super B, T16> codec16,
+            final Function<C, T16> getter16,
+            final Function16<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, C> factory
+    ) {
+        return new PortStreamCodec<>() {
+            @Override
+            public C decode(B buffer) {
+                T1 t1 = codec1.decode(buffer);
+                T2 t2 = codec2.decode(buffer);
+                T3 t3 = codec3.decode(buffer);
+                T4 t4 = codec4.decode(buffer);
+                T5 t5 = codec5.decode(buffer);
+                T6 t6 = codec6.decode(buffer);
+                T7 t7 = codec7.decode(buffer);
+                T8 t8 = codec8.decode(buffer);
+                T9 t9 = codec9.decode(buffer);
+                T10 t10 = codec10.decode(buffer);
+                T11 t11 = codec11.decode(buffer);
+                T12 t12 = codec12.decode(buffer);
+                T13 t13 = codec13.decode(buffer);
+                T14 t14 = codec14.decode(buffer);
+                T15 t15 = codec15.decode(buffer);
+                T16 t16 = codec16.decode(buffer);
+                return factory.apply(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15, t16);
+            }
+
+            @Override
+            public void encode(B buffer, C composite) {
+                codec1.encode(buffer, getter1.apply(composite));
+                codec2.encode(buffer, getter2.apply(composite));
+                codec3.encode(buffer, getter3.apply(composite));
+                codec4.encode(buffer, getter4.apply(composite));
+                codec5.encode(buffer, getter5.apply(composite));
+                codec6.encode(buffer, getter6.apply(composite));
+                codec7.encode(buffer, getter7.apply(composite));
+                codec8.encode(buffer, getter8.apply(composite));
+                codec9.encode(buffer, getter9.apply(composite));
+                codec10.encode(buffer, getter10.apply(composite));
+                codec11.encode(buffer, getter11.apply(composite));
+                codec12.encode(buffer, getter12.apply(composite));
+                codec13.encode(buffer, getter13.apply(composite));
+                codec14.encode(buffer, getter14.apply(composite));
+                codec15.encode(buffer, getter15.apply(composite));
+                codec16.encode(buffer, getter16.apply(composite));
             }
         };
     }
