@@ -3,6 +3,7 @@ package org.confluence.lib.util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -16,6 +17,57 @@ import java.util.function.ToDoubleFunction;
 public final class LibMathUtils {
     public static final float HALF_SQRT_3 = (float) (Math.sqrt(3) / 2.0);
     public static final float INV_255 = 1.0F / 255.0F;
+
+    /**
+     * 将HSV转换为ARGB颜色
+     */
+    public static int hsvToArgb(float hue, float saturation, float value, int alpha) {
+        int i = (int)(hue * 6.0F) % 6;
+        float f = hue * 6.0F - (float)i;
+        float f1 = value * (1.0F - saturation);
+        float f2 = value * (1.0F - f * saturation);
+        float f3 = value * (1.0F - (1.0F - f) * saturation);
+        float f4;
+        float f5;
+        float f6;
+        switch (i) {
+            case 0:
+                f4 = value;
+                f5 = f3;
+                f6 = f1;
+                break;
+            case 1:
+                f4 = f2;
+                f5 = value;
+                f6 = f1;
+                break;
+            case 2:
+                f4 = f1;
+                f5 = value;
+                f6 = f3;
+                break;
+            case 3:
+                f4 = f1;
+                f5 = f2;
+                f6 = value;
+                break;
+            case 4:
+                f4 = f3;
+                f5 = f1;
+                f6 = value;
+                break;
+            case 5:
+                f4 = value;
+                f5 = f1;
+                f6 = f2;
+                break;
+            default:
+                throw new RuntimeException("Something went wrong when converting from HSV to RGB. Input was " + hue + ", " + saturation + ", " + value);
+        }
+
+        return FastColor.ARGB32.color(alpha, Mth.clamp((int)(f4 * 255.0F), 0, 255), Mth.clamp((int)(f5 * 255.0F), 0, 255), Mth.clamp((int)(f6 * 255.0F), 0, 255));
+    }
+
 
     /// @author ChatGPT
     public static float cubicBezier(float t, float p0, float p1, float p2, float p3) {
@@ -565,5 +617,12 @@ public final class LibMathUtils {
         float zMax = Math.max(pointA.z, pointB.z) + 0.5F;
         float zMin = Math.min(pointA.z, pointB.z) - 0.5F;
         return point2.x < xMax && point2.x > xMin && point2.y < yMax && point2.y > yMin && point2.z < zMax && point2.z > zMin;
+    }
+
+    /**
+     * 计算暴击伤害，如果触发暴击则伤害×1.5
+     */
+    public static float criticalDamageTotal(float critical, float damage, RandomSource random) {
+        return checkChance(critical, random) ? damage * 1.5F : damage;
     }
 }
