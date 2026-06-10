@@ -142,6 +142,10 @@ public final class LibClientUtils {
     }
 
     public static MutableComponent keyMappingComponent(KeyMapping keyMapping) {
-        return MutableComponent.create(keyMapping.getTranslatedKeyMessage().getContents()).withStyle(ChatFormatting.GRAY);
+        return keyMappingComponent(keyMapping, ChatFormatting.GRAY);
+    }
+
+    public static MutableComponent keyMappingComponent(KeyMapping keyMapping, ChatFormatting color) {
+        return MutableComponent.create(keyMapping.getTranslatedKeyMessage().getContents()).withStyle(color);
     }
 }
