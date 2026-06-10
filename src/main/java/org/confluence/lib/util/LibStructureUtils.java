@@ -13,9 +13,7 @@ import org.joml.Vector3f;
 import java.util.List;
 import java.util.Map;
 
-import static org.confluence.lib.util.VectorUtils.*;
-
-public final class StructureUtils {
+public final class LibStructureUtils {
     /// 主要是类内部引用，很少外部使用，你无须在意.png
     public static void ball8(BlockPos.MutableBlockPos posCheck, boolean replace, int x, int y, int z, int blockState, BlockPos centerPos, Object2IntMap<BlockPos> blockMap) {
         for (int i = 0; i < 8; i++) {
@@ -254,8 +252,8 @@ public final class StructureUtils {
             for (int y = setStartY; y <= setEndY; y++) {
                 for (int z = setStartZ; z <= setEndZ; z++) {
                     Vector3f pointP = new Vector3f(x, y, z);
-                    if (!isProjectionBetweenPoints(startPos, endPos, pointP)) continue;
-                    Vector3f pointP2 = getProjectionOnLineSegment(startPos, endPos, pointP);
+                    if (!LibMathUtils.isProjectionBetweenPoints(startPos, endPos, pointP)) continue;
+                    Vector3f pointP2 = LibMathUtils.getProjectionOnLineSegment(startPos, endPos, pointP);
                     double lengthGet = pointP2.distance(endPos);//0;//Math.sqrt(y2 + Mth.square(endPos.z - z) - getDistanceToLineSegment(startPos, endPos, pointP));
                     double lengthP = lengthGet / length;
                     if (pointP.distance(pointP2) <= (startRadius * lengthP + endRadius * (1.0D - lengthP))) {
@@ -275,11 +273,11 @@ public final class StructureUtils {
 
     /// 迷宫填充
     public static void mazeSet(BlockPos centerPos, float distance, int layer, int blockstate, int width, int height, WorldgenRandom random, float difficulty, Object2IntMap<BlockPos> blockMap) {
-        Map<Vector3f, BooleanStorage4> mazePos = mazePos(VectorUtils.toVector3f(centerPos), distance, layer, random, difficulty);
+        Map<Vector3f, BooleanStorage4> mazePos = LibGeometryUtils.mazePos(LibMathUtils.toVector3f(centerPos), distance, layer, random, difficulty);
         int length = Mth.ceil(distance * 0.5);
 
         for (Map.Entry<Vector3f, BooleanStorage4> entry : mazePos.entrySet()) {
-            BlockPos keySet = VectorUtils.fromVector3f(entry.getKey());
+            BlockPos keySet = LibMathUtils.fromVector3f(entry.getKey());
             BooleanStorage4 value = entry.getValue();
             if (value.get(0)) {
                 rectangular(keySet.offset(-width, 0, -width), keySet.offset(length, height, width), blockstate, blockMap, 0);
@@ -303,7 +301,7 @@ public final class StructureUtils {
         double step = (rEnd - rStart) / VctList.size();
         int i = 0;
         for (Vector3f posPoint : VctList) {
-            ball(rStart + step * i++, VectorUtils.fromVector3f(posPoint), blockstate, replace, blockMap);
+            ball(rStart + step * i++, LibMathUtils.fromVector3f(posPoint), blockstate, replace, blockMap);
         }
     }
 
@@ -312,14 +310,14 @@ public final class StructureUtils {
         double step = (rEnd - rStart) / VctList.size();
         int i = 0;
         for (Vector3f posPoint : VctList) {
-            ball(rStart + step * i++, VectorUtils.fromVector3f(posPoint), blockstate1, blockstate2, replace, blockMap, checkY);
+            ball(rStart + step * i++, LibMathUtils.fromVector3f(posPoint), blockstate1, blockstate2, replace, blockMap, checkY);
         }
     }
 
     /// 在整个坐标列表上填充椭球体
     public static void lineSetEllipsoid(List<Vector3f> VctList, double radiusDX, double radiusDY, double radiusDZ, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap) {
         for (Vector3f posPoint : VctList) {
-            ellipsoid(radiusDX, radiusDY, radiusDZ, VectorUtils.fromVector3f(posPoint), blockstate, replace, blockMap);
+            ellipsoid(radiusDX, radiusDY, radiusDZ, LibMathUtils.fromVector3f(posPoint), blockstate, replace, blockMap);
         }
     }
 
@@ -328,21 +326,21 @@ public final class StructureUtils {
         double step = (rEnd - rStart) / VctList.size();
         int i = 0;
         for (Vector3f posPoint : VctList) {
-            ball(rStart + step * i++, VectorUtils.fromVector3f(posPoint), blockstate, replace, blockMap, placePer, random);
+            ball(rStart + step * i++, LibMathUtils.fromVector3f(posPoint), blockstate, replace, blockMap, placePer, random);
         }
     }
 
     /// 在整个坐标列表上填充椭球体，带有随机比例
     public static void lineSetEllipsoid(List<Vector3f> VctList, double radiusDX, double radiusDY, double radiusDZ, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
         for (Vector3f posPoint : VctList) {
-            ellipsoid(radiusDX, radiusDY, radiusDZ, VectorUtils.fromVector3f(posPoint), blockstate, replace, blockMap, placePer, random);
+            ellipsoid(radiusDX, radiusDY, radiusDZ, LibMathUtils.fromVector3f(posPoint), blockstate, replace, blockMap, placePer, random);
         }
     }
 
     /// 在整个坐标列表上放置地物
     public static void lineSetFeature(List<Vector3f> list, Map<BlockPos, ResourceLocation> featureMap, ResourceLocation[] feature, WorldgenRandom random) {
         for (Vector3f vctPos : list) {
-            featureMap.put(VectorUtils.fromVector3f(vctPos), Util.getRandom(feature, random));
+            featureMap.put(LibMathUtils.fromVector3f(vctPos), Util.getRandom(feature, random));
         }
     }
 
@@ -350,14 +348,14 @@ public final class StructureUtils {
     ///
     /// 不规则球体填充，带有壁厚、随机比例
     public static void ball(int radius, int wall, BlockPos centerPos, Object2IntMap<BlockPos> blockMap, float chance, WorldgenRandom random, int wallBlock, int airBlock) {
-        List<Vector3f> list = ballPos(radius, centerPos, chance, random);
+        List<Vector3f> list = LibGeometryUtils.ballPos(radius, centerPos, chance, random);
         lineSet(list, radius, radius, wallBlock, true, blockMap);
         lineSet(list, radius - wall, radius - wall, airBlock, true, blockMap);
     }
 
     /// 不规则球体填充，带有壁厚、随机比例、指定y坐标上下不同种方块填充
     public static void ball(int radius, int wall, BlockPos centerPos, Object2IntMap<BlockPos> blockMap, float chance, WorldgenRandom random, int wallBlock, int airBlock1, int airBlock2, int checkY) {
-        List<Vector3f> list = ballPos(radius, centerPos, chance, random);
+        List<Vector3f> list = LibGeometryUtils.ballPos(radius, centerPos, chance, random);
         lineSet(list, radius, radius, wallBlock, true, blockMap);
         lineSet(list, radius - wall, radius - wall, airBlock1, airBlock2, true, blockMap, checkY);
     }

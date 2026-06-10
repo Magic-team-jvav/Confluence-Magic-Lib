@@ -15,7 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
-import org.confluence.lib.util.VectorUtils;
+import org.confluence.lib.util.LibGeometryUtils;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -24,9 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.confluence.lib.util.RenderUtils.calculateNormalRaw;
-import static org.confluence.lib.util.RenderUtils.drawCube;
-import static org.confluence.lib.util.VectorUtils.lightningPathList;
+import static org.confluence.lib.util.LibGeometryUtils.lightningPathList;
+import static org.confluence.lib.util.LibRenderUtils.calculateNormalRaw;
+import static org.confluence.lib.util.LibRenderUtils.drawCube;
 
 public class ThunderboltVFX extends VisualEffects {
     private final Map<Vector2f, Vector2f> POINTS_MAP = new HashMap<>();
@@ -228,7 +228,7 @@ public class ThunderboltVFX extends VisualEffects {
         for (Vector3f after : pathPoints) {
             if (j >= 2) {
                 points.clear();
-                VectorUtils.findVerticalPlane(point, before, after, side, points);
+                LibGeometryUtils.findVerticalPlane(point, before, after, side, points);
                 while (points.size() < 4) points.add(new Vector3f(0, 0, 0));
 
                 points0.add(points.get(0));

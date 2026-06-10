@@ -10,31 +10,19 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.QuartPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.TagKey;
-import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
-import net.minecraft.world.entity.*;
-import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.WaterAnimal;
-import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.world.entity.monster.Enemy;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
@@ -44,16 +32,12 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
-import net.minecraft.world.phys.Vec2;
-import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.entity.PartEntity;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.loading.LoadingModList;
 import net.minecraftforge.server.ServerLifecycleHooks;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.component.NbtComponent;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 import org.mesdag.portlib.component.PortDataComponentType;
 import org.mesdag.portlib.wrapper.common.PortEffectCure;
@@ -65,7 +49,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public final class LibUtils {
@@ -81,52 +64,6 @@ public final class LibUtils {
     @ApiStatus.Internal
     public static <T> T forMixin$ModifyExpression(T value) {
         return value;
-    }
-
-    /// 获取两个向量的角度（弧度）
-    ///
-    /// @param a 向量a
-    /// @param b 向量b
-    /// @return 两个向量的角度（弧度）
-    public static float getAngleRadians(Vec2 a, Vec2 b) {
-        return getAngleRadians(a.x, a.y, b.x, b.y);
-    }
-
-    /// 获取两个向量的角度（弧度）
-    ///
-    /// @param ax 向量a的x坐标
-    /// @param ay 向量a的y坐标
-    /// @param bx 向量b的x坐标
-    /// @param by 向量b的y坐标
-    /// @return 角度（弧度）
-    public static float getAngleRadians(double ax, double ay, double bx, double by) {
-        return (float) (Math.atan2(by - ay, bx - ax)) + 3.141f;// + (a.x > b.x ? Math.PI : 0));
-    }
-
-    public static float rotLerp(float a, float from, float to) {
-        return Mth.rotLerp(a, from, to);
-    }
-
-    public static void createItemEntity(ItemStack stack, double x, double y, double z, Level level, int pickUpDelay) {
-        if (stack.isEmpty()) return;
-        ItemEntity itemEntity = new ItemEntity(level, x, y, z, stack);
-        itemEntity.setPickUpDelay(pickUpDelay);
-        level.addFreshEntity(itemEntity);
-    }
-
-    public static void createItemEntity(ItemStack stack, Vec3 pos, Level level, int pickUpDelay) {
-        createItemEntity(stack, pos.x, pos.y, pos.z, level, pickUpDelay);
-    }
-
-    public static void createItemEntity(Item item, int count, double x, double y, double z, Level level, int pickUpDelay) {
-        if (count <= 0 || item == Items.AIR) return;
-        ItemEntity itemEntity = new ItemEntity(level, x, y, z, new ItemStack(item, count));
-        itemEntity.setPickUpDelay(pickUpDelay);
-        level.addFreshEntity(itemEntity);
-    }
-
-    public static void createItemEntity(Item item, int count, Vec3 pos, Level level, int pickUpDelay) {
-        createItemEntity(item, count, pos.x, pos.y, pos.z, level, pickUpDelay);
     }
 
     /// @param a 形参的方块实体类型
@@ -205,18 +142,6 @@ public final class LibUtils {
         return Math.max(original, MAX_STACK_SIZE);
     }
 
-    public static boolean anyHandHasItem(LivingEntity living, Predicate<ItemStack> predicate) {
-        return predicate.test(living.getMainHandItem()) || predicate.test(living.getOffhandItem());
-    }
-
-    public static boolean anyHandHasItem(LivingEntity living, Item item) {
-        return living.getMainHandItem().is(item) || living.getOffhandItem().is(item);
-    }
-
-    public static boolean anyHandHasItem(LivingEntity living, TagKey<Item> tag) {
-        return living.getMainHandItem().is(tag) || living.getOffhandItem().is(tag);
-    }
-
     public static boolean isDev() {
         return !FMLEnvironment.production;
     }
@@ -225,17 +150,6 @@ public final class LibUtils {
         if (isDev()) {
             runnable.run();
         }
-    }
-
-    public static void setItemAndDropChance(Mob mob, DifficultyInstance difficulty, EquipmentSlot slot, Item item, float chance) {
-        ItemStack itemStack = item.getDefaultInstance();
-        // todo
-//        float enchantChance = (slot.getType() == EquipmentSlot.Type.HAND ? 0.25F : 0.5F) * difficulty.getSpecialMultiplier();
-//        if (mob.getRandom().nextFloat() < enchantChance) {
-//            EnchantmentHelper.enchantItemFromProvider(itemStack, mob.registryAccess(), VanillaEnchantmentProviders.MOB_SPAWN_EQUIPMENT, difficulty, mob.getRandom());
-//        }
-        mob.setItemSlot(slot, itemStack);
-        mob.setDropChance(slot, chance);
     }
 
     public static CompoundTag getItemStackNbt(ItemStack stack) {
@@ -284,16 +198,6 @@ public final class LibUtils {
         return pos.getBlockAt(x, y, z);
     }
 
-    public static CompoundTag getOrCreatePersistedData(Player player) {
-        CompoundTag data = player.getPersistentData();
-        if (data.contains(Player.PERSISTED_NBT_TAG, Tag.TAG_COMPOUND)) {
-            return data.getCompound(Player.PERSISTED_NBT_TAG);
-        }
-        CompoundTag tag = new CompoundTag();
-        data.put(Player.PERSISTED_NBT_TAG, tag);
-        return tag;
-    }
-
     public static boolean isPhysicalClient() {
         return FMLEnvironment.dist.isClient();
     }
@@ -340,45 +244,9 @@ public final class LibUtils {
         return list.build();
     }
 
-    public static boolean isAnimal(LivingEntity living) {
-        return !(living instanceof Enemy) && (living instanceof Animal || living instanceof WaterAnimal);
-    }
-
     public static ResourceLocation withUniqueSuffix(ResourceLocation id) {
         UUID uuid = UUID.randomUUID();
         return id.withSuffix("_" + uuid.toString().replace("-", ""));
-    }
-
-    public static @Nullable Entity getOwner(DamageSource damageSource) {
-        Entity entity = damageSource.getEntity();
-        if (entity == null) return null;
-        return getOwner(entity);
-    }
-
-    /// 尝试寻找该实体的所有者，如果找不到则返回该实体
-    ///
-    /// 适合查询始作俑者
-    ///
-    /// @see LibUtils#tryFindBeImpacted(Entity) 适合查询直接受影响的实体的方法
-    @Contract("null -> null; !null -> !null")
-    public static @Nullable Entity getOwner(@Nullable Entity entity) {
-        if (entity instanceof PartEntity<?> partEntity) {
-            return partEntity.getParent();
-        } else if (entity instanceof OwnableEntity ownableEntity) {
-            return ownableEntity.getOwner();
-        } else if (entity instanceof TraceableEntity traceableEntity) {
-            return traceableEntity.getOwner();
-        }
-        return entity;
-    }
-
-    /// 适合查询直接受影响的实体，如攻击本体
-    @Contract("null -> null; !null -> !null")
-    public static @Nullable Entity tryFindBeImpacted(@Nullable Entity entity) {
-        if (entity instanceof PartEntity<?> part) {
-            return part.getParent();
-        }
-        return entity;
     }
 
     public static @Nullable ChunkAccess getChunkIfLoaded(ServerChunkCache chunkSource, BlockPos blockPos) {
@@ -422,28 +290,11 @@ public final class LibUtils {
         });
     }
 
-    public static boolean canHitEntity(@Nullable Entity target, @Nullable Entity owner) {
-        if (target == null || target.isRemoved()) return false; // 有模组把target写成了null
-        target = getOwner(target);
-        if (owner == target || !target.isAttackable() || !target.canBeHitByProjectile() || target instanceof ArmorStand) {
-            return false;
-        }
-        return owner == null || (!owner.isPassengerOfSameVehicle(target)/* && !target.skipAttackInteraction(owner)*/);
-    }
-
-    public static boolean isSingleplayerOwner(ServerPlayer player) {
-        return player.server.isSingleplayerOwner(player.getGameProfile());
-    }
-
     /// 可于游戏加载早期阶段判断
     ///
     /// 不能在mixin plugin中使用
     public static boolean isModLoaded(String modid) {
         return LoadingModList.get().getModFileById(modid) != null;
-    }
-
-    public static void poweringCreeper(Creeper creeper) {
-        creeper.getEntityData().set(Creeper.DATA_IS_POWERED, true);
     }
 
     public static DamageSource damageSource(Level level, ResourceKey<DamageType> key, @Nullable Entity causing, @Nullable Entity direct) {
@@ -452,5 +303,15 @@ public final class LibUtils {
 
     public static DamageSource damageSource(Level level, ResourceKey<DamageType> key, @Nullable Entity entity) {
         return level.damageSources().source(key, entity);
+    }
+
+    public static int listRandom(BooleanStorage4 list, RandomSource random) {
+        for (int i = 0; i < 100; i++) {
+            int listW = random.nextInt(list.size());
+            if (!list.get(listW)) {
+                return listW;
+            }
+        }
+        return 0;
     }
 }

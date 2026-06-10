@@ -26,7 +26,7 @@ import java.util.Queue;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public final class FeatureUtils {
+public final class LibFeatureUtils {
     public static boolean safeSetBlock(WorldGenLevel level, BlockPos pos, BlockState state, Predicate<BlockState> oldState) {
         if (oldState.test(level.getBlockState(pos))) {
             return level.setBlock(pos, state, 3);
