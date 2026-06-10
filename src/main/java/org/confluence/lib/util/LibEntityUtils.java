@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
@@ -35,12 +36,12 @@ import java.util.function.Predicate;
 
 public final class LibEntityUtils {
     public static boolean canHitEntity(@Nullable Entity target, @Nullable Entity owner) {
-        if (target == null || target.isRemoved()) return false; // 有模组把target写成了null
+        if (target == null || target.isRemoved()) return false;
         target = getOwner(target);
         if (owner == target || !target.isAttackable() || !target.canBeHitByProjectile() || target instanceof ArmorStand) {
             return false;
         }
-        return owner == null || (!owner.isPassengerOfSameVehicle(target)/* && !target.skipAttackInteraction(owner)*/);
+        return owner == null || (!owner.isPassengerOfSameVehicle(target));
     }
 
     public static void poweringCreeper(Creeper creeper) {
@@ -295,5 +296,16 @@ public final class LibEntityUtils {
 
     public static void createItemEntity(Item item, int count, Vec3 pos, Level level, int pickUpDelay) {
         createItemEntity(item, count, pos.x, pos.y, pos.z, level, pickUpDelay);
+    }
+
+    public static Vec3 getPlayerHandPos(Player player) {
+        float i = player.getMainArm() == HumanoidArm.RIGHT ? 1 : -1;
+        float f = player.yBodyRot * Mth.DEG_TO_RAD + 1f;
+        float d0 = Mth.sin(f);
+        float d1 = Mth.cos(f);
+        float scale = player.getScale();
+        float d2 = i * 0.25F * scale;
+        float d3 = 0.8F * scale;
+        return new Vec3(-d1 * d2 - d0 * d3, 0, -d0 * d2 + d1 * d3);
     }
 }

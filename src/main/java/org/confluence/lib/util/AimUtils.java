@@ -17,110 +17,6 @@ import org.mesdag.portlib.wrapper.common.extensions.IPortEntityExtension;
 public class AimUtils {
     public static final int MAX_TICKS = 60; // 弹道预判最长时间，单位：刻
 
-    /// 预判的设置；可对于一类预判类型通用（注：不同弓箭之间的速度、加速度等可能有细微差别，注意甄别）
-    ///
-    /// 注意：ticksMonsterExtra的用法要取决于使用案例。若是玩家发射弹幕则弹幕发射后会被调用一次tick；
-    ///
-    /// 若是叶绿箭撞墙弹回则被预判的怪物相当于多了一次移动tick，此时建议将ticksMonsterExtra设为1（注：老羊在1.12.2的观察所得；以对高速单位的实践经验为准）。
-    ///
-    /// 建议在预判不精准时，确认箭矢的重力加速度/速度乘数/起始速度 被正确设置，而后考虑调整ticksMonsterExtra。
-    public static class AimHelperOptions {
-        double projectileGravity = 0.05d, // 箭矢的重力加速度
-                projectileSpeed = 0d, // 箭矢的起始速度；**需要设置！**
-                projectileSpeedMax = 99d, // 箭矢最大速度（仅：恶魔锄刀等加速弹幕）
-                projectileSpeedMulti = 0.99d, // 箭矢每刻速度乘数
-                randomOffsetRadius = 0d, // 追踪位置的随机偏移，单位：格
-                ticksTotal = 10, // 若预判方案为固定tick（MC刻），则预判实体在此时间后的位置。
-                ticksMonsterExtra = 0; // 根据MC实体tick的先后顺序，有时怪物会多出一次移动tick，此时将其设为1
-        boolean useAcceleration = false, useTickEstimation = false;
-        int epoch = 5; // 对弹道预判的逼近循环次数上限（收敛时会提前结束）
-        int noGravityTicks = 0; // 若弹幕前几tick无重力影响，请更新此特性。
-        // 敌人加速度的额外偏移量
-        Vec3 accelerationOffset = new Vec3(0, 0, 0);
-
-        // 构造器
-        public AimHelperOptions() {
-            super();
-        }
-
-        // 构造器 - 可后续调整；对于特殊的弹射物类型酌情设置重力、速度乘数信息
-        public AimHelperOptions(Projectile projectile) {
-            this();
-            // TODO 完善此处，使构造器实现的效果与弹幕本身一致
-            setProjectileGravity(IPortEntityExtension.of(projectile).getGravity());
-        }
-
-        public AimHelperOptions setTicksTotal(double ticksTotal) {
-            this.ticksTotal = ticksTotal;
-            return this;
-        }
-
-        public AimHelperOptions setTicksMonsterExtra(double ticksMonsterExtra) {
-            this.ticksMonsterExtra = ticksMonsterExtra;
-            return this;
-        }
-
-        public AimHelperOptions setProjectileGravity(double projectileGravity) {
-            this.projectileGravity = projectileGravity;
-            return this;
-        }
-
-        public AimHelperOptions setProjectileSpeed(double projectileSpeed) {
-            this.projectileSpeed = projectileSpeed;
-            return this;
-        }
-
-        public AimHelperOptions setProjectileSpeedMax(double projectileSpeedMax) {
-            this.projectileSpeedMax = projectileSpeedMax;
-            return this;
-        }
-
-        public AimHelperOptions setProjectileSpeedMulti(double projectileSpeedMulti) {
-            this.projectileSpeedMulti = projectileSpeedMulti;
-            return this;
-        }
-
-        public AimHelperOptions setRandomOffsetRadius(double randomOffsetRadius) {
-            this.randomOffsetRadius = randomOffsetRadius;
-            return this;
-        }
-
-        public AimHelperOptions setEpoch(int epoch) {
-            this.epoch = epoch;
-            return this;
-        }
-
-        public AimHelperOptions setNoGravityTicks(int noGravityTicks) {
-            this.noGravityTicks = noGravityTicks;
-            return this;
-        }
-
-        public AimHelperOptions setAccelerationMode(boolean useAcceleration) {
-            this.useAcceleration = useAcceleration;
-            return this;
-        }
-
-        public AimHelperOptions setAimMode(boolean useTickEstimation) {
-            this.useTickEstimation = useTickEstimation;
-            return this;
-        }
-
-        public AimHelperOptions setAccOffset(Vec3 accelerationOffset) {
-            this.accelerationOffset = accelerationOffset;
-            return this;
-        }
-
-        public AimHelperOptions addAccOffset(Vec3 accelerationOffset) {
-            this.accelerationOffset.add(accelerationOffset);
-            return this;
-        }
-
-        public AimHelperOptions subtractAccOffset(Vec3 accelerationOffset) {
-            this.accelerationOffset.subtract(accelerationOffset);
-            return this;
-        }
-    }
-
     /// 取得实体的速度用来进行预判。
     ///
     /// TODO：未来进行boss预判冲刺时，玩家的速度可能需要特殊处理。
@@ -294,5 +190,109 @@ public class AimUtils {
         }
         // 转换为弹幕速度
         return LibMathUtils.getDirection(shootLoc, predictedLoc, aimHelperOption.projectileSpeed);
+    }
+
+    /// 预判的设置；可对于一类预判类型通用（注：不同弓箭之间的速度、加速度等可能有细微差别，注意甄别）
+    ///
+    /// 注意：ticksMonsterExtra的用法要取决于使用案例。若是玩家发射弹幕则弹幕发射后会被调用一次tick；
+    ///
+    /// 若是叶绿箭撞墙弹回则被预判的怪物相当于多了一次移动tick，此时建议将ticksMonsterExtra设为1（注：老羊在1.12.2的观察所得；以对高速单位的实践经验为准）。
+    ///
+    /// 建议在预判不精准时，确认箭矢的重力加速度/速度乘数/起始速度 被正确设置，而后考虑调整ticksMonsterExtra。
+    public static class AimHelperOptions {
+        double projectileGravity = 0.05d, // 箭矢的重力加速度
+                projectileSpeed = 0d, // 箭矢的起始速度；**需要设置！**
+                projectileSpeedMax = 99d, // 箭矢最大速度（仅：恶魔锄刀等加速弹幕）
+                projectileSpeedMulti = 0.99d, // 箭矢每刻速度乘数
+                randomOffsetRadius = 0d, // 追踪位置的随机偏移，单位：格
+                ticksTotal = 10, // 若预判方案为固定tick（MC刻），则预判实体在此时间后的位置。
+                ticksMonsterExtra = 0; // 根据MC实体tick的先后顺序，有时怪物会多出一次移动tick，此时将其设为1
+        boolean useAcceleration = false, useTickEstimation = false;
+        int epoch = 5; // 对弹道预判的逼近循环次数上限（收敛时会提前结束）
+        int noGravityTicks = 0; // 若弹幕前几tick无重力影响，请更新此特性。
+        // 敌人加速度的额外偏移量
+        Vec3 accelerationOffset = new Vec3(0, 0, 0);
+
+        // 构造器
+        public AimHelperOptions() {
+            super();
+        }
+
+        // 构造器 - 可后续调整；对于特殊的弹射物类型酌情设置重力、速度乘数信息
+        public AimHelperOptions(Projectile projectile) {
+            this();
+            // TODO 完善此处，使构造器实现的效果与弹幕本身一致
+            setProjectileGravity(IPortEntityExtension.of(projectile).getGravity());
+        }
+
+        public AimHelperOptions setTicksTotal(double ticksTotal) {
+            this.ticksTotal = ticksTotal;
+            return this;
+        }
+
+        public AimHelperOptions setTicksMonsterExtra(double ticksMonsterExtra) {
+            this.ticksMonsterExtra = ticksMonsterExtra;
+            return this;
+        }
+
+        public AimHelperOptions setProjectileGravity(double projectileGravity) {
+            this.projectileGravity = projectileGravity;
+            return this;
+        }
+
+        public AimHelperOptions setProjectileSpeed(double projectileSpeed) {
+            this.projectileSpeed = projectileSpeed;
+            return this;
+        }
+
+        public AimHelperOptions setProjectileSpeedMax(double projectileSpeedMax) {
+            this.projectileSpeedMax = projectileSpeedMax;
+            return this;
+        }
+
+        public AimHelperOptions setProjectileSpeedMulti(double projectileSpeedMulti) {
+            this.projectileSpeedMulti = projectileSpeedMulti;
+            return this;
+        }
+
+        public AimHelperOptions setRandomOffsetRadius(double randomOffsetRadius) {
+            this.randomOffsetRadius = randomOffsetRadius;
+            return this;
+        }
+
+        public AimHelperOptions setEpoch(int epoch) {
+            this.epoch = epoch;
+            return this;
+        }
+
+        public AimHelperOptions setNoGravityTicks(int noGravityTicks) {
+            this.noGravityTicks = noGravityTicks;
+            return this;
+        }
+
+        public AimHelperOptions setAccelerationMode(boolean useAcceleration) {
+            this.useAcceleration = useAcceleration;
+            return this;
+        }
+
+        public AimHelperOptions setAimMode(boolean useTickEstimation) {
+            this.useTickEstimation = useTickEstimation;
+            return this;
+        }
+
+        public AimHelperOptions setAccOffset(Vec3 accelerationOffset) {
+            this.accelerationOffset = accelerationOffset;
+            return this;
+        }
+
+        public AimHelperOptions addAccOffset(Vec3 accelerationOffset) {
+            this.accelerationOffset.add(accelerationOffset);
+            return this;
+        }
+
+        public AimHelperOptions subtractAccOffset(Vec3 accelerationOffset) {
+            this.accelerationOffset.subtract(accelerationOffset);
+            return this;
+        }
     }
 }
