@@ -2,6 +2,7 @@ package org.confluence.lib.util;
 
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,11 +23,23 @@ import org.confluence.lib.ConfluenceMagicLib;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.Queue;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 public final class FeatureUtils {
+
+    public static BlockState[] DEBUG_COLOR = new BlockState[]{
+            Blocks.BLUE_CONCRETE.defaultBlockState(),
+            Blocks.CYAN_CONCRETE.defaultBlockState(),
+            Blocks.GREEN_CONCRETE.defaultBlockState(),
+            Blocks.LIME_CONCRETE.defaultBlockState(),
+            Blocks.YELLOW_CONCRETE.defaultBlockState(),
+            Blocks.ORANGE_CONCRETE.defaultBlockState(),
+            Blocks.RED_CONCRETE.defaultBlockState()
+    };
+
     public static boolean safeSetBlock(WorldGenLevel level, BlockPos pos, BlockState state, Predicate<BlockState> oldState) {
         if (oldState.test(level.getBlockState(pos))) {
             return level.setBlock(pos, state, 3);
@@ -319,6 +332,13 @@ public final class FeatureUtils {
             return false;
         }
         return true;
+    }
+
+    public static void updateLeavesOptimized(WorldGenLevel level, Collection<Long> trunkCollection, Collection<Long> leavesCollection, boolean cleanUncovered, boolean debugMode) {
+        LongSet trunkSet = trunkCollection instanceof LongSet ? (LongSet) trunkCollection : new LongOpenHashSet(trunkCollection);
+        LongSet leavesSet = leavesCollection instanceof LongSet ? (LongSet) leavesCollection : new LongOpenHashSet(leavesCollection);
+
+        updateLeavesOptimized(level, trunkSet, leavesSet, cleanUncovered, debugMode);
     }
 
     public static void updateLeavesOptimized(WorldGenLevel level, LongSet trunkSet, LongSet leavesSet, boolean cleanUncovered, boolean debugMode) {
