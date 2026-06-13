@@ -12,6 +12,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.confluence.lib.ConfluenceMagicLib;
+import org.mesdag.portlib.wrapper.resource.PortContextAwareReloadListener;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -20,7 +21,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-public abstract class SingleJsonFileReloadListener implements PreparableReloadListener {
+public abstract class SingleJsonFileReloadListener extends PortContextAwareReloadListener {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
     @Override
