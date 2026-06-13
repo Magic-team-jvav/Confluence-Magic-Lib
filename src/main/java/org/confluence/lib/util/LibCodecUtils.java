@@ -24,6 +24,7 @@ public final class LibCodecUtils {
             Codec.FLOAT.fieldOf("x").forGetter(vec2 -> vec2.x),
             Codec.FLOAT.fieldOf("y").forGetter(vec2 -> vec2.y)
     ).apply(instance, Vec2::new));
+    public static final Codec<Float> FLOAT_0_1 = Codec.floatRange(0, 1);
 
     public static <A, B> Codec<Tuple<A, B>> tuple(Codec<A> aCodec, Codec<B> bCodec) {
         return tuple("a", aCodec, "b", bCodec);

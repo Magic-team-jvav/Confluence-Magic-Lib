@@ -46,9 +46,9 @@ public final class LibStructureUtils {
     /// 填充方法
     ///
     /// 球体填充
-    public static void ball(double radiusD, BlockPos centerPos, int blockState, boolean replace, Object2IntMap<BlockPos> blockMap) {
+    public static void ball(float radiusD, BlockPos centerPos, int blockState, boolean replace, Object2IntMap<BlockPos> blockMap) {
         int radius = Mth.ceil(radiusD);
-        double radius2 = radiusD * radiusD;
+        float radius2 = radiusD * radiusD;
         BlockPos.MutableBlockPos posCheck = centerPos.mutable();
         for (int x = 0; x < radius; x++) {
             int x2 = x * x;
@@ -64,9 +64,9 @@ public final class LibStructureUtils {
     }
 
     /// 球体填充，带有指定y坐标上下不同种方块填充
-    public static void ball(double radiusD, BlockPos centerPos, int blockState1, int blockState2, boolean replace, Object2IntMap<BlockPos> blockMap, int checkY) {
+    public static void ball(float radiusD, BlockPos centerPos, int blockState1, int blockState2, boolean replace, Object2IntMap<BlockPos> blockMap, int checkY) {
         int radius = Mth.ceil(radiusD);
-        double radius2 = radiusD * radiusD;
+        float radius2 = radiusD * radiusD;
         BlockPos.MutableBlockPos posCheck = centerPos.mutable();
         for (int x = 0; x < radius; x++) {
             int x2 = x * x;
@@ -82,9 +82,9 @@ public final class LibStructureUtils {
     }
 
     /// 球体填充，带有随机比例
-    public static void ball(double radiusD, BlockPos centerPos, int blockState, boolean replace, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
+    public static void ball(float radiusD, BlockPos centerPos, int blockState, boolean replace, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
         int radius = Mth.ceil(radiusD);
-        double radius2 = radiusD * radiusD;
+        float radius2 = radiusD * radiusD;
         BlockPos.MutableBlockPos posCheck = centerPos.mutable();
         for (int x = 0; x < radius; x++) {
             int x2 = x * x;
@@ -100,13 +100,13 @@ public final class LibStructureUtils {
     }
 
     /// 椭球体填充
-    public static void ellipsoid(double radiusDX, double radiusDY, double radiusDZ, BlockPos centerPos, int blockState, boolean replace, Object2IntMap<BlockPos> blockMap) {
+    public static void ellipsoid(float radiusDX, float radiusDY, float radiusDZ, BlockPos centerPos, int blockState, boolean replace, Object2IntMap<BlockPos> blockMap) {
         int radiusX = Mth.ceil(radiusDX);
         int radiusY = Mth.ceil(radiusDY);
         int radiusZ = Mth.ceil(radiusDZ);
-        double inv_rX = 1 / (radiusDX * radiusDX);
-        double inv_rY = 1 / (radiusDY * radiusDY);
-        double inv_rZ = 1 / (radiusDZ * radiusDZ);
+        float inv_rX = 1 / (radiusDX * radiusDX);
+        float inv_rY = 1 / (radiusDY * radiusDY);
+        float inv_rZ = 1 / (radiusDZ * radiusDZ);
         BlockPos.MutableBlockPos posCheck = centerPos.mutable();
         for (int x = 0; x < radiusX; x++) {
             int x2 = x * x;
@@ -122,13 +122,13 @@ public final class LibStructureUtils {
     }
 
     /// 椭球体填充，带有指定y坐标上下不同种方块填充
-    public static void ellipsoid(double radiusDX, double radiusDY, double radiusDZ, BlockPos centerPos, int blockState1, int blockState2, boolean replace, Object2IntMap<BlockPos> blockMap, int checkY) {
+    public static void ellipsoid(float radiusDX, float radiusDY, float radiusDZ, BlockPos centerPos, int blockState1, int blockState2, boolean replace, Object2IntMap<BlockPos> blockMap, int checkY) {
         int radiusX = Mth.ceil(radiusDX);
         int radiusY = Mth.ceil(radiusDY);
         int radiusZ = Mth.ceil(radiusDZ);
-        double inv_rX = 1 / (radiusDX * radiusDX);
-        double inv_rY = 1 / (radiusDY * radiusDY);
-        double inv_rZ = 1 / (radiusDZ * radiusDZ);
+        float inv_rX = 1 / (radiusDX * radiusDX);
+        float inv_rY = 1 / (radiusDY * radiusDY);
+        float inv_rZ = 1 / (radiusDZ * radiusDZ);
         BlockPos.MutableBlockPos posCheck = centerPos.mutable();
         for (int x = 0; x < radiusX; x++) {
             int x2 = x * x;
@@ -144,13 +144,13 @@ public final class LibStructureUtils {
     }
 
     /// 椭球体填充，带有随机比例
-    public static void ellipsoid(double radiusDX, double radiusDY, double radiusDZ, BlockPos centerPos, int blockState, boolean replace, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
+    public static void ellipsoid(float radiusDX, float radiusDY, float radiusDZ, BlockPos centerPos, int blockState, boolean replace, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
         int radiusX = Mth.ceil(radiusDX);
         int radiusY = Mth.ceil(radiusDY);
         int radiusZ = Mth.ceil(radiusDZ);
-        double inv_rX = 1 / (radiusDX * radiusDX);
-        double inv_rY = 1 / (radiusDY * radiusDY);
-        double inv_rZ = 1 / (radiusDZ * radiusDZ);
+        float inv_rX = 1 / (radiusDX * radiusDX);
+        float inv_rY = 1 / (radiusDY * radiusDY);
+        float inv_rZ = 1 / (radiusDZ * radiusDZ);
         BlockPos.MutableBlockPos posCheck = centerPos.mutable();
         for (int x = 0; x < radiusX; x++) {
             int x2 = x * x;
@@ -225,7 +225,7 @@ public final class LibStructureUtils {
     }
 
     /// 任意角度圆台填充
-    public static void frustumSet(Vector3f startPos, Vector3f endPos, double startRadius, double endRadius, int blockstate, Object2IntMap<BlockPos> blockMap) {
+    public static void frustumSet(Vector3f startPos, Vector3f endPos, float startRadius, float endRadius, int blockstate, Object2IntMap<BlockPos> blockMap) {
         int xStart0 = (int) (startPos.x + startRadius + 1);
         int xStart1 = (int) (startPos.x - startRadius - 1);
         int xEnd0 = (int) (endPos.x + endRadius + 1);
@@ -246,7 +246,7 @@ public final class LibStructureUtils {
         int setStartZ = Math.min(zStart1, zEnd1);
         int setEndZ = Math.max(zStart0, zEnd0);
 
-        double length = startPos.distance(endPos);
+        float length = startPos.distance(endPos);
 
         for (int x = setStartX; x <= setEndX; x++) {
             for (int y = setStartY; y <= setEndY; y++) {
@@ -254,8 +254,8 @@ public final class LibStructureUtils {
                     Vector3f pointP = new Vector3f(x, y, z);
                     if (!LibMathUtils.isProjectionBetweenPoints(startPos, endPos, pointP)) continue;
                     Vector3f pointP2 = LibMathUtils.getProjectionOnLineSegment(startPos, endPos, pointP);
-                    double lengthGet = pointP2.distance(endPos);//0;//Math.sqrt(y2 + Mth.square(endPos.z - z) - getDistanceToLineSegment(startPos, endPos, pointP));
-                    double lengthP = lengthGet / length;
+                    float lengthGet = pointP2.distance(endPos);//0;//Math.sqrt(y2 + Mth.square(endPos.z - z) - getDistanceToLineSegment(startPos, endPos, pointP));
+                    float lengthP = lengthGet / length;
                     if (pointP.distance(pointP2) <= (startRadius * lengthP + endRadius * (1.0D - lengthP))) {
                         blockMap.put(new BlockPos(x, y, z), blockstate);
                     }
@@ -297,8 +297,8 @@ public final class LibStructureUtils {
     /// 列表快捷填充
     ///
     /// 在整个坐标列表上填充球体，带有半径渐变
-    public static void lineSet(List<Vector3f> VctList, double rStart, double rEnd, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap) {
-        double step = (rEnd - rStart) / VctList.size();
+    public static void lineSet(List<Vector3f> VctList, float rStart, float rEnd, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap) {
+        float step = (rEnd - rStart) / VctList.size();
         int i = 0;
         for (Vector3f posPoint : VctList) {
             ball(rStart + step * i++, LibMathUtils.fromVector3f(posPoint), blockstate, replace, blockMap);
@@ -306,8 +306,8 @@ public final class LibStructureUtils {
     }
 
     /// 在整个坐标列表上填充球体，带有指定y坐标上下不同种方块填充
-    public static void lineSet(List<Vector3f> VctList, double rStart, double rEnd, int blockstate1, int blockstate2, boolean replace, Object2IntMap<BlockPos> blockMap, int checkY) {
-        double step = (rEnd - rStart) / VctList.size();
+    public static void lineSet(List<Vector3f> VctList, float rStart, float rEnd, int blockstate1, int blockstate2, boolean replace, Object2IntMap<BlockPos> blockMap, int checkY) {
+        float step = (rEnd - rStart) / VctList.size();
         int i = 0;
         for (Vector3f posPoint : VctList) {
             ball(rStart + step * i++, LibMathUtils.fromVector3f(posPoint), blockstate1, blockstate2, replace, blockMap, checkY);
@@ -315,15 +315,15 @@ public final class LibStructureUtils {
     }
 
     /// 在整个坐标列表上填充椭球体
-    public static void lineSetEllipsoid(List<Vector3f> VctList, double radiusDX, double radiusDY, double radiusDZ, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap) {
+    public static void lineSetEllipsoid(List<Vector3f> VctList, float radiusDX, float radiusDY, float radiusDZ, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap) {
         for (Vector3f posPoint : VctList) {
             ellipsoid(radiusDX, radiusDY, radiusDZ, LibMathUtils.fromVector3f(posPoint), blockstate, replace, blockMap);
         }
     }
 
     /// 在整个坐标列表上填充球体，带有半径渐变、随机比例
-    public static void lineSet(List<Vector3f> VctList, double rStart, double rEnd, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
-        double step = (rEnd - rStart) / VctList.size();
+    public static void lineSet(List<Vector3f> VctList, float rStart, float rEnd, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
+        float step = (rEnd - rStart) / VctList.size();
         int i = 0;
         for (Vector3f posPoint : VctList) {
             ball(rStart + step * i++, LibMathUtils.fromVector3f(posPoint), blockstate, replace, blockMap, placePer, random);
@@ -331,7 +331,7 @@ public final class LibStructureUtils {
     }
 
     /// 在整个坐标列表上填充椭球体，带有随机比例
-    public static void lineSetEllipsoid(List<Vector3f> VctList, double radiusDX, double radiusDY, double radiusDZ, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
+    public static void lineSetEllipsoid(List<Vector3f> VctList, float radiusDX, float radiusDY, float radiusDZ, int blockstate, boolean replace, Object2IntMap<BlockPos> blockMap, float placePer, WorldgenRandom random) {
         for (Vector3f posPoint : VctList) {
             ellipsoid(radiusDX, radiusDY, radiusDZ, LibMathUtils.fromVector3f(posPoint), blockstate, replace, blockMap, placePer, random);
         }
