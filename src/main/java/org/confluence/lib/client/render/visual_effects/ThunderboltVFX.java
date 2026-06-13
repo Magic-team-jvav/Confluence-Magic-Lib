@@ -1,6 +1,5 @@
 package org.confluence.lib.client.render.visual_effects;
 
-import PortLib.extensions.com.mojang.blaze3d.vertex.VertexConsumer.PortVertexConsumerExtension;
 import PortLib.extensions.java.util.List.PortListExtension;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -16,6 +15,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import org.confluence.lib.util.LibGeometryUtils;
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -109,7 +109,7 @@ public class ThunderboltVFX extends VisualEffects {
             }
             if (!showTheLightning) continue;
             Vec3 targetPos = entityPos.add(pointLast.x, checkPos.getY() - entityMainPos.y, pointLast.y());
-            Vector3f mPos = new Vector3f((float) targetPos.x* 0.5F + random.nextFloat() * 6 - 3, -random.nextFloat() * 6 - 2, (float)targetPos.z* 0.5F + random.nextFloat() * 6 - 3);
+            Vector3f mPos = new Vector3f((float) targetPos.x * 0.5F + random.nextFloat() * 6 - 3, -random.nextFloat() * 6 - 2, (float) targetPos.z * 0.5F + random.nextFloat() * 6 - 3);
 
             List<Vector3f> pathPoints = new ArrayList<>();
             pathPoints.add(entityPos.toVector3f());
@@ -187,17 +187,14 @@ public class ThunderboltVFX extends VisualEffects {
                         PoseStack.Pose pose = poseStack.last();
                         VertexConsumer consumer = bufferSource.getBuffer(RenderType.lines());
                         poseStack.pushPose();
-                        {
-                            int finalAlpha = alpha;
-                            PortVertexConsumerExtension.vertex(consumer, pose, beforeVct.x, beforeVct.y, beforeVct.z, v -> {
-                                PortVertexConsumerExtension.setColor(v, 180, 0, 255, finalAlpha);
-                                PortVertexConsumerExtension.setNormal(v, pose, 0, 1, 0);
-                            });
-                            PortVertexConsumerExtension.vertex(consumer, pose, lightningVct.x, lightningVct.y, lightningVct.z, v -> {
-                                PortVertexConsumerExtension.setColor(v, 180, 0, 255, finalAlpha);
-                                PortVertexConsumerExtension.setNormal(v, pose, 0, 1, 0);
-                            });
-                        }
+                        consumer.vertex(pose.pose(), beforeVct.x, beforeVct.y, beforeVct.z)
+                                .color(180, 0, 255, alpha)
+                                .normal(pose.normal(), 0, 1, 0)
+                                .endVertex();
+                        consumer.vertex(pose.pose(), lightningVct.x, lightningVct.y, lightningVct.z)
+                                .color(180, 0, 255, alpha)
+                                .normal(pose.normal(), 0, 1, 0)
+                                .endVertex();
                         poseStack.popPose();
                     }
                     beforeVct = lightningVct;
@@ -241,7 +238,7 @@ public class ThunderboltVFX extends VisualEffects {
             j++;
         }
 
-        PoseStack.Pose pose = poseStack.last();
+        Matrix4f pose = poseStack.last().pose();
         poseStack.pushPose();
         Vec3 camPos = getCamera().getPosition();
         float cx = (float) (camPos.x - entityPos.x);
@@ -272,31 +269,31 @@ public class ThunderboltVFX extends VisualEffects {
             poseStack.pushPose();
             {
                 if (face || calculateNormalRaw(s0x, s0y, s0z, e2x, e2y, e2z, e3x, e3y, e3z, cx, cy, cz)) {
-                    PortVertexConsumerExtension.vertex(consumer, pose, s0x, s0y, s0z, v -> PortVertexConsumerExtension.setColor(v, red, green, blue, alpha));
-                    PortVertexConsumerExtension.vertex(consumer, pose, e0x, e0y, e0z, v -> PortVertexConsumerExtension.setColor(v, red, green, blue, alpha));
-                    PortVertexConsumerExtension.vertex(consumer, pose, e3x, e3y, e3z, v -> PortVertexConsumerExtension.setColor(v, red, green, blue, alpha));
-                    PortVertexConsumerExtension.vertex(consumer, pose, s1x, s1y, s1z, v -> PortVertexConsumerExtension.setColor(v, red, green, blue, alpha));
+                    consumer.vertex(pose, s0x, s0y, s0z).color(red, green, blue, alpha).endVertex();
+                    consumer.vertex(pose, e0x, e0y, e0z).color(red, green, blue, alpha).endVertex();
+                    consumer.vertex(pose, e3x, e3y, e3z).color(red, green, blue, alpha).endVertex();
+                    consumer.vertex(pose, s1x, s1y, s1z).color(red, green, blue, alpha).endVertex();
                 }
 
                 if (face || calculateNormalRaw(s1x, s1y, s1z, e3x, e3y, e3z, s0x, s0y, s0z, cx, cy, cz)) {
-                    PortVertexConsumerExtension.vertex(consumer, pose, s1x, s1y, s1z, v -> PortVertexConsumerExtension.setColor(v, red, green, blue, alpha));
-                    PortVertexConsumerExtension.vertex(consumer, pose, e3x, e3y, e3z, v -> PortVertexConsumerExtension.setColor(v, red, green, blue, alpha));
-                    PortVertexConsumerExtension.vertex(consumer, pose, s0x, s0y, s0z, v -> PortVertexConsumerExtension.setColor(v, red, green, blue, alpha));
-                    PortVertexConsumerExtension.vertex(consumer, pose, s2x, s2y, s2z, v -> PortVertexConsumerExtension.setColor(v, red, green, blue, alpha));
+                    consumer.vertex(pose, s1x, s1y, s1z).color(red, green, blue, alpha).endVertex();
+                    consumer.vertex(pose, e3x, e3y, e3z).color(red, green, blue, alpha).endVertex();
+                    consumer.vertex(pose, s0x, s0y, s0z).color(red, green, blue, alpha).endVertex();
+                    consumer.vertex(pose, s2x, s2y, s2z).color(red, green, blue, alpha).endVertex();
                 }
 
                 if (face || calculateNormalRaw(s2x, s2y, s2z, s0x, s0y, s0z, s1x, s1y, s1z, cx, cy, cz)) {
-                    PortVertexConsumerExtension.vertex(consumer, pose, s2x, s2y, s2z, v -> PortVertexConsumerExtension.setColor(v, red, green, blue, alpha));
-                    PortVertexConsumerExtension.vertex(consumer, pose, s0x, s0y, s0z, v -> PortVertexConsumerExtension.setColor(v, red, green, blue, alpha));
-                    PortVertexConsumerExtension.vertex(consumer, pose, s1x, s1y, s1z, v -> PortVertexConsumerExtension.setColor(v, red, green, blue, alpha));
-                    PortVertexConsumerExtension.vertex(consumer, pose, e3x, e3y, e3z, v -> PortVertexConsumerExtension.setColor(v, red, green, blue, alpha));
+                    consumer.vertex(pose, s2x, s2y, s2z).color(red, green, blue, alpha).endVertex();
+                    consumer.vertex(pose, s0x, s0y, s0z).color(red, green, blue, alpha).endVertex();
+                    consumer.vertex(pose, s1x, s1y, s1z).color(red, green, blue, alpha).endVertex();
+                    consumer.vertex(pose, e3x, e3y, e3z).color(red, green, blue, alpha).endVertex();
                 }
 
                 if (face || calculateNormalRaw(s3x, s3y, s3z, s1x, s1y, s1z, s2x, s2y, s2z, cx, cy, cz)) {
-                    PortVertexConsumerExtension.vertex(consumer, pose, s3x, s3y, s3z, v -> PortVertexConsumerExtension.setColor(v, red, green, blue, alpha));
-                    PortVertexConsumerExtension.vertex(consumer, pose, s1x, s1y, s1z, v -> PortVertexConsumerExtension.setColor(v, red, green, blue, alpha));
-                    PortVertexConsumerExtension.vertex(consumer, pose, s2x, s2y, s2z, v -> PortVertexConsumerExtension.setColor(v, red, green, blue, alpha));
-                    PortVertexConsumerExtension.vertex(consumer, pose, s0x, s0y, s0z, v -> PortVertexConsumerExtension.setColor(v, red, green, blue, alpha));
+                    consumer.vertex(pose, s3x, s3y, s3z).color(red, green, blue, alpha).endVertex();
+                    consumer.vertex(pose, s1x, s1y, s1z).color(red, green, blue, alpha).endVertex();
+                    consumer.vertex(pose, s2x, s2y, s2z).color(red, green, blue, alpha).endVertex();
+                    consumer.vertex(pose, s0x, s0y, s0z).color(red, green, blue, alpha).endVertex();
                 }
             }
             poseStack.popPose();
