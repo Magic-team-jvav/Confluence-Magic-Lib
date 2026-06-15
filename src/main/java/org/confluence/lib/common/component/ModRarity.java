@@ -120,10 +120,10 @@ public class ModRarity {
         return special;
     }
 
-    public static @Nullable ModRarity getRarity(ItemStack itemStack, boolean prototype) {
-        ModRarity rarity = getModRarity(itemStack, prototype);
+    public static @Nullable ModRarity getRarity(ItemStack stack, boolean prototype) {
+        ModRarity rarity = getModRarity(stack, prototype);
         if (rarity != null) return rarity;
-        return switch (itemStack.getRarity()) {
+        return switch (stack.getRarity()) {
             case COMMON -> COMMON;
             case UNCOMMON -> UNCOMMON;
             case RARE -> RARE;
@@ -132,12 +132,15 @@ public class ModRarity {
         };
     }
 
-    public static @Nullable ModRarity getRarity(ItemStack itemStack) {
-        return getRarity(itemStack, false);
+    public static @Nullable ModRarity getRarity(ItemStack stack) {
+        return getRarity(stack, false);
     }
 
-    public static @Nullable ModRarity getModRarity(ItemStack itemStack, boolean prototype) {
-        return PortItemStackExtension.getData(itemStack, ConfluenceMagicLib.MOD_RARITY);
+    public static @Nullable ModRarity getModRarity(ItemStack stack, boolean prototype) {
+        if (prototype) {
+            return PortItemStackExtension.getPrototypeData(stack).get(ConfluenceMagicLib.MOD_RARITY.get());
+        }
+        return PortItemStackExtension.getData(stack, ConfluenceMagicLib.MOD_RARITY);
     }
 
     public static Style withColor(ItemStack itemStack, Style style) {

@@ -9,6 +9,8 @@
         "CreativeModeTabMixin",
         "DamageSourceMixin",
         "FoodDataMixin",
+        "FriendlyByteBufMixin",
+        "ItemEntityMixin",
         "LivingEntityMixin",
         "PlayerMixin",
         "PrimaryLevelDataMixin",
