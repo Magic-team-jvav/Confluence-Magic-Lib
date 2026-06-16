@@ -3,8 +3,10 @@ package org.confluence.lib.util;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
-import net.minecraftforge.registries.DeferredRegister;
 import org.confluence.lib.common.LibTags;
+import org.mesdag.portlib.registries.PortBlockRegistration;
+import org.mesdag.portlib.registries.PortItemRegistration;
+import org.mesdag.portlib.registries.PortRegistration;
 
 public record WipNotDisplayOutput(
         CreativeModeTab.Output delegate
@@ -18,11 +20,15 @@ public record WipNotDisplayOutput(
         }
     }
 
-    public void acceptAll(DeferredRegister<? extends ItemLike> register, CreativeModeTab.TabVisibility tabVisibility) {
+    public void acceptAll(PortRegistration<? extends ItemLike> register, CreativeModeTab.TabVisibility tabVisibility) {
         register.getEntries().forEach(item -> accept(item.get(), tabVisibility));
     }
 
-    public void acceptAll(DeferredRegister<? extends ItemLike> register) {
+    public void acceptAll(PortItemRegistration register) {
+        acceptAll(register, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+    }
+
+    public void acceptAll(PortBlockRegistration register) {
         acceptAll(register, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
     }
 
