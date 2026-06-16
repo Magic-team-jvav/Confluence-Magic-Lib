@@ -20,7 +20,7 @@ public record WipNotDisplayOutput(
         }
     }
 
-    public void acceptAll(PortRegistration<? extends ItemLike> register, CreativeModeTab.TabVisibility tabVisibility) {
+    public <I extends ItemLike> void acceptAll(PortRegistration<I> register, CreativeModeTab.TabVisibility tabVisibility) {
         register.getEntries().forEach(item -> accept(item.get(), tabVisibility));
     }
 
