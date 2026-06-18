@@ -72,6 +72,6 @@ public interface ILibAbstractContainerScreen {
         if (stack.is(GroupItem.getInstance())) {
             return PortItemStackExtension.getDataOrDefault(stack, ConfluenceMagicLib.GROUP_STACKS, GroupItem.Stacks.EMPTY).getId();
         }
-        return ILibClientItemStack.of(stack).confluence$getGroupId();
+        return ILibClientItemStack.of(stack).confluence$clientGetGroupId();
     }
 }

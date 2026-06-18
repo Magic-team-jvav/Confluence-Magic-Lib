@@ -95,7 +95,7 @@ public class GroupItem extends Item {
             this.id = id;
             if (LibUtils.isPhysicalClient()) {
                 for (ItemStack stack : values) {
-                    ILibClientItemStack.of(stack).confluence$setGroupId(id);
+                    ILibClientItemStack.of(stack).confluence$clientSetGroupId(id);
                 }
             }
         }
@@ -203,7 +203,7 @@ public class GroupItem extends Item {
             Set<ItemStack> set = ItemStackLinkedSet.createTypeAndTagSet();
             for (ItemStack stack : stacks) {
                 if (LibUtils.isPhysicalClient()) {
-                    ILibClientItemStack.of(stack).confluence$setGroupId(id);
+                    ILibClientItemStack.of(stack).confluence$clientSetGroupId(id);
                 }
                 set.add(stack);
             }
