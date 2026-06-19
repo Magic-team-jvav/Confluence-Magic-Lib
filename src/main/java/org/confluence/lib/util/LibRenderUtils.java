@@ -1,11 +1,13 @@
 package org.confluence.lib.util;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -211,5 +213,147 @@ public final class LibRenderUtils {
         float dotProduct = nx * cx + ny * cy + nz * cz;
 
         return dotProduct > 0;
+    }
+
+    public static void renderDebugBlock(BufferBuilder buffer, BlockPos pos, float size, int r, int g, int b, int a, boolean up, boolean down, boolean north, boolean south, boolean east, boolean west) {
+        int x = pos.getX();
+        int y = pos.getY();
+        int z = pos.getZ();
+
+        //0
+        if (!((!up) || (!north))) {
+            buffer.vertex(x, y + size, z).color(r, g, b, a).endVertex();
+            buffer.vertex(x + size, y + size, z).color(r, g, b, a).endVertex();
+        }
+
+        //1
+        if (!((!up) || (!east))) {
+            buffer.vertex(x + size, y + size, z).color(r, g, b, a).endVertex();
+            buffer.vertex(x + size, y + size, z + size).color(r, g, b, a).endVertex();
+        }
+
+        //2
+        if (!((!up) || (!south))) {
+            buffer.vertex(x + size, y + size, z + size).color(r, g, b, a).endVertex();
+            buffer.vertex(x, y + size, z + size).color(r, g, b, a).endVertex();
+        }
+
+        //3
+        if (!((!up) || (!west))) {
+            buffer.vertex(x, y + size, z + size).color(r, g, b, a).endVertex();
+            buffer.vertex(x, y + size, z).color(r, g, b, a).endVertex();
+        }
+
+        // BOTTvertex()
+        //4
+        if (!((!down) || (!east))) {
+            buffer.vertex(x + size, y, z).color(r, g, b, a).endVertex();
+            buffer.vertex(x + size, y, z + size).color(r, g, b, a).endVertex();
+        }
+
+        //5
+        if (!((!down) || (!south))) {
+            buffer.vertex(x + size, y, z + size).color(r, g, b, a).endVertex();
+            buffer.vertex(x, y, z + size).color(r, g, b, a).endVertex();
+        }
+
+        //6
+        if (!((!down) || (!west))) {
+            buffer.vertex(x, y, z + size).color(r, g, b, a).endVertex();
+            buffer.vertex(x, y, z).color(r, g, b, a).endVertex();
+        }
+
+        //7
+        if (!((!down) || (!north))) {
+            buffer.vertex(x, y, z).color(r, g, b, a).endVertex();
+            buffer.vertex(x + size, y, z).color(r, g, b, a).endVertex();
+        }
+
+        // Edgevertex()
+        //8
+        if (!((!east) || (!south))) {
+            buffer.vertex(x + size, y, z + size).color(r, g, b, a).endVertex();
+            buffer.vertex(x + size, y + size, z + size).color(r, g, b, a).endVertex();
+        }
+
+        // Edgevertex()
+        //9
+        if (!((!east) || (!north))) {
+            buffer.vertex(x + size, y, z).color(r, g, b, a).endVertex();
+            buffer.vertex(x + size, y + size, z).color(r, g, b, a).endVertex();
+        }
+
+        // Edgevertex()
+        //10
+        if (!((!west) || (!south))) {
+            buffer.vertex(x, y, z + size).color(r, g, b, a).endVertex();
+            buffer.vertex(x, y + size, z + size).color(r, g, b, a).endVertex();
+        }
+
+        // Edgevertex()
+        //11
+        if (!((!west) || (!north))) {
+            buffer.vertex(x, y, z).color(r, g, b, a).endVertex();
+            buffer.vertex(x, y + size, z).color(r, g, b, a).endVertex();
+        }
+    }
+
+    public static void renderDebugBlock(BufferBuilder buffer, BlockPos pos, float size, int r, int g, int b, int a) {
+        int x = pos.getX();
+        int y = pos.getY();
+        int z = pos.getZ();
+
+        //0
+        buffer.vertex(x, y + size, z).color(r, g, b, a).endVertex();
+        buffer.vertex(x + size, y + size, z).color(r, g, b, a).endVertex();
+
+        //1
+        buffer.vertex(x + size, y + size, z).color(r, g, b, a).endVertex();
+        buffer.vertex(x + size, y + size, z + size).color(r, g, b, a).endVertex();
+
+        //2
+        buffer.vertex(x + size, y + size, z + size).color(r, g, b, a).endVertex();
+        buffer.vertex(x, y + size, z + size).color(r, g, b, a).endVertex();
+
+        //3
+        buffer.vertex(x, y + size, z + size).color(r, g, b, a).endVertex();
+        buffer.vertex(x, y + size, z).color(r, g, b, a).endVertex();
+
+        // BOTTvertex()
+        //4
+        buffer.vertex(x + size, y, z).color(r, g, b, a).endVertex();
+        buffer.vertex(x + size, y, z + size).color(r, g, b, a).endVertex();
+
+        //5
+        buffer.vertex(x + size, y, z + size).color(r, g, b, a).endVertex();
+        buffer.vertex(x, y, z + size).color(r, g, b, a).endVertex();
+
+        //6
+        buffer.vertex(x, y, z + size).color(r, g, b, a).endVertex();
+        buffer.vertex(x, y, z).color(r, g, b, a).endVertex();
+
+        //7
+        buffer.vertex(x, y, z).color(r, g, b, a).endVertex();
+        buffer.vertex(x + size, y, z).color(r, g, b, a).endVertex();
+
+        // Edgevertex()
+        //8
+        buffer.vertex(x + size, y, z + size).color(r, g, b, a).endVertex();
+        buffer.vertex(x + size, y + size, z + size).color(r, g, b, a).endVertex();
+
+        // Edgevertex()
+        //9
+        buffer.vertex(x + size, y, z).color(r, g, b, a).endVertex();
+        buffer.vertex(x + size, y + size, z).color(r, g, b, a).endVertex();
+
+        // Edgevertex()
+        //10
+        buffer.vertex(x, y, z + size).color(r, g, b, a).endVertex();
+        buffer.vertex(x, y + size, z + size).color(r, g, b, a).endVertex();
+
+        // Edgevertex()
+        //11
+        buffer.vertex(x, y, z).color(r, g, b, a).endVertex();
+        buffer.vertex(x, y + size, z).color(r, g, b, a).endVertex();
     }
 }
