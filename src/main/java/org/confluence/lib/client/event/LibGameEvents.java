@@ -28,7 +28,7 @@ public final class LibGameEvents {
         PortEventHandler.addListener(PortEventPriority.HIGHEST, LibGameEvents::renderTooltip);
     }
 
-    private static void clientTick(PortClientTickEvent.PortPre event) {
+    private static void clientTick(PortClientTickEvent.Pre event) {
         ExpertColorAnimation.INSTANCE.updateColor();
         MasterColorAnimation.INSTANCE.updateColor();
         LocalPlayer player = Minecraft.getInstance().player;
@@ -37,7 +37,7 @@ public final class LibGameEvents {
         }
     }
 
-    private static void renderTooltip(PortRenderTooltipEvent.PortGatherComponents event) {
+    private static void renderTooltip(PortRenderTooltipEvent.GatherComponents event) {
         ItemStack itemStack = event.getItemStack();
         if (itemStack.isEmpty()) return;
 

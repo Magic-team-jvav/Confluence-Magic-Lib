@@ -302,7 +302,11 @@ public final class LibUtils {
     }
 
     public static DamageSource damageSource(Level level, ResourceKey<DamageType> key, @Nullable Entity entity) {
-        return level.damageSources().source(key, entity);
+        return level.damageSources().source(key, entity, entity);
+    }
+
+    public static DamageSource damageSource(Level level, ResourceKey<DamageType> key) {
+        return level.damageSources().source(key, null, null);
     }
 
     public static int listRandom(BooleanStorage4 list, RandomSource random) {

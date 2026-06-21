@@ -38,14 +38,12 @@ public class StateProperties {
             this.name = pName;
         }
 
-        /**
-         * 获取与该方块相连的多方块的相对方向
-         * <p>
-         * 注：是以玩家视角看向的相对方向
-         *
-         * @param blockState 该方块的方块状态
-         * @return 相对方向
-         */
+        /// 获取与该方块相连的多方块的相对方向
+        ///
+        /// 注：是以玩家视角看向的相对方向
+        ///
+        /// @param blockState 该方块的方块状态
+        /// @return 相对方向
         public static Direction getConnectedDirection(BlockState blockState) {
             Direction facing = blockState.hasProperty(BlockStateProperties.HORIZONTAL_FACING) ? blockState.getValue(BlockStateProperties.HORIZONTAL_FACING) : Direction.NORTH;
             return switch (blockState.getValue(HORIZONTAL_TWO_PART)) {

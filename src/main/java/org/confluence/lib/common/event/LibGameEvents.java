@@ -100,7 +100,7 @@ public final class LibGameEvents {
 
     private static void serverStarting(PortServerStartingEvent event) {NaturalSpawnerUtils.init(event.getServer());}
 
-    private static void serverTick(PortServerTickEvent.PortPost event) {NaturalSpawnerUtils.update(event.getServer());}
+    private static void serverTick(PortServerTickEvent.Post event) {NaturalSpawnerUtils.update(event.getServer());}
 
     private static void serverStopped(PortServerStoppedEvent event) {
         NaturalSpawnerUtils.clear();
@@ -131,7 +131,7 @@ public final class LibGameEvents {
         }
     }
 
-    private static void entityTickPre(PortEntityTickEvent.PortPre event) {
+    private static void entityTickPre(PortEntityTickEvent.Pre event) {
         Entity entity = event.getEntity();
         if (entity instanceof LivingEntity livingEntity && livingEntity.isAlive()) {
             DelayTaskHolder holder = PortEntityExtension.getExistingAttachOrNull(livingEntity, ConfluenceMagicLib.DELAY_TASK_HOLDER);
@@ -150,7 +150,7 @@ public final class LibGameEvents {
         }
     }
 
-    private static void livingSwapItemsHands(PortLivingSwapItemsEvent.PortHands event) {
+    private static void livingSwapItemsHands(PortLivingSwapItemsEvent.Hands event) {
         LivingEntity livingEntity = event.getEntity();
         if (livingEntity.isAlive()) {
             DelayTaskHolder holder = PortEntityExtension.getExistingAttachOrNull(livingEntity, ConfluenceMagicLib.DELAY_TASK_HOLDER);
@@ -167,13 +167,13 @@ public final class LibGameEvents {
         }
     }
 
-    private static void livingDamage(PortLivingDamageEvent.PortPost event) {
+    private static void livingDamage(PortLivingDamageEvent.Post event) {
         if (event.getSource().getEntity() instanceof ServerPlayer player) {
             AttackDamagePacketS2C.sendToClient(player, event.getNewDamage());
         }
     }
 
-    private static void livingDamageModify(PortLivingDamageEvent.PortPre event) {
+    private static void livingDamageModify(PortLivingDamageEvent.Pre event) {
         float amount = event.getNewDamage();
         if (amount <= 0.0F) return;
         LivingEntity victim = event.getEntity();
@@ -223,7 +223,7 @@ public final class LibGameEvents {
                 });
     }
 
-    private static void playerTick(PortPlayerTickEvent.PortPost event) {
+    private static void playerTick(PortPlayerTickEvent.Post event) {
         LibAttributes.applyPickupRange(event.getEntity());
     }
 }
