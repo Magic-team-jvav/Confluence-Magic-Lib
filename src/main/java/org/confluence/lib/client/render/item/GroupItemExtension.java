@@ -1,6 +1,5 @@
 package org.confluence.lib.client.render.item;
 
-import PortLib.extensions.net.minecraft.world.item.ItemStack.PortItemStackExtension;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
@@ -35,7 +34,7 @@ public enum GroupItemExtension implements IClientItemExtensions {
 
         @Override
         public void renderByItem(ItemStack stack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay) {
-            GroupItem.Stacks stacks = PortItemStackExtension.getData(stack, ConfluenceMagicLib.GROUP_STACKS);
+            GroupItem.Stacks stacks = stack.getData(ConfluenceMagicLib.GROUP_STACKS);
             if (stacks == null) return;
             long time = minecraft.level == null ? System.currentTimeMillis() / 1000 : minecraft.level.getGameTime() / 40;
             ItemStack itemStack = stacks.getCurrentRendered(time);

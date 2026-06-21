@@ -1,6 +1,5 @@
 package org.confluence.lib.common.menu;
 
-import PortLib.extensions.net.minecraft.world.entity.Entity.PortEntityExtension;
 import com.mojang.datafixers.util.Function6;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -75,7 +74,7 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
     public ItemStack getUpResult() {
         int index = getUpIndex();
         if (index == -1) return result.getItem(0);
-        return recipes.get(index).getResultItem(PortEntityExtension.registryAccess(player));
+        return recipes.get(index).getResultItem(player.registryAccess());
     }
 
     public int getUpIndex() {
@@ -96,7 +95,7 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
     public ItemStack getDownResult() {
         int index = getDownIndex();
         if (index == -1) return result.getItem(0);
-        return recipes.get(index).getResultItem(PortEntityExtension.registryAccess(player));
+        return recipes.get(index).getResultItem(player.registryAccess());
     }
 
     public int getDownIndex() {
@@ -131,7 +130,7 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
     public void setupResultSlot() {
         if (isValidRecipeIndex(selectedRecipeIndex.get())) {
             R recipe = recipes.get(selectedRecipeIndex.get());
-            ItemStack itemStack = recipe.getResultItem(PortEntityExtension.registryAccess(player)).copy();
+            ItemStack itemStack = recipe.getResultItem(player.registryAccess()).copy();
             if (itemStack.isItemEnabled(player.level().enabledFeatures())) {
                 result.setItem(0, itemStack);
                 resultSlot.setCurrentRecipe(recipe);
@@ -168,7 +167,7 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
                 if (!recipes.isEmpty()) {
                     if (selectedRecipeIndex.get() == -1) selectedRecipeIndex.set(0);
                     R recipe = recipes.get(selectedRecipeIndex.get());
-                    itemStack = recipe.getResultItem(PortEntityExtension.registryAccess(player)).copy();
+                    itemStack = recipe.getResultItem(player.registryAccess()).copy();
                     resultSlot.setCurrentRecipe(recipe);
                 }
                 result.setItem(0, itemStack);

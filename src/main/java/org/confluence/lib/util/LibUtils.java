@@ -1,7 +1,5 @@
 package org.confluence.lib.util;
 
-import PortLib.extensions.net.minecraft.core.HolderLookup.PortHolderLookupExtension;
-import PortLib.extensions.net.minecraft.world.item.ItemStack.PortItemStackExtension;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Either;
@@ -157,26 +155,26 @@ public final class LibUtils {
     }
 
     public static CompoundTag getItemStackNbtNoCopy(ItemStack stack) {
-        NbtComponent nbtComponent = PortItemStackExtension.getData(stack, ConfluenceMagicLib.NBT);
+        NbtComponent nbtComponent = stack.getData(ConfluenceMagicLib.NBT);
         if (nbtComponent == null) {
             CompoundTag nbt = new CompoundTag();
-            PortItemStackExtension.setData(stack, ConfluenceMagicLib.NBT, new NbtComponent(nbt));
+            stack.setData(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
             return nbt;
         }
         return nbtComponent.nbt();
     }
 
     public static @Nullable CompoundTag getItemStackNbtIfPresent(ItemStack stack) {
-        NbtComponent component = PortItemStackExtension.getData(stack, ConfluenceMagicLib.NBT);
+        NbtComponent component = stack.getData(ConfluenceMagicLib.NBT);
         if (component == null) return null;
         return component.nbt();
     }
 
     public static void updateItemStackNbt(ItemStack stack, Consumer<CompoundTag> consumer) {
-        NbtComponent nbtComponent = PortItemStackExtension.getData(stack, ConfluenceMagicLib.NBT);
+        NbtComponent nbtComponent = stack.getData(ConfluenceMagicLib.NBT);
         CompoundTag nbt = nbtComponent == null ? new CompoundTag() : nbtComponent.nbt().copy();
         consumer.accept(nbt);
-        PortItemStackExtension.setData(stack, ConfluenceMagicLib.NBT, new NbtComponent(nbt));
+        stack.setData(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
     }
 
     public static String toTitleCase(String raw) {
@@ -220,11 +218,11 @@ public final class LibUtils {
     }
 
     public static <T> void resetDataComponent(ItemStack stack, PortDataComponentType<T> type) {
-        T value = PortItemStackExtension.getPrototypeData(stack).get(type);
+        T value = stack.getPrototypeData().get(type);
         if (value == null) {
-            PortItemStackExtension.removeData(stack, type);
+            stack.removeData(type);
         } else {
-            PortItemStackExtension.setData(stack, type, value);
+            stack.setData(type, value);
         }
     }
 
@@ -284,7 +282,7 @@ public final class LibUtils {
         return level.getBiomeManager().withDifferentSource((qx, qy, qz) -> {
             ChunkAccess access = LibUtils.getChunkIfLoaded(level, QuartPos.toSection(qx), QuartPos.toSection(qz));
             if (access == null) {
-                return PortHolderLookupExtension.Provider.holderOrThrow(level.registryAccess(), Biomes.THE_VOID);
+                return level.registryAccess().holderOrThrow(Biomes.THE_VOID);
             }
             return access.getNoiseBiome(qx, qy, qz);
         });

@@ -1,6 +1,5 @@
 package org.confluence.lib.common.event;
 
-import PortLib.extensions.net.minecraft.world.item.ItemStack.PortItemStackExtension;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import com.mojang.datafixers.util.Pair;
@@ -95,7 +94,7 @@ public final class LibModEvents {
                             .map(Map.Entry::getKey)
                             .filter(stack -> stack.is(GroupItem.getInstance())).toList();
                     for (ItemStack groupStack : groupStacks) {
-                        for (ItemStack stack : PortItemStackExtension.getDataOrDefault(groupStack, ConfluenceMagicLib.GROUP_STACKS, GroupItem.Stacks.EMPTY).getValues()) {
+                        for (ItemStack stack : groupStack.getDataOrDefault(ConfluenceMagicLib.GROUP_STACKS, GroupItem.Stacks.EMPTY).getValues()) {
                             if (event.getEntries().contains(stack)) continue;
                             event.insertBefore(groupStack, stack, CreativeModeTab.TabVisibility.PARENT_TAB_ONLY);
                         }
@@ -108,10 +107,10 @@ public final class LibModEvents {
                 for (Map.Entry<ItemStack, CreativeModeTab.TabVisibility> entry : event.getEntries()) {
                     if (PortBuildCreativeModeTabContentsEvent.isParentTab(entry.getValue())) {
                         ItemStack stack = entry.getKey();
-                        GroupItem.BelongsTo belongsTo = PortItemStackExtension.getData(stack, ConfluenceMagicLib.BELONGS_TO_GROUP);
+                        GroupItem.BelongsTo belongsTo = stack.getData(ConfluenceMagicLib.BELONGS_TO_GROUP);
                         if (belongsTo == null) {
                             if (stack.is(GroupItem.getInstance())) {
-                                GroupItem.Stacks stacks = PortItemStackExtension.getData(stack, ConfluenceMagicLib.GROUP_STACKS);
+                                GroupItem.Stacks stacks = stack.getData(ConfluenceMagicLib.GROUP_STACKS);
                                 if (stacks == null) continue;
                                 groupItems.put(stacks.getName(), stack);
                             }
@@ -128,9 +127,9 @@ public final class LibModEvents {
                         return newStack;
                     });
                     event.remove(stack, CreativeModeTab.TabVisibility.PARENT_TAB_ONLY);
-                    GroupItem.Stacks stacks = PortItemStackExtension.getData(groupStack, ConfluenceMagicLib.GROUP_STACKS);
+                    GroupItem.Stacks stacks = groupStack.getData(ConfluenceMagicLib.GROUP_STACKS);
                     if (stacks == null) continue;
-                    PortItemStackExtension.setData(groupStack, ConfluenceMagicLib.GROUP_STACKS, stacks.withValues(tabKey, stack));
+                    groupStack.setData(ConfluenceMagicLib.GROUP_STACKS, stacks.withValues(tabKey, stack));
                 }
             }
         }

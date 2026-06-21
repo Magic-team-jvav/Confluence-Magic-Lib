@@ -1,7 +1,5 @@
 package org.confluence.lib.common.event;
 
-import PortLib.extensions.net.minecraft.world.effect.MobEffectInstance.PortMobEffectInstanceExtension;
-import PortLib.extensions.net.minecraft.world.entity.Entity.PortEntityExtension;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
@@ -87,7 +85,7 @@ public final class LibGameEvents {
     }
 
     private static void playerNaturalHeal(PlayerNaturalHealEvent event) {
-        if (event.getEntity().getActiveEffects().stream().anyMatch(instance -> PortMobEffectInstanceExtension.getPortCures(instance).contains(LibUtils.DENY_HEAL))) {
+        if (event.getEntity().getActiveEffects().stream().anyMatch(instance -> instance.getPortCures().contains(LibUtils.DENY_HEAL))) {
             event.setCanceled(true);
         }
     }
@@ -111,9 +109,9 @@ public final class LibGameEvents {
 
     private static void livingDeath(PortLivingDeathEvent event) {
         LivingEntity livingEntity = event.getEntity();
-        DelayTaskHolder holder = PortEntityExtension.getExistingAttachOrNull(livingEntity, ConfluenceMagicLib.DELAY_TASK_HOLDER);
+        DelayTaskHolder holder = livingEntity.getExistingAttachmentOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
         if (holder != null) {
-            PortEntityExtension.removeAttach(livingEntity, ConfluenceMagicLib.DELAY_TASK_HOLDER);
+            livingEntity.removeAttachment(ConfluenceMagicLib.DELAY_TASK_HOLDER);
         }
     }
 
@@ -134,7 +132,7 @@ public final class LibGameEvents {
     private static void entityTickPre(PortEntityTickEvent.Pre event) {
         Entity entity = event.getEntity();
         if (entity instanceof LivingEntity livingEntity && livingEntity.isAlive()) {
-            DelayTaskHolder holder = PortEntityExtension.getExistingAttachOrNull(livingEntity, ConfluenceMagicLib.DELAY_TASK_HOLDER);
+            DelayTaskHolder holder = livingEntity.getExistingAttachmentOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
             if (holder != null) holder.tick();
         }
     }
@@ -143,7 +141,7 @@ public final class LibGameEvents {
         LivingEntity livingEntity = event.getEntity();
         EquipmentSlot slot = event.getSlot();
         if (livingEntity.isAlive()) {
-            DelayTaskHolder holder = PortEntityExtension.getExistingAttachOrNull(livingEntity, ConfluenceMagicLib.DELAY_TASK_HOLDER);
+            DelayTaskHolder holder = livingEntity.getExistingAttachmentOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
             if (holder != null && !ItemStack.isSameItem(event.getFrom(), event.getTo())) {
                 holder.removeTask(slot);
             }
@@ -153,7 +151,7 @@ public final class LibGameEvents {
     private static void livingSwapItemsHands(PortLivingSwapItemsEvent.Hands event) {
         LivingEntity livingEntity = event.getEntity();
         if (livingEntity.isAlive()) {
-            DelayTaskHolder holder = PortEntityExtension.getExistingAttachOrNull(livingEntity, ConfluenceMagicLib.DELAY_TASK_HOLDER);
+            DelayTaskHolder holder = livingEntity.getExistingAttachmentOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
             if (holder != null) {
                 ItemStack toMain = event.getItemSwappedToMainHand();
                 ItemStack toOff = event.getItemSwappedToOffHand();

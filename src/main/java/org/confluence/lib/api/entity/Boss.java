@@ -1,6 +1,5 @@
 package org.confluence.lib.api.entity;
 
-import PortLib.extensions.net.minecraft.network.chat.MutableComponent.PortMutableComponentExtension;
 import com.google.common.collect.Streams;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -38,8 +37,8 @@ public interface Boss extends Enemy, IDiscardWhenRespawnEntity {
         Level level = entity.level();
         if (!level.isClientSide && entity instanceof Boss boss) {
             if (boss.shouldShowMessage()) {
-                Component mes = PortMutableComponentExtension.withColor(Component.translatable("message.confluence.boss_spawn",
-                        entity.getDisplayName()), GlobalColors.EVENT.get()).withStyle(ChatFormatting.BOLD);
+                Component mes = Component.translatable("message.confluence.boss_spawn",
+                        entity.getDisplayName()).withColor(GlobalColors.EVENT.get()).withStyle(ChatFormatting.BOLD);
 
                 for (Player player : level.players()) {
                     player.sendSystemMessage(mes);
@@ -52,8 +51,8 @@ public interface Boss extends Enemy, IDiscardWhenRespawnEntity {
         Level level = entity.level();
         if (!level.isClientSide && entity instanceof Boss boss) {
             if (boss.shouldShowMessage()) {
-                Component mes = PortMutableComponentExtension.withColor(Component.translatable("message.confluence.boss_leave",
-                        entity.getDisplayName()), GlobalColors.EVENT.get()).withStyle(ChatFormatting.BOLD);
+                Component mes = Component.translatable("message.confluence.boss_leave",
+                        entity.getDisplayName()).withColor(GlobalColors.EVENT.get()).withStyle(ChatFormatting.BOLD);
 
                 for (Player player : level.players()) {
                     player.sendSystemMessage(mes);

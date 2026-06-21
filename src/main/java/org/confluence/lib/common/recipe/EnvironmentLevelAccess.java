@@ -2,8 +2,6 @@ package org.confluence.lib.common.recipe;
 
 import PortLib.extensions.com.mojang.serialization.Codec.PortCodecExtension;
 import PortLib.extensions.net.minecraft.advancements.critereon.StatePropertiesPredicate.PortStatePropertiesPredicateExtension;
-import PortLib.extensions.net.minecraft.core.Holder.PortHolderExtension;
-import PortLib.extensions.net.minecraft.world.entity.player.Player.PortPlayerExtension;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -59,7 +57,7 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
         if (pos == null) {
             Vec3 start = player.getEyePosition(0.5F);
             Vec3 lookVector = player.getViewVector(0.5F);
-            double range = Math.max(PortPlayerExtension.blockInteractionRange(player), PortPlayerExtension.entityInteractionRange(player));
+            double range = Math.max(player.blockInteractionRange(), player.entityInteractionRange());
             Vec3 end = start.add(lookVector.x * range, lookVector.y * range, lookVector.z * range);
             ClipContext context = new ClipContext(start, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player);
             BlockHitResult blockResult = player.level().clip(context);
@@ -187,7 +185,7 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
             biome.ifPresent(biomes -> {
                 list.add(Component.translatable("jei.tooltip.environment.biome").withStyle(ChatFormatting.AQUA));
                 for (Holder<Biome> holder : biomes) {
-                    list.add(Component.translatable(Util.makeDescriptionId("biome", PortHolderExtension.getKey(holder).location())).withStyle(ChatFormatting.GRAY));
+                    list.add(Component.translatable(Util.makeDescriptionId("biome", holder.getKey().location())).withStyle(ChatFormatting.GRAY));
                 }
             });
             block.ifPresent(context -> {

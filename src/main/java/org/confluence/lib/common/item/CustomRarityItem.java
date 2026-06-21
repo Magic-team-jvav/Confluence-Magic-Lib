@@ -1,7 +1,6 @@
 package org.confluence.lib.common.item;
 
 import PortLib.extensions.net.minecraft.world.item.Item.PortItemExtension;
-import PortLib.extensions.net.minecraft.world.item.ItemStack.PortItemStackExtension;
 import com.google.common.collect.Multimap;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -38,6 +37,6 @@ public class CustomRarityItem extends Item {
 
     @Override
     public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack) {
-        return modifiers == null ? super.getAttributeModifiers(slot, stack) : PortItemStackExtension.getPortAttributeModifiers(stack).getAttributeModifiers(slot);
+        return modifiers == null ? super.getAttributeModifiers(slot, stack) : stack.getPortAttributeModifiers().getAttributeModifiers(slot);
     }
 }

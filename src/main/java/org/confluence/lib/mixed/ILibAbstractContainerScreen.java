@@ -1,6 +1,5 @@
 package org.confluence.lib.mixed;
 
-import PortLib.extensions.net.minecraft.world.item.ItemStack.PortItemStackExtension;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.resources.ResourceLocation;
@@ -70,7 +69,7 @@ public interface ILibAbstractContainerScreen {
 
     private static int getGroupId(ItemStack stack) {
         if (stack.is(GroupItem.getInstance())) {
-            return PortItemStackExtension.getDataOrDefault(stack, ConfluenceMagicLib.GROUP_STACKS, GroupItem.Stacks.EMPTY).getId();
+            return stack.getDataOrDefault(ConfluenceMagicLib.GROUP_STACKS, GroupItem.Stacks.EMPTY).getId();
         }
         return ILibClientItemStack.of(stack).confluence$clientGetGroupId();
     }

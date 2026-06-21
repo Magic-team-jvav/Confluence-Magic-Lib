@@ -1,12 +1,12 @@
 package org.confluence.lib.client.event;
 
-import PortLib.extensions.net.minecraft.network.chat.MutableComponent.PortMutableComponentExtension;
 import com.mojang.datafixers.util.Either;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 import org.confluence.lib.client.DPSMeter;
@@ -44,10 +44,10 @@ public final class LibGameEvents {
         List<Either<FormattedText, TooltipComponent>> tooltipElements = event.getTooltipElements();
         if (tooltipElements.isEmpty()) return;
         Optional<FormattedText> displayName = tooltipElements.get(0).left();
-        if (displayName.isPresent() && displayName.get() instanceof Component component) {
+        if (displayName.isPresent() && displayName.get() instanceof MutableComponent component) {
             ModRarity rarity = ModRarity.getRarity(itemStack);
             if (rarity != null) {
-                tooltipElements.set(0, Either.left(PortMutableComponentExtension.withColor(component.copy(), rarity.color())));
+                tooltipElements.set(0, Either.left(component.copy().withColor(rarity.color())));
             }
         }
 

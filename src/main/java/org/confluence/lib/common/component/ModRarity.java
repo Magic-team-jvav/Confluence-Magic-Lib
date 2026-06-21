@@ -1,6 +1,5 @@
 package org.confluence.lib.common.component;
 
-import PortLib.extensions.net.minecraft.world.item.ItemStack.PortItemStackExtension;
 import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -138,9 +137,9 @@ public class ModRarity {
 
     public static @Nullable ModRarity getModRarity(ItemStack stack, boolean prototype) {
         if (prototype) {
-            return PortItemStackExtension.getPrototypeData(stack).get(ConfluenceMagicLib.MOD_RARITY.get());
+            return stack.getPrototypeData().get(ConfluenceMagicLib.MOD_RARITY.get());
         }
-        return PortItemStackExtension.getData(stack, ConfluenceMagicLib.MOD_RARITY);
+        return stack.getData(ConfluenceMagicLib.MOD_RARITY);
     }
 
     public static Style withColor(ItemStack itemStack, Style style) {

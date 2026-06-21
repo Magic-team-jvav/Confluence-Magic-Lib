@@ -1,7 +1,6 @@
 package org.confluence.lib.common.recipe;
 
 import PortLib.extensions.com.mojang.serialization.DataResult.PortDataResultExtension;
-import PortLib.extensions.net.minecraft.network.FriendlyByteBuf.PortFriendlyByteBufExtension;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
@@ -38,7 +37,7 @@ public abstract class SimpleRecipeSerializer<R extends PortRecipe<?>> implements
         if (streamCodec == null) {
             streamCodec = getStreamCodec();
         }
-        PortRegistryFriendlyByteBuf buf = PortFriendlyByteBufExtension.wrap(buffer);
+        PortRegistryFriendlyByteBuf buf = buffer.wrap();
         R r = streamCodec.decode(buf);
         r.setId(recipeId);
         return r;
@@ -50,7 +49,7 @@ public abstract class SimpleRecipeSerializer<R extends PortRecipe<?>> implements
         if (streamCodec == null) {
             streamCodec = getStreamCodec();
         }
-        PortRegistryFriendlyByteBuf buf = PortFriendlyByteBufExtension.wrap(buffer);
+        PortRegistryFriendlyByteBuf buf = buffer.wrap();
         streamCodec.encode(buf, recipe);
     }
 

@@ -1,7 +1,6 @@
 package org.confluence.lib.common.item;
 
 import PortLib.extensions.net.minecraft.resources.ResourceLocation.PortResourceLocationExtension;
-import PortLib.extensions.net.minecraft.world.item.ItemStack.PortItemStackExtension;
 import com.google.common.collect.AbstractIterator;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
@@ -60,16 +59,16 @@ public class GroupItem extends Item {
 
     public static ItemStack of(ResourceLocation name, List<ItemStack> stacks) {
         ItemStack stack = getInstance().getDefaultInstance();
-        PortItemStackExtension.setData(stack, ConfluenceMagicLib.GROUP_STACKS, Stacks.of(name, false, stacks));
-        PortItemStackExtension.setCustomName(stack, Component.translatable("itemGroup." + name.getNamespace() + "." + name.getPath()));
+        stack.setData(ConfluenceMagicLib.GROUP_STACKS, Stacks.of(name, false, stacks));
+        stack.setCustomName(Component.translatable("itemGroup." + name.getNamespace() + "." + name.getPath()));
         return stack;
     }
 
     @ApiStatus.Internal
     public static void toggleVisibility(ItemStack group) {
-        Stacks stacks = PortItemStackExtension.getData(group, ConfluenceMagicLib.GROUP_STACKS);
+        Stacks stacks = group.getData(ConfluenceMagicLib.GROUP_STACKS);
         if (stacks == null) throw new NullPointerException("Stacks must non-null!");
-        PortItemStackExtension.setData(group, ConfluenceMagicLib.GROUP_STACKS, stacks.toggleVisibility());
+        group.setData(ConfluenceMagicLib.GROUP_STACKS, stacks.toggleVisibility());
     }
 
     public static class Stacks {
@@ -225,7 +224,7 @@ public class GroupItem extends Item {
     public static CreativeModeTab.Output belongsTo(BelongsTo belongsTo, CreativeModeTab.Output output) {
         if (LibStartupConfig.itemGroups()) {
             return (stack, tabVisibility) -> {
-                PortItemStackExtension.setData(stack, ConfluenceMagicLib.BELONGS_TO_GROUP, belongsTo);
+                stack.setData(ConfluenceMagicLib.BELONGS_TO_GROUP, belongsTo);
                 output.accept(stack, tabVisibility);
             };
         }
@@ -280,7 +279,7 @@ public class GroupItem extends Item {
                         ItemStack element = unfiltered.next();
                         if (element.is(getInstance())) {
                             index = 0;
-                            Stacks stacks = PortItemStackExtension.getDataOrDefault(element, ConfluenceMagicLib.GROUP_STACKS, Stacks.EMPTY);
+                            Stacks stacks = element.getDataOrDefault(ConfluenceMagicLib.GROUP_STACKS, Stacks.EMPTY);
                             values = stacks.visible ? stacks.values : new ItemStack[0];
                             return element;
                         }

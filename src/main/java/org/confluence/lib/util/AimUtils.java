@@ -9,7 +9,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import org.mesdag.portlib.wrapper.common.extensions.IPortEntityExtension;
 
 /// Aim Utils的作用是根据 实体的位置/预判射出的位置，要预判的实体以及预判的设置 进行预判
 ///
@@ -222,7 +221,7 @@ public class AimUtils {
         public AimHelperOptions(Projectile projectile) {
             this();
             // TODO 完善此处，使构造器实现的效果与弹幕本身一致
-            setProjectileGravity(IPortEntityExtension.of(projectile).getGravity());
+            setProjectileGravity(projectile.getGravity());
         }
 
         public AimHelperOptions setTicksTotal(double ticksTotal) {
