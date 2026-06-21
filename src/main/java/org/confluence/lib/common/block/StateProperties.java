@@ -21,6 +21,7 @@ public class StateProperties {
     public static final BooleanProperty DRIVE = BooleanProperty.create("drive"); // 驱动
     public static final BooleanProperty IS_SUPPORTING = BooleanProperty.create("is_supporting"); // 支撑
     public static final BooleanProperty UNLOCKED = BooleanProperty.create("unlocked"); // 解锁
+    public static final BooleanProperty SHIMMER_IMMERSED = BooleanProperty.create("shimmer_immersed");
     public static final EnumProperty<HorizontalTwoPart> HORIZONTAL_TWO_PART = EnumProperty.create("horizontal_two_part", HorizontalTwoPart.class);
     public static final EnumProperty<VerticalTwoPart> VERTICAL_TWO_PART = EnumProperty.create("vertical_two_part", VerticalTwoPart.class);
     public static final EnumProperty<ForwardTwoPart> FORWARD_TWO_PART = EnumProperty.create("forward_two_part", ForwardTwoPart.class);

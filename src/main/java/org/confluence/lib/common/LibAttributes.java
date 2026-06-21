@@ -127,7 +127,7 @@ public final class LibAttributes {
     public static float applyRangedDamage(@Nullable Entity attacker, DamageSource damageSource, float amount) {
         if (attacker instanceof LivingEntity living &&
                 damageSource.is(DamageTypeTags.IS_PROJECTILE) &&
-                hasCustomAttribute(ConfluenceMagicLib.RANGED_DAMAGE)
+                !hasCustomAttribute(ConfluenceMagicLib.RANGED_DAMAGE)
         ) {
             AttributeInstance instance = living.getAttribute(ConfluenceMagicLib.RANGED_DAMAGE);
             if (instance != null) {
@@ -141,7 +141,7 @@ public final class LibAttributes {
     public static float applyMagicDamage(@Nullable Entity attacker, DamageSource damageSource, float amount) {
         if (attacker instanceof LivingEntity living &&
                 damageSource.is(Tags.DamageTypes.IS_MAGIC) &&
-                hasCustomAttribute(ConfluenceMagicLib.MAGIC_DAMAGE)
+                !hasCustomAttribute(ConfluenceMagicLib.MAGIC_DAMAGE)
         ) {
             AttributeInstance instance = living.getAttribute(ConfluenceMagicLib.MAGIC_DAMAGE);
             if (instance != null) {
