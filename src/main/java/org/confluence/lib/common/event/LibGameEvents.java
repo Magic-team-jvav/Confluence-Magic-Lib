@@ -109,9 +109,9 @@ public final class LibGameEvents {
 
     private static void livingDeath(PortLivingDeathEvent event) {
         LivingEntity livingEntity = event.getEntity();
-        DelayTaskHolder holder = livingEntity.getExistingAttachmentOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
+        DelayTaskHolder holder = livingEntity.getExistingDataOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
         if (holder != null) {
-            livingEntity.removeAttachment(ConfluenceMagicLib.DELAY_TASK_HOLDER);
+            livingEntity.removeData(ConfluenceMagicLib.DELAY_TASK_HOLDER);
         }
     }
 
@@ -132,7 +132,7 @@ public final class LibGameEvents {
     private static void entityTickPre(PortEntityTickEvent.Pre event) {
         Entity entity = event.getEntity();
         if (entity instanceof LivingEntity livingEntity && livingEntity.isAlive()) {
-            DelayTaskHolder holder = livingEntity.getExistingAttachmentOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
+            DelayTaskHolder holder = livingEntity.getExistingDataOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
             if (holder != null) holder.tick();
         }
     }
@@ -141,7 +141,7 @@ public final class LibGameEvents {
         LivingEntity livingEntity = event.getEntity();
         EquipmentSlot slot = event.getSlot();
         if (livingEntity.isAlive()) {
-            DelayTaskHolder holder = livingEntity.getExistingAttachmentOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
+            DelayTaskHolder holder = livingEntity.getExistingDataOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
             if (holder != null && !ItemStack.isSameItem(event.getFrom(), event.getTo())) {
                 holder.removeTask(slot);
             }
@@ -151,7 +151,7 @@ public final class LibGameEvents {
     private static void livingSwapItemsHands(PortLivingSwapItemsEvent.Hands event) {
         LivingEntity livingEntity = event.getEntity();
         if (livingEntity.isAlive()) {
-            DelayTaskHolder holder = livingEntity.getExistingAttachmentOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
+            DelayTaskHolder holder = livingEntity.getExistingDataOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
             if (holder != null) {
                 ItemStack toMain = event.getItemSwappedToMainHand();
                 ItemStack toOff = event.getItemSwappedToOffHand();
