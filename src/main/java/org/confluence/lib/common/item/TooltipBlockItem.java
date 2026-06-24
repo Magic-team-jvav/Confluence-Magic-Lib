@@ -1,6 +1,5 @@
 package org.confluence.lib.common.item;
 
-import PortLib.extensions.net.minecraft.world.item.Item.PortItemExtension;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
@@ -19,7 +18,7 @@ public class TooltipBlockItem extends BlockItem {
     private final List<Component> tooltips;
 
     public TooltipBlockItem(Block block, Properties properties, ModRarity rarity, List<Component> tooltips) {
-        super(block, PortItemExtension.Properties.component(properties, ConfluenceMagicLib.MOD_RARITY, rarity));
+        super(block, properties.component(ConfluenceMagicLib.MOD_RARITY, rarity));
         this.tooltips = tooltips;
     }
 

@@ -1,6 +1,5 @@
 package org.confluence.lib.common.item;
 
-import PortLib.extensions.net.minecraft.world.item.Item.PortItemExtension;
 import com.google.common.collect.Multimap;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -25,7 +24,7 @@ public class CustomRarityItem extends Item {
     }
 
     public CustomRarityItem(Properties properties, ModRarity rarity) {
-        super(PortItemExtension.Properties.component(properties, ConfluenceMagicLib.MOD_RARITY, rarity));
+        super(properties.component(ConfluenceMagicLib.MOD_RARITY, rarity));
     }
 
     public CustomRarityItem addAttributeModifiers(Consumer<PortItemAttributeModifiers.PortBuilder> consumer) {
