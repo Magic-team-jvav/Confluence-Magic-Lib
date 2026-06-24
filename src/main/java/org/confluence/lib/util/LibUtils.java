@@ -30,14 +30,14 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.fml.loading.LoadingModList;
-import net.minecraftforge.server.ServerLifecycleHooks;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.component.NbtComponent;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.mesdag.portlib.component.PortDataComponentType;
+import org.mesdag.portlib.diff.Diff;
+import org.mesdag.portlib.registries.PortRegistryEntry;
+import org.mesdag.portlib.wrapper.PortEnvironment;
 import org.mesdag.portlib.wrapper.common.PortEffectCure;
 
 import java.util.Arrays;
@@ -141,7 +141,7 @@ public final class LibUtils {
     }
 
     public static boolean isDev() {
-        return !FMLEnvironment.production;
+        return PortEnvironment.isDeveloper();
     }
 
     public static void devRun(Runnable runnable) {
@@ -155,26 +155,26 @@ public final class LibUtils {
     }
 
     public static CompoundTag getItemStackNbtNoCopy(ItemStack stack) {
-        NbtComponent nbtComponent = stack.getData(ConfluenceMagicLib.NBT);
+        NbtComponent nbtComponent = stack.get(ConfluenceMagicLib.NBT);
         if (nbtComponent == null) {
             CompoundTag nbt = new CompoundTag();
-            stack.setData(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
+            stack.set(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
             return nbt;
         }
         return nbtComponent.nbt();
     }
 
     public static @Nullable CompoundTag getItemStackNbtIfPresent(ItemStack stack) {
-        NbtComponent component = stack.getData(ConfluenceMagicLib.NBT);
+        NbtComponent component = stack.get(ConfluenceMagicLib.NBT);
         if (component == null) return null;
         return component.nbt();
     }
 
     public static void updateItemStackNbt(ItemStack stack, Consumer<CompoundTag> consumer) {
-        NbtComponent nbtComponent = stack.getData(ConfluenceMagicLib.NBT);
+        NbtComponent nbtComponent = stack.get(ConfluenceMagicLib.NBT);
         CompoundTag nbt = nbtComponent == null ? new CompoundTag() : nbtComponent.nbt().copy();
         consumer.accept(nbt);
-        stack.setData(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
+        stack.set(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
     }
 
     public static String toTitleCase(String raw) {
@@ -197,33 +197,37 @@ public final class LibUtils {
     }
 
     public static boolean isPhysicalClient() {
-        return FMLEnvironment.dist.isClient();
+        return PortEnvironment.isPhysicalClient();
     }
 
     /// @return 单人模式中为false；客户端连接服务端时，客户端为true，服务端为false
     /// @apiNote 你应该在逻辑服务端启动后调用这个方法，且仅适用于在逻辑服务端调用
     public static boolean isLogicalClient() {
-        return isPhysicalClient() && ServerLifecycleHooks.getCurrentServer() == null;
+        return PortEnvironment.isLogicalClient();
     }
 
     public static boolean isPhysicalServer() {
-        return FMLEnvironment.dist.isDedicatedServer();
+        return PortEnvironment.isPhysicalServer();
     }
 
     /// @return 逻辑客户端为false, 逻辑服务端为true
     /// @apiNote 你应该在逻辑服务端启动后调用这个方法
     public static boolean isLogicalServer() {
-        if (isPhysicalServer()) return true;
-        return ServerLifecycleHooks.getCurrentServer() != null && ServerLifecycleHooks.getCurrentServer().isSameThread();
+        return PortEnvironment.isLogicalServer();
     }
 
     public static <T> void resetDataComponent(ItemStack stack, PortDataComponentType<T> type) {
-        T value = stack.getPrototypeData().get(type);
+        T value = stack.getPrototype().get(type);
         if (value == null) {
-            stack.removeData(type);
+            stack.remove(type);
         } else {
-            stack.setData(type, value);
+            stack.set(type, value);
         }
+    }
+
+    @Diff
+    public static <T> void resetDataComponent(ItemStack stack, PortRegistryEntry<PortDataComponentType<?>, PortDataComponentType<T>> type) {
+        resetDataComponent(stack, type.get());
     }
 
     public static <K, V> Map<K, V> convertTupleListToMap(List<Tuple<K, V>> list) {
@@ -292,7 +296,7 @@ public final class LibUtils {
     ///
     /// 不能在mixin plugin中使用
     public static boolean isModLoaded(String modid) {
-        return LoadingModList.get().getModFileById(modid) != null;
+        return PortEnvironment.isModLoaded(modid);
     }
 
     public static DamageSource damageSource(Level level, ResourceKey<DamageType> key, @Nullable Entity causing, @Nullable Entity direct) {

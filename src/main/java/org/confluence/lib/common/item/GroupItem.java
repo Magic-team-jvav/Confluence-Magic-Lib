@@ -59,16 +59,16 @@ public class GroupItem extends Item {
 
     public static ItemStack of(ResourceLocation name, List<ItemStack> stacks) {
         ItemStack stack = getInstance().getDefaultInstance();
-        stack.setData(ConfluenceMagicLib.GROUP_STACKS, Stacks.of(name, false, stacks));
+        stack.set(ConfluenceMagicLib.GROUP_STACKS, Stacks.of(name, false, stacks));
         stack.setCustomName(Component.translatable("itemGroup." + name.getNamespace() + "." + name.getPath()));
         return stack;
     }
 
     @ApiStatus.Internal
     public static void toggleVisibility(ItemStack group) {
-        Stacks stacks = group.getData(ConfluenceMagicLib.GROUP_STACKS);
+        Stacks stacks = group.get(ConfluenceMagicLib.GROUP_STACKS);
         if (stacks == null) throw new NullPointerException("Stacks must non-null!");
-        group.setData(ConfluenceMagicLib.GROUP_STACKS, stacks.toggleVisibility());
+        group.set(ConfluenceMagicLib.GROUP_STACKS, stacks.toggleVisibility());
     }
 
     public static class Stacks {
@@ -224,7 +224,7 @@ public class GroupItem extends Item {
     public static CreativeModeTab.Output belongsTo(BelongsTo belongsTo, CreativeModeTab.Output output) {
         if (LibStartupConfig.itemGroups()) {
             return (stack, tabVisibility) -> {
-                stack.setData(ConfluenceMagicLib.BELONGS_TO_GROUP, belongsTo);
+                stack.set(ConfluenceMagicLib.BELONGS_TO_GROUP, belongsTo);
                 output.accept(stack, tabVisibility);
             };
         }
@@ -279,7 +279,7 @@ public class GroupItem extends Item {
                         ItemStack element = unfiltered.next();
                         if (element.is(getInstance())) {
                             index = 0;
-                            Stacks stacks = element.getDataOrDefault(ConfluenceMagicLib.GROUP_STACKS, Stacks.EMPTY);
+                            Stacks stacks = element.getOrDefault(ConfluenceMagicLib.GROUP_STACKS, Stacks.EMPTY);
                             values = stacks.visible ? stacks.values : new ItemStack[0];
                             return element;
                         }

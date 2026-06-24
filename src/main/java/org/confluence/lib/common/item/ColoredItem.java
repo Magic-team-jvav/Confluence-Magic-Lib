@@ -28,7 +28,7 @@ public class ColoredItem extends CustomRarityItem {
     }
 
     public static int getRGBA(ItemStack stack) {
-        NbtComponent nbtComponent = stack.getData(ConfluenceMagicLib.NBT);
+        NbtComponent nbtComponent = stack.get(ConfluenceMagicLib.NBT);
         if (nbtComponent == null) {
             return 0xFF66CCFF;
         }

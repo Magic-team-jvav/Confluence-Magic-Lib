@@ -69,7 +69,7 @@ public interface ILibAbstractContainerScreen {
 
     private static int getGroupId(ItemStack stack) {
         if (stack.is(GroupItem.getInstance())) {
-            return stack.getDataOrDefault(ConfluenceMagicLib.GROUP_STACKS, GroupItem.Stacks.EMPTY).getId();
+            return stack.getOrDefault(ConfluenceMagicLib.GROUP_STACKS, GroupItem.Stacks.EMPTY).getId();
         }
         return ILibClientItemStack.of(stack).confluence$clientGetGroupId();
     }

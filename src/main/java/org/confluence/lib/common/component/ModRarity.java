@@ -137,9 +137,9 @@ public class ModRarity {
 
     public static @Nullable ModRarity getModRarity(ItemStack stack, boolean prototype) {
         if (prototype) {
-            return stack.getPrototypeData().get(ConfluenceMagicLib.MOD_RARITY.get());
+            return stack.getPrototype().get(ConfluenceMagicLib.MOD_RARITY.get());
         }
-        return stack.getData(ConfluenceMagicLib.MOD_RARITY);
+        return stack.get(ConfluenceMagicLib.MOD_RARITY);
     }
 
     public static Style withColor(ItemStack itemStack, Style style) {
