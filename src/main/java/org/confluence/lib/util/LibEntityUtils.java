@@ -308,4 +308,11 @@ public final class LibEntityUtils {
         float d3 = 0.8F * scale;
         return new Vec3(-d1 * d2 - d0 * d3, 0, -d0 * d2 + d1 * d3);
     }
+
+    /// 更新实体朝向
+    public static void updateEntityRotation(Entity entity, Vec3 dir) {
+        float[] angle = LibMathUtils.dirToRot(dir, true);
+        entity.setYRot(angle[0]);
+        entity.setXRot(angle[1]);
+    }
 }
