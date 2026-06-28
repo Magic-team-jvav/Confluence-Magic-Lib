@@ -8,7 +8,6 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import org.mesdag.portlib.diff.mixin.SimpleContainerAccessor;
 import org.mesdag.portlib.wrapper.IPortNBTSerializable;
 
 import javax.annotation.Nullable;
@@ -30,7 +29,7 @@ public class PlayerContainer<C extends BlockEntity & PlayerContainer.ValidEntity
     }
 
     public void setItemNoUpdate(int index, ItemStack stack) {
-        ((SimpleContainerAccessor) this).getItems().set(index, stack);
+        getItems().set(index, stack);
         if (!stack.isEmpty() && stack.getCount() > getMaxStackSize()) {
             stack.setCount(getMaxStackSize());
         }

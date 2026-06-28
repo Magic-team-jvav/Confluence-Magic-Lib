@@ -221,7 +221,7 @@ public class AimUtils {
         public AimHelperOptions(Projectile projectile) {
             this();
             // TODO 完善此处，使构造器实现的效果与弹幕本身一致
-            setProjectileGravity(projectile.getGravity());
+            setProjectileGravity(projectile.getGravity1211());
         }
 
         public AimHelperOptions setTicksTotal(double ticksTotal) {

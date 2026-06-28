@@ -17,6 +17,10 @@ import org.jetbrains.annotations.Nullable;
 public final class LibDamageTypes {
     // 枪械伤害（无无敌帧）
     public static final ResourceKey<DamageType> BULLET_DAMAGE = register("bullet_damage");
+    // 霜冻伤害
+    public static final ResourceKey<DamageType> FROST_BURN = register("frost_burn");
+    // 狱炎伤害
+    public static final ResourceKey<DamageType> HELLFIRE = register("hellfire");
 
     private static ResourceKey<DamageType> register(String id) {
         return ResourceKey.create(Registries.DAMAGE_TYPE, ConfluenceMagicLib.asResource(id));
@@ -36,5 +40,7 @@ public final class LibDamageTypes {
 
     public static void bootstrap(BootstapContext<DamageType> context) {
         context.register(BULLET_DAMAGE, new DamageType("bullet_damage", DamageScaling.NEVER, 0.1F));
+        context.register(FROST_BURN, new DamageType("frost_burn_damage_type", 0.1F));
+        context.register(HELLFIRE, new DamageType("hellfire_damage_type", 0.1F));
     }
 }

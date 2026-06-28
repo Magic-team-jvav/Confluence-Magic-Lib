@@ -27,8 +27,8 @@ public class CustomRarityItem extends Item {
         super(properties.component(ConfluenceMagicLib.MOD_RARITY, rarity));
     }
 
-    public CustomRarityItem addAttributeModifiers(Consumer<PortItemAttributeModifiers.PortBuilder> consumer) {
-        PortItemAttributeModifiers.PortBuilder builder = PortItemAttributeModifiers.builder();
+    public CustomRarityItem addAttributeModifiers(Consumer<PortItemAttributeModifiers.Builder> consumer) {
+        PortItemAttributeModifiers.Builder builder = PortItemAttributeModifiers.builder();
         consumer.accept(builder);
         this.modifiers = builder.build();
         return this;

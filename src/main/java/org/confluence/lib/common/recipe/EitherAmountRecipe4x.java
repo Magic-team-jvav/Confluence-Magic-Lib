@@ -1,7 +1,6 @@
 package org.confluence.lib.common.recipe;
 
 import PortLib.extensions.net.minecraft.world.item.ItemStack.PortItemStackExtension;
-import PortLib.extensions.net.minecraft.world.item.crafting.Ingredient.PortIngredientExtension;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -65,8 +64,8 @@ public abstract class EitherAmountRecipe4x<I extends MenuRecipeInput> extends Ab
     @Override
     public boolean isIncomplete() {
         return either.map(
-                shaped -> shaped.ingredients().isEmpty() || shaped.ingredients().stream().filter(ingredient -> !ingredient.isEmpty()).anyMatch(PortIngredientExtension::hasNoItems),
-                shapeless -> shapeless.isEmpty() || shapeless.stream().anyMatch(PortIngredientExtension::hasNoItems)
+                shaped -> shaped.ingredients().isEmpty() || shaped.ingredients().stream().filter(ingredient -> !ingredient.isEmpty()).anyMatch(Ingredient::hasNoItems),
+                shapeless -> shapeless.isEmpty() || shapeless.stream().anyMatch(Ingredient::hasNoItems)
         );
     }
 
