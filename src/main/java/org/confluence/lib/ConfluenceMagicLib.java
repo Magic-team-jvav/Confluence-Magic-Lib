@@ -67,7 +67,7 @@ public final class ConfluenceMagicLib {
     public static final PortRegistryEntry<Attribute, RangedAttribute> WHIP_RANGE = registerAttribute("player.whip_range", 3.0, 0.0, 64.0, RangedAttribute::new, maker -> maker.setSyncable(true));
     public static final PortRegistryEntry<Attribute, RangedAttribute> MARK_DAMAGE = registerAttribute("player.mark_damage", 0.0, 0.0, 1024.0, RangedAttribute::new, maker -> maker.setSyncable(true));
 
-    private static <A extends Attribute> PortRegistryEntry<Attribute, A> registerAttribute(String name, double defaultValue, double min, double max, Function4<String, Double, Double, Double, A> factory, Consumer<PortAttributeRegistration.PortAttributeMaker> consumer) {
+    private static <A extends Attribute> PortRegistryEntry<Attribute, A> registerAttribute(String name, double defaultValue, double min, double max, Function4<String, Double, Double, Double, A> factory, Consumer<PortAttributeRegistration.AttributeMaker> consumer) {
         return ATTRIBUTES.register(name, () -> factory.apply("attribute.name." + name, defaultValue, min, max), consumer);
     }
 
