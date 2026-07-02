@@ -2,6 +2,7 @@ package org.confluence.lib.util;
 
 import net.minecraft.Util;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 
 import java.time.format.DateTimeParseException;
 
@@ -22,8 +23,8 @@ public final class LibDateUtils {
     public static final int _18$00 = getDayTime(18, 0);
     public static final int _19$30 = getDayTime(19, 30);
 
-    public static int getDayTime(Level level) {
-        return getDayTime(level.getDayTime());
+    public static int getDayTime(LevelAccessor level) {
+        return getDayTime(level.getLevelData().getDayTime());
     }
 
     public static int getDayTime(long dayTime) {
@@ -64,7 +65,7 @@ public final class LibDateUtils {
         return isWithinDayTime(_04$30, _19$30, dayTime);
     }
 
-    public static boolean isDay(Level level) {
+    public static boolean isDay(LevelAccessor level) {
         return isDay(getDayTime(level));
     }
 
@@ -72,7 +73,7 @@ public final class LibDateUtils {
         return isWithinDayTime(_19$30, _04$30, dayTime);
     }
 
-    public static boolean isNight(Level level) {
+    public static boolean isNight(LevelAccessor level) {
         return isNight(getDayTime(level));
     }
 }
