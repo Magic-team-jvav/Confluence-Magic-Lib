@@ -136,6 +136,7 @@ public final class LibUtils {
         };
     }
 
+    // todo Container, ItemStack
     public static int getMaxStackSize(int original) {
         return Math.max(original, MAX_STACK_SIZE);
     }

@@ -8,6 +8,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.fml.event.IModBusEvent;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.mesdag.portlib.event.PortEventHandler;
 
@@ -18,7 +19,8 @@ public class CustomGroupItemIconEvent extends Event implements IModBusEvent {
     private static boolean registered;
     private static final Map<ResourceKey<CreativeModeTab>, Map<ResourceLocation, ItemStack>> icons = new Reference2ObjectOpenHashMap<>();
 
-    private CustomGroupItemIconEvent() {}
+    @ApiStatus.Internal
+    public CustomGroupItemIconEvent() {}
 
     public void register(ResourceKey<CreativeModeTab> tabKey, ResourceLocation groupName, ItemStack iconStack) {
         register(tabKey, groupName, iconStack, getMap(tabKey));

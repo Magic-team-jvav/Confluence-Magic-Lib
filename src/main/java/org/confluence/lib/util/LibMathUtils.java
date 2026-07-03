@@ -22,8 +22,8 @@ public final class LibMathUtils {
      * 将HSV转换为ARGB颜色
      */
     public static int hsvToArgb(float hue, float saturation, float value, int alpha) {
-        int i = (int)(hue * 6.0F) % 6;
-        float f = hue * 6.0F - (float)i;
+        int i = (int) (hue * 6.0F) % 6;
+        float f = hue * 6.0F - (float) i;
         float f1 = value * (1.0F - saturation);
         float f2 = value * (1.0F - f * saturation);
         float f3 = value * (1.0F - (1.0F - f) * saturation);
@@ -65,7 +65,7 @@ public final class LibMathUtils {
                 throw new RuntimeException("Something went wrong when converting from HSV to RGB. Input was " + hue + ", " + saturation + ", " + value);
         }
 
-        return FastColor.ARGB32.color(alpha, Mth.clamp((int)(f4 * 255.0F), 0, 255), Mth.clamp((int)(f5 * 255.0F), 0, 255), Mth.clamp((int)(f6 * 255.0F), 0, 255));
+        return FastColor.ARGB32.color(alpha, Mth.clamp((int) (f4 * 255.0F), 0, 255), Mth.clamp((int) (f5 * 255.0F), 0, 255), Mth.clamp((int) (f6 * 255.0F), 0, 255));
     }
 
 
@@ -324,7 +324,7 @@ public final class LibMathUtils {
     /// @param maxSpeed           弹幕追踪时最大速度; 取值范围 - [0, inf)
     /// @param minSpeed           弹幕追踪时最低速度; 取值范围 - [0, maxSpeed]
     /// @param defaultDir         若更新完毕的弹幕方向为0，但最低速度要求不为0时，返回defaultDir方向（长度会更新为minSpeed）。
-    ///                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   *警告*：此向量不要为0
+    ///                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 *警告*：此向量不要为0
     /// @return 最终更新完毕的方向向量
     public static Vec3 interpolateSimple(
             Vec3 currDir,
@@ -619,10 +619,16 @@ public final class LibMathUtils {
         return point2.x < xMax && point2.x > xMin && point2.y < yMax && point2.y > yMin && point2.z < zMax && point2.z > zMin;
     }
 
-    /**
-     * 计算暴击伤害，如果触发暴击则伤害×1.5
-     */
+    /// 计算暴击伤害，如果触发暴击则伤害×1.5
     public static float criticalDamageTotal(float critical, float damage, RandomSource random) {
         return checkChance(critical, random) ? damage * 1.5F : damage;
+    }
+
+    public static Vec3 rotToDir(float yRot, float xRot) {
+        float cosX = Mth.cos(xRot * Mth.DEG_TO_RAD);
+        float x = -Mth.sin(yRot * Mth.DEG_TO_RAD) * cosX;
+        float y = -Mth.sin(xRot * Mth.DEG_TO_RAD);
+        float z = Mth.cos(yRot * Mth.DEG_TO_RAD) * cosX;
+        return new Vec3(x, y, z);
     }
 }
