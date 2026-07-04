@@ -7,6 +7,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,6 +28,7 @@ public class StateProperties {
     public static final EnumProperty<VerticalFourPart> VERTICAL_FOUR_PART = EnumProperty.create("vertical_four_part", VerticalFourPart.class);
     public static final EnumProperty<HorizontalNinePart> HORIZONTAL_NINE_PART = EnumProperty.create("horizontal_nine_part", HorizontalNinePart.class);
     public static final EnumProperty<HorizontalTenPart> HORIZONTAL_TEN_PART = EnumProperty.create("horizontal_ten_part", HorizontalTenPart.class);
+    public static final IntegerProperty HUMIDITY = IntegerProperty.create("humidity", 0, 3);
 
     public enum HorizontalTwoPart implements StringRepresentable {
         BASE("base"),

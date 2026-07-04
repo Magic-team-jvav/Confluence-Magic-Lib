@@ -4,6 +4,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import org.confluence.lib.ConfluenceMagicLib;
 
@@ -23,6 +24,14 @@ public final class LibTags {
 
         private static TagKey<DamageType> register(String id) {
             return TagKey.create(Registries.DAMAGE_TYPE, ConfluenceMagicLib.asResource(id));
+        }
+    }
+
+    public static class EntityTypes {
+        public static final TagKey<EntityType<?>> SLIME = register("slime");
+
+        private static TagKey<EntityType<?>> register(String id) {
+            return TagKey.create(Registries.ENTITY_TYPE, ConfluenceMagicLib.asResource(id));
         }
     }
 }

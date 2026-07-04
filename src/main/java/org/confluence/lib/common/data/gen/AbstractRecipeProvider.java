@@ -25,20 +25,20 @@ import java.util.function.Consumer;
 
 public abstract class AbstractRecipeProvider extends RecipeProvider {
     private final List<Appender<?>> appenders = new LinkedList<>();
-    private @Nullable CompletableFuture<HolderLookup.Provider> lookup;
+    private @Nullable CompletableFuture<HolderLookup.Provider> registries;
 
     public AbstractRecipeProvider(PackOutput output) {
         super(output);
     }
 
-    public AbstractRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup) {
+    public AbstractRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
         super(output);
-        this.lookup = lookup;
+        this.registries = registries;
     }
 
     @Override
     public CompletableFuture<?> run(CachedOutput output) {
-        if (lookup == null) {
+        if (registries == null) {
             return CompletableFuture.supplyAsync(() -> {
                 List<CompletableFuture<?>> futures = new LinkedList<>();
                 futures.add(super.run(output));
@@ -51,7 +51,7 @@ public abstract class AbstractRecipeProvider extends RecipeProvider {
                 return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
             }, Util.backgroundExecutor()).thenCompose(completableFuture -> completableFuture);
         }
-        return lookup.thenCompose(provider -> run(output, provider));
+        return registries.thenCompose(provider -> run(output, provider));
     }
 
     public CompletableFuture<?> run(CachedOutput output, HolderLookup.Provider provider) {
