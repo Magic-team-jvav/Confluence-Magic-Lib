@@ -32,6 +32,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.LibStartupConfig;
+import org.confluence.lib.api.entity.IDiscardWhenRespawnEntity;
 import org.confluence.lib.api.event.PlayerNaturalHealEvent;
 import org.confluence.lib.api.event.SwitchItemFunctionEvent;
 import org.confluence.lib.common.LibAttributes;
@@ -249,5 +250,12 @@ public final class LibGameEvents {
     @SubscribeEvent
     public static void playerTick$Post(PlayerTickEvent.Post event) {
         LibAttributes.applyPickupRange(event.getEntity());
+    }
+
+    @SubscribeEvent
+    public static void player$Respawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            IDiscardWhenRespawnEntity.process(player);
+        }
     }
 }
