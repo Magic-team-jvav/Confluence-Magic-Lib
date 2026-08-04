@@ -1,0 +1,5 @@
+{
+    "net/minecraft/client/gui/GuiGraphicsExtractor": [
+        "org/confluence/lib/mixed/LibGuiGraphicsExtractorExtension"
+    ]
+}
