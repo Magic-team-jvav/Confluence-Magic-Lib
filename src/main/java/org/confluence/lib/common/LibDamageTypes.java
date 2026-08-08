@@ -11,15 +11,11 @@ import net.minecraft.world.level.Level;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * 通用伤害类型常量，供所有子模块使用
- */
+/// 通用伤害类型常量，供所有子模块使用
 public final class LibDamageTypes {
-    // 枪械伤害（无无敌帧）
-    public static final ResourceKey<DamageType> BULLET_DAMAGE = register("bullet_damage");
-    // 霜冻伤害
+    public static final ResourceKey<DamageType> STAR_CLOAK = register("star_cloak");
+    public static final ResourceKey<DamageType> GUN_BULLET = register("gun_bullet");
     public static final ResourceKey<DamageType> FROST_BURN = register("frost_burn");
-    // 狱炎伤害
     public static final ResourceKey<DamageType> HELLFIRE = register("hellfire");
 
     private static ResourceKey<DamageType> register(String id) {
@@ -39,8 +35,9 @@ public final class LibDamageTypes {
     }
 
     public static void bootstrap(BootstapContext<DamageType> context) {
-        context.register(BULLET_DAMAGE, new DamageType("bullet_damage", DamageScaling.NEVER, 0.1F));
-        context.register(FROST_BURN, new DamageType("frost_burn_damage_type", 0.1F));
-        context.register(HELLFIRE, new DamageType("hellfire_damage_type", 0.1F));
+        context.register(STAR_CLOAK, new DamageType("star_cloak", DamageScaling.ALWAYS, 5));
+        context.register(GUN_BULLET, new DamageType("gun_bullet", DamageScaling.NEVER, 0.1F));
+        context.register(FROST_BURN, new DamageType("frost_burn", 0.1F));
+        context.register(HELLFIRE, new DamageType("hellfire", 0.1F));
     }
 }

@@ -1,6 +1,7 @@
 package org.confluence.lib.common;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageType;
@@ -14,8 +15,18 @@ public final class LibTags {
         public static final TagKey<Item> SKIP_USING_SLOWDOWN = register("skip_using_slowdown"); // 使用时不影响玩家移动速度
         public static final TagKey<Item> SKIP_RESET_STRENGTH = register("skip_reset_strength"); // 使用时不重置玩家攻击冷却
 
+        public static final TagKey<Item> INGOTS_TIN = common("ingots/tin");
+        public static final TagKey<Item> INGOTS_LEAD = common("ingots/lead");
+        public static final TagKey<Item> INGOTS_SILVER = common("ingots/silver");
+        public static final TagKey<Item> INGOTS_TUNGSTEN = common("ingots/tungsten");
+        public static final TagKey<Item> INGOTS_PLATINUM = common("ingots/platinum");
+
         private static TagKey<Item> register(String id) {
             return ItemTags.create(ConfluenceMagicLib.asResource(id));
+        }
+
+        private static TagKey<Item> common(String id) {
+            return ItemTags.create(ResourceLocation.fromNamespaceAndPath("c", id));
         }
     }
 

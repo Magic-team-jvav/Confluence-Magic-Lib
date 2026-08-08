@@ -7,14 +7,12 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.LibTags;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
 
-@ApiStatus.Internal
-public class LibEntityTypeTagsProvider extends EntityTypeTagsProvider {
-    public LibEntityTypeTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup, @Nullable ExistingFileHelper helper) {
+public final class LibEntityTypeTagsProvider extends EntityTypeTagsProvider {
+    LibEntityTypeTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookup, @Nullable ExistingFileHelper helper) {
         super(output, lookup, ConfluenceMagicLib.LIB_ID, helper);
     }
 

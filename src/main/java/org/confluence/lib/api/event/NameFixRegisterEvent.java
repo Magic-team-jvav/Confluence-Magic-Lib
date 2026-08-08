@@ -1,58 +1,68 @@
 package org.confluence.lib.api.event;
 
 import com.google.common.collect.ImmutableMap;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.fml.event.IModBusEvent;
+import org.jetbrains.annotations.ApiStatus;
+
+import java.util.Map;
 
 public abstract class NameFixRegisterEvent extends Event implements IModBusEvent {
-    private final ImmutableMap.Builder<String, String> builder;
+    private ImmutableMap.Builder<ResourceLocation, ResourceLocation> builder;
 
-    public NameFixRegisterEvent(ImmutableMap.Builder<String, String> builder) {
-        this.builder = builder;
+    protected NameFixRegisterEvent() {}
+
+    @ApiStatus.Internal
+    public Map<ResourceLocation, ResourceLocation> getAlias() {
+        return builder == null ? Map.of() : builder.build();
     }
 
-    public NameFixRegisterEvent register(String source, String target) {
-        builder.put(source, target);
+    public NameFixRegisterEvent register(String from, String to) {
+        return register(ResourceLocation.parse(from), ResourceLocation.parse(to));
+    }
+
+    public NameFixRegisterEvent register(ResourceLocation from, ResourceLocation to) {
+        if (builder == null) builder = ImmutableMap.builder();
+        builder.put(from, to);
         return this;
     }
 
-    public NameFixRegisterEvent register(ResourceLocation source, ResourceLocation target) {
-        builder.put(source.toString(), target.toString());
-        return this;
+    public NameFixRegisterEvent register(String from, ResourceLocation to) {
+        return register(ResourceLocation.parse(from), to);
     }
 
-    public NameFixRegisterEvent register(String source, ResourceLocation target) {
-        builder.put(source, target.toString());
-        return this;
-    }
-
-    public NameFixRegisterEvent register(ResourceLocation source, String target) {
-        builder.put(source.toString(), target);
-        return this;
+    public NameFixRegisterEvent register(ResourceLocation from, String to) {
+        return register(from, ResourceLocation.parse(to));
     }
 
     public static class BlockWithItem extends NameFixRegisterEvent {
-        public BlockWithItem(ImmutableMap.Builder<String, String> builder) {
-            super(builder);
-        }
+        @ApiStatus.Internal
+        public BlockWithItem() {}
     }
 
     public static class Block extends NameFixRegisterEvent {
-        public Block(ImmutableMap.Builder<String, String> builder) {
-            super(builder);
-        }
+        @ApiStatus.Internal
+        public Block() {}
     }
 
     public static class Item extends NameFixRegisterEvent {
-        public Item(ImmutableMap.Builder<String, String> builder) {
-            super(builder);
-        }
+        @ApiStatus.Internal
+        public Item() {}
     }
 
-    public static class Biome extends NameFixRegisterEvent {
-        public Biome(ImmutableMap.Builder<String, String> builder) {
-            super(builder);
+    public static class Data extends NameFixRegisterEvent {
+        private final ResourceKey<? extends Registry<?>> registryKey;
+
+        @ApiStatus.Internal
+        public Data(ResourceKey<? extends Registry<?>> registryKey) {
+            this.registryKey = registryKey;
+        }
+
+        public ResourceKey<? extends Registry<?>> getRegistryKey() {
+            return registryKey;
         }
     }
 }

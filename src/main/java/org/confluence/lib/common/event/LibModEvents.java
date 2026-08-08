@@ -1,6 +1,6 @@
 package org.confluence.lib.common.event;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Streams;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.Registry;
@@ -39,29 +39,24 @@ public final class LibModEvents {
         PortEventHandler.addListener(PortEventPriority.LOWEST, LibModEvents::buildCreativeModeTabContents);
     }
 
-    private static Map<String, String> blockWithItemMap;
+    private static Map<ResourceLocation, ResourceLocation> blockWithItem;
 
+    @SuppressWarnings("UnstableApiUsage")
     private static void register(PortRegisterEvent event) {
         FluidBuilder.register(event);
         ResourceKey<? extends Registry<?>> registryKey = event.getRegistryKey();
         if (Registries.ATTRIBUTE.equals(registryKey)) {
             LibAttributes.prepareReplacements();
         } else if (Registries.BLOCK.equals(registryKey)) {
-            ImmutableMap.Builder<String, String> blockWithItem = ImmutableMap.builder();
-            PortEventHandler.postEvent(new NameFixRegisterEvent.BlockWithItem(blockWithItem));
-            blockWithItemMap = blockWithItem.build();
-            ImmutableMap.Builder<String, String> block = ImmutableMap.builder();
-            PortEventHandler.postEvent(new NameFixRegisterEvent.Block(block));
-            block.putAll(blockWithItemMap);
-            for (Map.Entry<String, String> entry : block.build().entrySet()) {
-                ((ForgeRegistry<Block>) ForgeRegistries.BLOCKS).addAlias(ResourceLocation.parse(entry.getKey()), ResourceLocation.parse(entry.getValue()));
+            blockWithItem = PortEventHandler.postEventWithReturn(new NameFixRegisterEvent.BlockWithItem()).getAlias();
+            Map<ResourceLocation, ResourceLocation> block = PortEventHandler.postEventWithReturn(new NameFixRegisterEvent.Block()).getAlias();
+            for (Map.Entry<ResourceLocation, ResourceLocation> entry : Iterables.concat(block.entrySet(), blockWithItem.entrySet())) {
+                ((ForgeRegistry<Block>) ForgeRegistries.BLOCKS).addAlias(entry.getKey(), entry.getValue());
             }
         } else if (Registries.ITEM.equals(registryKey)) {
-            ImmutableMap.Builder<String, String> item = ImmutableMap.builder();
-            PortEventHandler.postEvent(new NameFixRegisterEvent.Item(item));
-            item.putAll(blockWithItemMap);
-            for (Map.Entry<String, String> entry : item.build().entrySet()) {
-                ((ForgeRegistry<Item>) ForgeRegistries.ITEMS).addAlias(ResourceLocation.parse(entry.getKey()), ResourceLocation.parse(entry.getValue()));
+            Map<ResourceLocation, ResourceLocation> item = PortEventHandler.postEventWithReturn(new NameFixRegisterEvent.Item()).getAlias();
+            for (Map.Entry<ResourceLocation, ResourceLocation> entry : Iterables.concat(item.entrySet(), blockWithItem.entrySet())) {
+                ((ForgeRegistry<Item>) ForgeRegistries.ITEMS).addAlias(entry.getKey(), entry.getValue());
             }
         }
     }
