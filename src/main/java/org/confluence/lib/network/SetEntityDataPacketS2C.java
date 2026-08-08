@@ -4,15 +4,18 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.mixed.ILibExtraSyncedData;
 
 /// @see ILibExtraSyncedData
-public record SetEntityDataPacketS2C(int entityId, Entry... entries) implements CustomPacketPayload {
+public record SetEntityDataPacketS2C(
+        int entityId,
+        Entry... entries
+) implements CustomPacketPayload {
     public static final byte DATA_BOOLEAN = 0;
-    public static final Type<SetEntityDataPacketS2C> TYPE = new Type<>(ConfluenceMagicLib.asResource("set_entity_data"));
+    public static final Type<SetEntityDataPacketS2C> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath("cml", "set_entity_data"));
     public static final StreamCodec<RegistryFriendlyByteBuf, SetEntityDataPacketS2C> STREAM_CODEC = new StreamCodec<>() {
         @Override
         public SetEntityDataPacketS2C decode(RegistryFriendlyByteBuf buffer) {

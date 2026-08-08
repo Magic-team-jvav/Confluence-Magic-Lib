@@ -171,8 +171,4 @@ public final class ConfluenceMagicLib {
     public static ResourceLocation asResource(String path) {
         return ResourceLocation.fromNamespaceAndPath(LIB_ID, path);
     }
-
-    public static ResourceLocation asConfluenceResource(String path) {
-        return ResourceLocation.fromNamespaceAndPath(CONFLUENCE_ID, path);
-    }
 }

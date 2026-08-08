@@ -1,9 +1,7 @@
 package org.confluence.lib.mixin.fixer;
 
-import com.google.common.collect.ImmutableMap;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.core.Registry;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryDataLoader;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -23,15 +21,13 @@ public abstract class RegistryDataLoader$RegistryDataMixin<T> {
     @Final
     private ResourceKey<? extends Registry<T>> key;
 
+    @SuppressWarnings("UnstableApiUsage")
     @ModifyExpressionValue(method = "create", at = @At(value = "INVOKE", target = "Lnet/neoforged/neoforge/registries/RegistryBuilder;create()Lnet/minecraft/core/Registry;"))
     private Registry<T> modifyRegistry(Registry<T> original) {
         if (original instanceof BaseMappedRegistry<T> registry) {
-            if (Registries.BIOME.equals(key)) {
-                ImmutableMap.Builder<String, String> biome = ImmutableMap.builder();
-                ModLoader.postEvent(new NameFixRegisterEvent.Biome(biome));
-                for (Map.Entry<String, String> entry : biome.build().entrySet()) {
-                    registry.addAlias(ResourceLocation.parse(entry.getKey()), ResourceLocation.parse(entry.getValue()));
-                }
+            Map<ResourceLocation, ResourceLocation> alias = ModLoader.postEventWithReturn(new NameFixRegisterEvent.Data(key)).getAlias();
+            for (Map.Entry<ResourceLocation, ResourceLocation> entry : alias.entrySet()) {
+                registry.addAlias(entry.getKey(), entry.getValue());
             }
         }
         return original;

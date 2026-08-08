@@ -1,7 +1,8 @@
 package org.confluence.lib.common.event;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -54,22 +55,18 @@ public final class LibModEvents {
     @SubscribeEvent
     public static void fmlLoadComplete(FMLLoadCompleteEvent event) {
         event.enqueueWork(() -> {
-            ImmutableMap.Builder<String, String> blockWithItem = ImmutableMap.builder();
-            ModLoader.postEvent(new NameFixRegisterEvent.BlockWithItem(blockWithItem));
-            Map<String, String> map = blockWithItem.build();
+            Map<ResourceLocation, ResourceLocation> blockWithItem = ModLoader.postEventWithReturn(new NameFixRegisterEvent.BlockWithItem()).getAlias();
 
-            ImmutableMap.Builder<String, String> block = ImmutableMap.builder();
-            ModLoader.postEvent(new NameFixRegisterEvent.Block(block));
-            block.putAll(map);
-            for (Map.Entry<String, String> entry : block.build().entrySet()) {
-                BuiltInRegistries.BLOCK.addAlias(ResourceLocation.parse(entry.getKey()), ResourceLocation.parse(entry.getValue()));
+            Map<ResourceLocation, ResourceLocation> block = ModLoader.postEventWithReturn(new NameFixRegisterEvent.Block()).getAlias();
+            for (Map.Entry<ResourceLocation, ResourceLocation> entry : Iterables.concat(block.entrySet(), blockWithItem.entrySet())) {
+                assert entry != null;
+                BuiltInRegistries.BLOCK.addAlias(entry.getKey(), entry.getValue());
             }
 
-            ImmutableMap.Builder<String, String> item = ImmutableMap.builder();
-            ModLoader.postEvent(new NameFixRegisterEvent.Item(item));
-            item.putAll(map);
-            for (Map.Entry<String, String> entry : item.build().entrySet()) {
-                BuiltInRegistries.ITEM.addAlias(ResourceLocation.parse(entry.getKey()), ResourceLocation.parse(entry.getValue()));
+            Map<ResourceLocation, ResourceLocation> item = ModLoader.postEventWithReturn(new NameFixRegisterEvent.Item()).getAlias();
+            for (Map.Entry<ResourceLocation, ResourceLocation> entry : Iterables.concat(item.entrySet(), blockWithItem.entrySet())) {
+                assert entry != null;
+                BuiltInRegistries.ITEM.addAlias(entry.getKey(), entry.getValue());
             }
         });
     }
@@ -136,6 +133,17 @@ public final class LibModEvents {
                     groupStack.set(ConfluenceMagicLib.GROUP_STACKS, stacks.withValues(tabKey, stack));
                 }
             }
+        }
+    }
+
+    @SubscribeEvent
+    public static void nameFixRegister$Data(NameFixRegisterEvent.Data event) {
+        ResourceKey<? extends Registry<?>> key = event.getRegistryKey();
+        if (Registries.DAMAGE_TYPE.equals(key)) {
+            event
+                    // 1.2.4 -> 1.3.0
+                    .register("terra_curio:star_cloak", "confluence_magic_lib:star_cloak")
+                    .register("terra_guns:bullet_damage", "confluence_magic_lib:gun_bullet");
         }
     }
 }

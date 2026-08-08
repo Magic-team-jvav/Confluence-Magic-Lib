@@ -33,9 +33,11 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.LibStartupConfig;
 import org.confluence.lib.api.entity.IDiscardWhenRespawnEntity;
+import org.confluence.lib.api.event.ArmorPenetrationEvent;
 import org.confluence.lib.api.event.PlayerNaturalHealEvent;
 import org.confluence.lib.api.event.SwitchItemFunctionEvent;
 import org.confluence.lib.common.LibAttributes;
+import org.confluence.lib.common.LibDamageTypes;
 import org.confluence.lib.common.data.saved.IGlobalData;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
 import org.confluence.lib.mixed.ILibDamageSource;
@@ -256,6 +258,21 @@ public final class LibGameEvents {
     public static void player$Respawn(PlayerEvent.PlayerRespawnEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             IDiscardWhenRespawnEntity.process(player);
+        }
+    }
+
+    @SubscribeEvent
+    public static void armorPenetration(ArmorPenetrationEvent event) {
+        if (event.getDamageSource().is(LibDamageTypes.STAR_CLOAK)) {
+            event.setPenetration(event.getPenetration() - 3);
+        }
+    }
+
+    @SubscribeEvent
+    public static void livingIncomingDamage(LivingIncomingDamageEvent event) {
+        if (ConfluenceMagicLib.IS_CONFLUENCE_LOAD) return;
+        if (event.getSource().is(LibDamageTypes.GUN_BULLET)) {
+            event.setInvulnerabilityTicks(0);
         }
     }
 }

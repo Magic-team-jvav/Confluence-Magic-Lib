@@ -1,5 +1,6 @@
 package org.confluence.lib.event;
 
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.Event;
 import net.neoforged.fml.event.IModBusEvent;
@@ -66,12 +67,16 @@ public abstract class NameFixRegisterEvent extends Event implements IModBusEvent
     }
 
     public static class Biome extends NameFixRegisterEvent {
-        public Biome(org.confluence.lib.api.event.NameFixRegisterEvent.Biome e) {
+        public Biome(org.confluence.lib.api.event.NameFixRegisterEvent.Data e) {
             super(e);
         }
 
         static {
-            NeoForge.EVENT_BUS.addListener(org.confluence.lib.api.event.NameFixRegisterEvent.Biome.class, e -> NeoForge.EVENT_BUS.post(new Biome(e)));
+            NeoForge.EVENT_BUS.addListener(org.confluence.lib.api.event.NameFixRegisterEvent.Data.class, e -> {
+                if (Registries.BIOME.equals(e.getRegistryKey())) {
+                    NeoForge.EVENT_BUS.post(new Biome(e));
+                }
+            });
         }
     }
 }

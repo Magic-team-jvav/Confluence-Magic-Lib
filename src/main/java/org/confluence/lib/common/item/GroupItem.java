@@ -223,7 +223,7 @@ public class GroupItem extends Item {
     }
 
     public static BelongsTo belongsTo(String path) {
-        return new BelongsTo(ConfluenceMagicLib.asConfluenceResource(path));
+        return new BelongsTo(ResourceLocation.fromNamespaceAndPath(ConfluenceMagicLib.CONFLUENCE_ID, path));
     }
 
     public static CreativeModeTab.Output belongsTo(String path, CreativeModeTab.Output output) {
