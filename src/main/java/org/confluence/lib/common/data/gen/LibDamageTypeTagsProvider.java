@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
 
-public class LibDamageTypeTagsProvider extends DamageTypeTagsProvider {
+public final class LibDamageTypeTagsProvider extends DamageTypeTagsProvider {
     LibDamageTypeTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries, @Nullable ExistingFileHelper helper) {
         super(output, registries, ConfluenceMagicLib.LIB_ID, helper);
     }
