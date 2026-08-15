@@ -10,6 +10,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import org.confluence.lib.api.permanent.PermanentUpgradeData;
 import org.confluence.lib.common.component.ModRarity;
 import org.confluence.lib.common.component.NbtComponent;
 import org.confluence.lib.common.component.ToolMode;
@@ -66,6 +67,13 @@ public final class ConfluenceMagicLib {
     public static final PortRegistryEntry<Attribute, RangedAttribute> SUMMON_KNOCKBACK = registerAttribute("player.summon_knockback", 0.0, 0.0, 5.0, RangedAttribute::new, maker -> maker.setSyncable(true));
     public static final PortRegistryEntry<Attribute, RangedAttribute> WHIP_RANGE = registerAttribute("player.whip_range", 3.0, 0.0, 64.0, RangedAttribute::new, maker -> maker.setSyncable(true));
     public static final PortRegistryEntry<Attribute, RangedAttribute> MARK_DAMAGE = registerAttribute("player.mark_damage", 0.0, 0.0, 1024.0, RangedAttribute::new, maker -> maker.setSyncable(true));
+    /**
+     * 玩家放置方块的速度倍率。默认值 1.0 表示原版速度；该属性会同步到客户端，
+     * 本体和附属模组都可以通过普通属性修饰符叠加永久强化、药水或装备效果。
+     */
+    public static final PortRegistryEntry<Attribute, RangedAttribute> PLACEMENT_SPEED = registerAttribute(
+            "player.placement_speed", 1.0, 0.0, 1024.0, RangedAttribute::new,
+            maker -> maker.setSyncable(true));
 
     private static <A extends Attribute> PortRegistryEntry<Attribute, A> registerAttribute(String name, double defaultValue, double min, double max, Function4<String, Double, Double, Double, A> factory, Consumer<PortAttributeRegistration.AttributeMaker> consumer) {
         return ATTRIBUTES.register(name, () -> factory.apply("attribute.name." + name, defaultValue, min, max), consumer);
@@ -90,6 +98,12 @@ public final class ConfluenceMagicLib {
 
     private static final PortAttachmentRegistration ATTACHMENTS = PortRegisterHandler.attachment(LIB_ID);
     public static final PortRegistryEntry<PortAttachmentType<?>, PortAttachmentType<DelayTaskHolder>> DELAY_TASK_HOLDER = ATTACHMENTS.registerSimple("delay_task_holder", () -> PortAttachmentType.builder(DelayTaskHolder::new));
+    /**
+     * 公共永久升级状态由 MagicLib 所有，业务模组只注册稳定 ID 与效果定义。
+     * copyOnDeath 保证死亡重建玩家实体时等级继续存在，具体属性由统一恢复入口幂等安装。
+     */
+    public static final PortRegistryEntry<PortAttachmentType<?>, PortAttachmentType<PermanentUpgradeData>> PERMANENT_UPGRADES =
+            ATTACHMENTS.register("permanent_upgrades", () -> PortAttachmentType.serializable(PermanentUpgradeData::new).copyOnDeath().build());
 
     public ConfluenceMagicLib(FMLJavaModLoadingContext context) {
         LibStartupConfig.register();
@@ -105,13 +119,6 @@ public final class ConfluenceMagicLib {
         ATTRIBUTES.addAlias(ResourceLocation.fromNamespaceAndPath("terra_curio", "generic.armor_penetration"), ARMOR_PENETRATION.getId());
         ATTRIBUTES.addAlias(ResourceLocation.fromNamespaceAndPath("terra_curio", "player.pickup_range"), PICKUP_RANGE.getId());
         ATTRIBUTES.addAlias(ResourceLocation.fromNamespaceAndPath("terra_curio", "player.aggro"), AGGRO.getId());
-        ATTRIBUTES.addAlias(ResourceLocation.fromNamespaceAndPath("terra_entity", "player.minion_capacity"), MINION_CAPACITY.getId());
-        ATTRIBUTES.addAlias(ResourceLocation.fromNamespaceAndPath("terra_entity", "player.sentry_capacity"), SENTRY_CAPACITY.getId());
-        ATTRIBUTES.addAlias(ResourceLocation.fromNamespaceAndPath("terra_entity", "player.summon_damage"), SUMMON_DAMAGE.getId());
-        ATTRIBUTES.addAlias(ResourceLocation.fromNamespaceAndPath("terra_entity", "player.summon_knockback"), SUMMON_KNOCKBACK.getId());
-        ATTRIBUTES.addAlias(ResourceLocation.fromNamespaceAndPath("terra_entity", "player.whip_range"), WHIP_RANGE.getId());
-        ATTRIBUTES.addAlias(ResourceLocation.fromNamespaceAndPath("terra_entity", "player.mark_damage"), MARK_DAMAGE.getId());
-
         org.confluence.lib.common.event.LibModEvents.init();
         org.confluence.lib.common.event.LibGameEvents.init();
         if (LibUtils.isPhysicalClient()) {

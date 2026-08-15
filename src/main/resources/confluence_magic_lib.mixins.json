@@ -14,6 +14,7 @@
         "LivingEntityMixin",
         "PlayerMixin",
         "PrimaryLevelDataMixin",
+        "SlotMixin",
         "accessor.LanguageProviderAccessor",
         "fixer.ChestBlockEntityAccessor",
         "fixer.RegistryDataLoader$RegistryDataMixin",

@@ -120,10 +120,11 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
 
     @Override
     public boolean clickMenuButton(Player player, int id) {
-        if (isValidRecipeIndex(id)) {
-            selectedRecipeIndex.set(id);
-            setupResultSlot();
+        if (!isValidRecipeIndex(id)) {
+            return false;
         }
+        selectedRecipeIndex.set(id);
+        setupResultSlot();
         return true;
     }
 
@@ -181,29 +182,30 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
 
     @Override
     public ItemStack quickMoveStack(Player pPlayer, int pIndex) {
+        if (pIndex < 0 || pIndex >= slots.size()) return ItemStack.EMPTY;
         ItemStack itemStack = ItemStack.EMPTY;
         Slot slot = slots.get(pIndex);
         if (slot.hasItem()) {
             ItemStack slotItem = slot.getItem();
             itemStack = slotItem.copy();
-            if (pIndex == 0) { // resultSlot
+            if (pIndex == 0) { // 成品槽
                 access.execute((level, blockPos) -> slotItem.getItem().onCraftedBy(slotItem, level, pPlayer));
-                if (!moveItemStackTo(slotItem, INV_SLOT_START, USE_ROW_SLOT_END, true)) { // playerInventory(ALL)
+                if (!moveItemStackTo(slotItem, INV_SLOT_START, USE_ROW_SLOT_END, true)) { // 玩家全部物品栏
                     return ItemStack.EMPTY;
                 }
 
                 slot.onQuickCraft(slotItem, itemStack);
-            } else if (pIndex >= INV_SLOT_START && pIndex < USE_ROW_SLOT_END) { // playerInventory(ALL)
-                if (!moveItemStackTo(slotItem, INPUT_START, INPUT_END, false)) { // craftSlots
+            } else if (pIndex >= INV_SLOT_START && pIndex < USE_ROW_SLOT_END) { // 玩家全部物品栏
+                if (!moveItemStackTo(slotItem, INPUT_START, INPUT_END, false)) { // 合成输入槽
                     if (pIndex < USE_ROW_SLOT_START) {
-                        if (!moveItemStackTo(slotItem, USE_ROW_SLOT_START, USE_ROW_SLOT_END, false)) { // playerInventory(HOT BAR)
+                        if (!moveItemStackTo(slotItem, USE_ROW_SLOT_START, USE_ROW_SLOT_END, false)) { // 快捷栏
                             return ItemStack.EMPTY;
                         }
-                    } else if (!moveItemStackTo(slotItem, INV_SLOT_START, INV_SLOT_END, false)) { // playerInventory(MAIN)
+                    } else if (!moveItemStackTo(slotItem, INV_SLOT_START, INV_SLOT_END, false)) { // 主物品栏
                         return ItemStack.EMPTY;
                     }
                 }
-            } else if (!moveItemStackTo(slotItem, INV_SLOT_START, USE_ROW_SLOT_END, false)) { // playerInventory(ALL)
+            } else if (!moveItemStackTo(slotItem, INV_SLOT_START, USE_ROW_SLOT_END, false)) { // 玩家全部物品栏
                 return ItemStack.EMPTY;
             }
 
@@ -218,7 +220,7 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
             }
 
             slot.onTake(pPlayer, slotItem);
-            if (pIndex == 0) { // resultSlot
+            if (pIndex == 0) { // 成品槽
                 pPlayer.drop(slotItem, false);
             }
         }

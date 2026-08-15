@@ -26,6 +26,8 @@ import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.LibStartupConfig;
 import org.confluence.lib.api.event.ArmorPenetrationEvent;
 import org.confluence.lib.api.event.CustomPickupRangeEvent;
+import org.confluence.lib.api.projectile.ProjectileCombatSnapshot;
+import org.confluence.lib.api.projectile.ProjectileCombatSnapshotCarrier;
 import org.confluence.lib.util.LibMathUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -155,15 +157,25 @@ public final class LibAttributes {
 
     @ApiStatus.Internal
     public static float applyArmorPenetration(LivingEntity victim, DamageSource damageSource, float armorValue) {
-        if (damageSource.getEntity() instanceof LivingEntity attacker) {
+        @Nullable ProjectileCombatSnapshot snapshot = ProjectileCombatSnapshotCarrier.find(damageSource);
+        if (snapshot != null) {
+            // 快照穿甲已经在发射时冻结，即使归属实体暂时无法解析也必须稳定生效一次。
+            armorValue -= snapshot.armorPenetration();
+        } else if (damageSource.getEntity() instanceof LivingEntity attacker) {
+            // 尚未迁移的伤害源继续读取攻击者命中时的实时穿甲属性。
             if (!hasCustomAttribute(ConfluenceMagicLib.ARMOR_PENETRATION)) {
                 AttributeInstance instance = attacker.getAttribute(ConfluenceMagicLib.ARMOR_PENETRATION.get());
                 if (instance != null) armorValue -= (float) instance.getValue();
             }
-            float penetration = PortEventHandler.postEventWithReturn(new ArmorPenetrationEvent(victim, damageSource, armorValue)).getPenetration();
-            return Math.max(armorValue - penetration, 0.0F);
+        } else {
+            return armorValue;
         }
-        return armorValue;
+
+        // 无论穿甲来自快照还是旧属性，都保留事件作为附属模组与具体玩法的最终扩展入口。
+        float penetration = PortEventHandler.postEventWithReturn(
+                new ArmorPenetrationEvent(victim, damageSource, armorValue)
+        ).getPenetration();
+        return Math.max(armorValue - penetration, 0.0F);
     }
 
     @ApiStatus.Internal
@@ -193,13 +205,26 @@ public final class LibAttributes {
 
     public static Holder<Attribute> getCustomAttribute(Holder<Attribute> attribute) {
         Holder<Attribute> target = MAP.get(attribute);
-        if (target == null) return attribute;
+        if (target == null || isSameAttribute(attribute, target)) return attribute;
         return target;
     }
 
     public static boolean hasCustomAttribute(Holder<Attribute> attribute) {
         Holder<Attribute> holder = MAP.get(attribute);
-        return holder != null && !holder.equals(attribute);
+        return holder != null && !isSameAttribute(attribute, holder);
+    }
+
+    /**
+     * 判断两个 Holder 是否指向同一个注册属性。
+     *
+     * <p>PortRegistryEntry 与 Forge Registry Holder 即使包装同一注册项也不会彼此 equals；若只比较
+     * Holder 对象，默认配置中的“原属性映射到自身”会被误判成外部接管，继而跳过玩家属性注册。</p>
+     */
+    private static boolean isSameAttribute(Holder<Attribute> first, Holder<Attribute> second) {
+        if (first == second || first.equals(second)) return true;
+        return first.unwrapKey()
+                .flatMap(firstKey -> second.unwrapKey().filter(firstKey::equals))
+                .isPresent();
     }
 
     public static Holder<Attribute> getCriticalChance() {

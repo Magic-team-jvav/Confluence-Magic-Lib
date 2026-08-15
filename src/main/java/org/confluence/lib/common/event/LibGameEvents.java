@@ -19,6 +19,9 @@ import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.LibStartupConfig;
 import org.confluence.lib.api.event.PlayerNaturalHealEvent;
 import org.confluence.lib.api.event.SwitchItemFunctionEvent;
+import org.confluence.lib.api.permanent.PermanentUpgradeRegistry;
+import org.confluence.lib.api.projectile.ProjectileCombatSnapshot;
+import org.confluence.lib.api.projectile.ProjectileCombatSnapshotCarrier;
 import org.confluence.lib.common.LibAttributes;
 import org.confluence.lib.common.data.saved.IGlobalData;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
@@ -36,6 +39,7 @@ import org.mesdag.portlib.event.entity.PortEntityAttributeModificationEvent;
 import org.mesdag.portlib.event.entity.PortEntityInvulnerabilityCheckEvent;
 import org.mesdag.portlib.event.entity.PortEntityJoinLevelEvent;
 import org.mesdag.portlib.event.entity.living.*;
+import org.mesdag.portlib.event.entity.player.PortPlayerEvent;
 import org.mesdag.portlib.event.other.PortItemStackedOnOtherEvent;
 import org.mesdag.portlib.event.server.PortServerStartingEvent;
 import org.mesdag.portlib.event.server.PortServerStoppedEvent;
@@ -54,6 +58,7 @@ public final class LibGameEvents {
         PortEventHandler.addListener(LibGameEvents::serverTick);
         PortEventHandler.addListener(LibGameEvents::serverStopped);
         PortEventHandler.addListener(LibGameEvents::playerLoggedIn);
+        PortEventHandler.addListener(LibGameEvents::playerRespawn);
         PortEventHandler.addListener(LibGameEvents::livingDeath);
         PortEventHandler.addListener(PortEventPriority.HIGH, true, LibGameEvents::itemStackedOnOther);
         PortEventHandler.addListener(PortEventPriority.HIGHEST, LibGameEvents::entityTickPre);
@@ -105,7 +110,21 @@ public final class LibGameEvents {
         IGlobalData.clearAll();
     }
 
-    private static void playerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {LibStartupConfig.checkIfSomeoneHasViolatedEULA(event.getEntity());}
+    private static void playerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        Player player = event.getEntity();
+        LibStartupConfig.checkIfSomeoneHasViolatedEULA(player);
+        if (player instanceof ServerPlayer serverPlayer) {
+            // 公共 API 自己承担恢复生命周期，附属模组只需注册定义，不必再复制登录事件监听器。
+            PermanentUpgradeRegistry.reconcileAll(serverPlayer);
+        }
+    }
+
+    private static void playerRespawn(PortPlayerEvent.PlayerRespawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+            // 死亡复制附件后，按保存等级幂等重建原版属性等可丢失的运行时效果。
+            PermanentUpgradeRegistry.reconcileAll(serverPlayer);
+        }
+    }
 
     private static void livingDeath(PortLivingDeathEvent event) {
         LivingEntity livingEntity = event.getEntity();
@@ -179,9 +198,16 @@ public final class LibGameEvents {
         DamageSource damageSource = event.getSource();
         if (damageSource.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return;
         @Nullable Entity attacker = damageSource.getEntity();
-        amount = LibAttributes.applyMagicDamage(attacker, damageSource, amount);
-        amount = LibAttributes.applyRangedDamage(attacker, damageSource, amount);
-        amount = ILibDamageSource.processCritical(attacker, amount, victim, damageSource);
+        @Nullable ProjectileCombatSnapshot snapshot = ProjectileCombatSnapshotCarrier.find(damageSource);
+        if (snapshot == null) {
+            // 未迁移的弹幕与普通伤害继续按命中时的玩家属性计算，确保旧内容行为不变。
+            amount = LibAttributes.applyMagicDamage(attacker, damageSource, amount);
+            amount = LibAttributes.applyRangedDamage(attacker, damageSource, amount);
+        } else {
+            // 快照已经在发射时选定唯一主伤害通道并冻结倍率，命中时只允许应用一次。
+            amount = snapshot.applyChannelMultiplier(amount);
+        }
+        amount = ILibDamageSource.processCritical(attacker, amount, victim, damageSource, snapshot);
         event.setNewDamage(amount);
     }
 
@@ -196,6 +222,11 @@ public final class LibGameEvents {
 
     private static void entityJoinLevel(PortEntityJoinLevelEvent event) {
         if (event.getEntity() instanceof AbstractArrow arrow && arrow.getOwner() instanceof LivingEntity living) {
+            if (arrow instanceof ProjectileCombatSnapshotCarrier carrier
+                    && carrier.getProjectileCombatSnapshot() != null) {
+                // 已迁移箭矢的弹速与暴击在事务中冻结，加入世界时不得再次读取实时属性。
+                return;
+            }
             LibAttributes.applyToArrow(living, arrow);
         }
     }

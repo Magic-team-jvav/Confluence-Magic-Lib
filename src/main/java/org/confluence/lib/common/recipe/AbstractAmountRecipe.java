@@ -3,10 +3,15 @@ package org.confluence.lib.common.recipe;
 import PortLib.extensions.java.util.List.PortListExtension;
 import PortLib.extensions.net.minecraft.world.item.ItemStack.PortItemStackExtension;
 import PortLib.extensions.net.minecraft.world.item.crafting.Ingredient.PortIngredientExtension;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.handler.codec.DecoderException;
+import io.netty.handler.codec.EncoderException;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -15,6 +20,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectFunction;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.item.ItemStack;
@@ -35,6 +43,78 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 public abstract class AbstractAmountRecipe<I extends PortRecipeInput> implements PortRecipe<I> {
+    /**
+     * 带数量配方允许一次产出超过普通堆叠上限的物品，例如一次制作 150 发弹药。
+     * 1.20.1 原版物品栈序列化会把 Count 写成有符号字节，数量超过 127 后会溢出并在加载时变成空栈。
+     * 此编解码器保留物品栈的完整 NBT，同时使用与 1.21 一致的小写 count 整数字段保存真实数量。
+     */
+    public static final Codec<ItemStack> BULK_RESULT_CODEC = new Codec<>() {
+        @Override
+        public <T> DataResult<Pair<ItemStack, T>> decode(DynamicOps<T> ops, T input) {
+            Tag converted = ops.convertTo(NbtOps.INSTANCE, input);
+            if (!(converted instanceof CompoundTag tag)) {
+                return DataResult.error(() -> "Unable to decode bulk recipe result");
+            }
+            int count = tag.contains("count", Tag.TAG_ANY_NUMERIC) ? tag.getInt("count") : 1;
+            if (count <= 0) {
+                return DataResult.error(() -> "Bulk recipe result count must be positive");
+            }
+            CompoundTag normalized = tag.copy();
+            normalized.remove("count");
+            normalized.putByte("Count", (byte) 1);
+            ItemStack stack = ItemStack.of(normalized);
+            if (stack.isEmpty()) {
+                return DataResult.error(() -> "Bulk recipe result must not be empty");
+            }
+            stack.setCount(count);
+            return DataResult.success(Pair.of(stack, input), Lifecycle.stable());
+        }
+
+        @Override
+        public <T> DataResult<T> encode(ItemStack input, DynamicOps<T> ops, T prefix) {
+            if (input.isEmpty()) {
+                return DataResult.error(() -> "Bulk recipe result must not be empty");
+            }
+            if (input.getCount() <= 0) {
+                return DataResult.error(() -> "Bulk recipe result count must be positive");
+            }
+            ItemStack normalized = input.copy();
+            normalized.setCount(1);
+            CompoundTag tag = normalized.save(new CompoundTag());
+            tag.remove("Count");
+            tag.putInt("count", input.getCount());
+            return DataResult.success(NbtOps.INSTANCE.convertTo(ops, tag), Lifecycle.stable());
+        }
+    };
+    /**
+     * 网络同步采用整型数量，避免登录时配方同步把大批量产出解码为空栈。
+     */
+    public static final PortStreamCodec<PortRegistryFriendlyByteBuf, ItemStack> BULK_RESULT_STREAM_CODEC = new PortStreamCodec<>() {
+        @Override
+        public ItemStack decode(PortRegistryFriendlyByteBuf buffer) {
+            int count = buffer.readVarInt();
+            if (count <= 0) {
+                throw new DecoderException("Bulk recipe result count must be positive");
+            }
+            ItemStack stack = PortItemStackExtension.streamCodec().decode(buffer);
+            stack.setCount(count);
+            return stack;
+        }
+
+        @Override
+        public void encode(PortRegistryFriendlyByteBuf buffer, ItemStack value) {
+            if (value.isEmpty()) {
+                throw new EncoderException("Bulk recipe result must not be empty");
+            }
+            if (value.getCount() <= 0) {
+                throw new EncoderException("Bulk recipe result count must be positive");
+            }
+            buffer.writeVarInt(value.getCount());
+            ItemStack normalized = value.copy();
+            normalized.setCount(1);
+            PortItemStackExtension.streamCodec().encode(buffer, normalized);
+        }
+    };
     public static final MapCodec<NonNullList<Ingredient>> INGREDIENTS_CODEC = PortIngredientExtension.codecNonempty().listOf().fieldOf("ingredients").flatXmap(list -> {
         Ingredient[] ingredients = list.toArray(new Ingredient[0]);
         if (ingredients.length == 0) {
@@ -239,14 +319,14 @@ public abstract class AbstractAmountRecipe<I extends PortRecipeInput> implements
 
     public static <R extends AbstractAmountRecipe<?>> MapCodec<R> shapelessSerializerMapCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                PortItemStackExtension.strictCodec().fieldOf("result").forGetter(recipe -> recipe.result),
+                BULK_RESULT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
                 INGREDIENTS_CODEC.forGetter(recipe -> recipe.ingredients)
         ).apply(instance, factory));
     }
 
     public static <R extends AbstractAmountRecipe<?>> PortStreamCodec<PortRegistryFriendlyByteBuf, R> shapelessSerializerSteamCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
         return PortStreamCodec.composite(
-                PortItemStackExtension.streamCodec(), r -> r.result,
+                BULK_RESULT_STREAM_CODEC, r -> r.result,
                 LibStreamCodecUtils.INGREDIENTS, r -> r.getIngredients(),
                 factory
         );

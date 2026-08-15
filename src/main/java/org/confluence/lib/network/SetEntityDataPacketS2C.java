@@ -41,6 +41,15 @@ public record SetEntityDataPacketS2C(int entityId, Entry... entries) implements 
         return ID;
     }
 
+    /**
+     * 扩展同步字段会修改客户端实体，必须交给客户端主线程执行。
+     */
+    @Override
+    public void handle(IPortPacket.Context context) {
+        Player player = context.player();
+        if (player != null) context.enqueueWork(() -> work(player));
+    }
+
     @Override
     public void work(Player player) {
         Entity entity = player.level().getEntity(entityId);
@@ -66,4 +75,5 @@ public record SetEntityDataPacketS2C(int entityId, Entry... entries) implements 
     public static Entry ofBoolean(boolean data) {
         return new Entry(DATA_BOOLEAN, data);
     }
+
 }

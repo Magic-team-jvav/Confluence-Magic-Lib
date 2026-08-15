@@ -10,32 +10,42 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-/// Aim Utils的作用是根据 实体的位置/预判射出的位置，要预判的实体以及预判的设置 进行预判
-///
-/// 注意：本类的返回值是瞄准的速度；详见各部分的docs。
+/**
+ * 负责根据发射点、目标实体运动状态和弹幕参数计算预判瞄准方向。
+ *
+ * <p>本工具类返回的是弹幕速度向量，而不是命中位置。调用方应根据弹幕自身的速度、
+ * 重力、加速规则和是否允许随机偏移来配置 {@link AimHelperOptions}，避免把自动索敌、
+ * 预判射击和普通直线射击混在同一套参数里。</p>
+ */
 public class AimUtils {
     public static final int MAX_TICKS = 60; // 弹道预判最长时间，单位：刻
 
-    /// 取得实体的速度用来进行预判。
-    ///
-    /// TODO：未来进行boss预判冲刺时，玩家的速度可能需要特殊处理。
-    ///
-    /// @param entity 要计算的实体
-    /// @return 实体的速度
+    /**
+     * 取得实体当前速度，用作后续位置预测的基础。
+     *
+     * <p>未来如果需要对 Boss 冲刺或玩家输入做更细的预判，可以在这里按实体类型分支；
+     * 当前保持最直接的 MC 速度语义，避免让普通弹幕携带额外修正。</p>
+     *
+     * @param entity 要计算的实体
+     * @return 实体当前速度
+     */
     private static Vec3 getEntityVelocity(Entity entity) {
         return entity.getDeltaMovement();
     }
 
-    /// 取得实体的加速度用来进行预判。
-    /// TODO：需要迷信一下来让实体类存储上一刻的速度用以计算加速度。
-    ///
-    /// @param entity 要计算的实体
-    /// @return 实体的加速度
+    /**
+     * 取得实体加速度，用于需要二阶运动预测的弹幕。
+     *
+     * <p>1.20 侧实体目前没有统一记录上一刻速度，因此这里返回零加速度。
+     * 如果以后要启用真正的加速度预判，应先通过 mixin 或公共缓存记录上一刻速度，
+     * 再在本方法中统一读取，不能让每个弹幕各自维护一套历史速度。</p>
+     *
+     * @param entity 要计算的实体
+     * @return 实体加速度
+     */
     private static Vec3 getEntityAcceleration(Entity entity) {
-        // TODO: Mixin this...
-        Vec3 lastVel = entity.getDeltaMovement();
-        Vec3 currVel = entity.getDeltaMovement();
-        return currVel.subtract(lastVel);
+        // 当前没有上一刻速度缓存，保持零加速度可避免假预判污染普通弹幕。
+        return Vec3.ZERO;
     }
 
 
@@ -212,15 +222,15 @@ public class AimUtils {
         // 敌人加速度的额外偏移量
         Vec3 accelerationOffset = new Vec3(0, 0, 0);
 
-        // 构造器
+        // 默认构造器，调用方必须显式设置弹速等核心参数。
         public AimHelperOptions() {
             super();
         }
 
-        // 构造器 - 可后续调整；对于特殊的弹射物类型酌情设置重力、速度乘数信息
+        // 从弹幕实体读取通用重力；特殊弹幕的速度倍率、最大速度等仍由调用方按类型补充。
         public AimHelperOptions(Projectile projectile) {
             this();
-            // TODO 完善此处，使构造器实现的效果与弹幕本身一致
+            // 这里只读取所有弹幕都具备的重力值，避免误把特殊弹幕的追踪或加速规则泛化到普通弹幕。
             setProjectileGravity(projectile.getGravity1211());
         }
 
