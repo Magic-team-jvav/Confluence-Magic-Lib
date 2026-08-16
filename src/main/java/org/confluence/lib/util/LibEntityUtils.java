@@ -35,23 +35,13 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public final class LibEntityUtils {
-    /**
-     * 判断实体是否可以作为当前攻击的碰撞目标。
-     * <p>
-     * 可拥有实体和可追踪实体可能暂时没有所有者，例如客户端刚收到实体但尚未完成所有者同步。
-     * 这类目标无法可靠参与敌我关系判断，因此统一按不可命中处理。
-     */
     public static boolean canHitEntity(@Nullable Entity target, @Nullable Entity owner) {
         if (target == null || target.isRemoved()) return false;
-        // 命中规则只解析分部实体。OwnableEntity 代表“可拥有”，并不代表伤害应转移给主人；
-        // 否则无主羊驼会被解析为 null，有主生物还会错误地把受击本体替换成玩家。
-        Entity resolvedTarget = tryFindBeImpacted(target);
-        if (resolvedTarget == null || resolvedTarget.isRemoved()) return false;
-        if (owner == resolvedTarget || !resolvedTarget.isAttackable() ||
-                !resolvedTarget.canBeHitByProjectile() || resolvedTarget instanceof ArmorStand) {
+        target = getOwner(target);
+        if (owner == target || !target.isAttackable() || !target.canBeHitByProjectile() || target instanceof ArmorStand) {
             return false;
         }
-        return owner == null || !owner.isPassengerOfSameVehicle(resolvedTarget);
+        return owner == null || (!owner.isPassengerOfSameVehicle(target));
     }
 
     public static void poweringCreeper(Creeper creeper) {
@@ -223,13 +213,12 @@ public final class LibEntityUtils {
         return getOwner(entity);
     }
 
-    /// 尝试解析造成当前行为的所有者。
+    /// 尝试寻找该实体的所有者，如果找不到则返回该实体
     ///
-    /// 分部实体返回其父实体，可拥有实体和可追踪实体返回其所有者，其余实体返回自身。
-    /// 可拥有实体或可追踪实体尚未绑定所有者时会返回 `null`，调用方必须处理该状态。
+    /// 适合查询始作俑者
     ///
     /// @see LibEntityUtils#tryFindBeImpacted(Entity) 适合查询直接受影响的实体的方法
-    @Contract("null -> null")
+    @Contract("null -> null; !null -> !null")
     public static @Nullable Entity getOwner(@Nullable Entity entity) {
         if (entity instanceof PartEntity<?> partEntity) {
             return partEntity.getParent();
@@ -266,7 +255,7 @@ public final class LibEntityUtils {
 
     public static void setItemAndDropChance(Mob mob, DifficultyInstance difficulty, EquipmentSlot slot, Item item, float chance) {
         ItemStack itemStack = item.getDefaultInstance();
-        // 生成装备的随机附魔尚未适配当前版本的附魔提供器。
+        // todo
 //        float enchantChance = (slot.getType() == EquipmentSlot.Type.HAND ? 0.25F : 0.5F) * difficulty.getSpecialMultiplier();
 //        if (mob.getRandom().nextFloat() < enchantChance) {
 //            EnchantmentHelper.enchantItemFromProvider(itemStack, mob.registryAccess(), VanillaEnchantmentProviders.MOB_SPAWN_EQUIPMENT, difficulty, mob.getRandom());

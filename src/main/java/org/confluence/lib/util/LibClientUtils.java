@@ -50,7 +50,7 @@ public final class LibClientUtils {
             }
             ImageIO.write(image, "png", path.toFile());
         } catch (IOException e) {
-            throw new RuntimeException("Failed to write native image to " + path, e);
+            throw new RuntimeException(e);
         }
     }
 

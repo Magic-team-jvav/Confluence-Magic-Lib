@@ -25,7 +25,7 @@ public class CollectRecipeProvider extends RecipeProvider {
 
     @Override
     protected final void buildRecipes(Consumer<FinishedRecipe> writer) {
-        throw new UnsupportedOperationException("CollectRecipeProvider delegates recipes to sub-providers");
+        throw new UnsupportedOperationException();
     }
 
     @Override

@@ -62,14 +62,14 @@ public final class LibMathUtils {
                 f6 = f2;
                 break;
             default:
-                throw new RuntimeException("Failed to convert HSV to RGB. Input was " + hue + ", " + saturation + ", " + value);
+                throw new RuntimeException("Something went wrong when converting from HSV to RGB. Input was " + hue + ", " + saturation + ", " + value);
         }
 
         return FastColor.ARGB32.color(alpha, Mth.clamp((int) (f4 * 255.0F), 0, 255), Mth.clamp((int) (f5 * 255.0F), 0, 255), Mth.clamp((int) (f6 * 255.0F), 0, 255));
     }
 
 
-    /// 计算三次贝塞尔曲线在指定进度上的插值结果。
+    /// @author ChatGPT
     public static float cubicBezier(float t, float p0, float p1, float p2, float p3) {
         float u = 1 - t;
         float tt = t * t;

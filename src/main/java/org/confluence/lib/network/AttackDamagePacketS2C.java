@@ -19,23 +19,12 @@ public record AttackDamagePacketS2C(float amount) implements IPortPacket.S2C {
         return ID;
     }
 
-    /**
-     * DPS 统计属于客户端运行时状态，必须交给客户端主线程更新。
-     */
-    @Override
-    public void handle(IPortPacket.Context context) {
-        Player player = context.player();
-        if (player != null) context.enqueueWork(() -> work(player));
-    }
-
     @Override
     public void work(Player player) {
         DPSMeter.addDPS(amount, player.level().getGameTime());
     }
 
     public static void sendToClient(ServerPlayer player, float amount) {
-        // GameTest 或部分服务端模拟玩家没有真实网络连接，此时伤害数字本来就没有客户端可同步。
-        if (player == null || player.connection == null) return;
         ConfluenceMagicLib.NETWORK_HANDLER.sendToPlayer(player, new AttackDamagePacketS2C(amount));
     }
 }

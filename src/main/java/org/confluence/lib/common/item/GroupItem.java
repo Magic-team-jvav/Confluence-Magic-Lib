@@ -1,6 +1,7 @@
 package org.confluence.lib.common.item;
 
 import PortLib.extensions.net.minecraft.resources.ResourceLocation.PortResourceLocationExtension;
+import com.google.common.collect.AbstractIterator;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenCustomHashSet;
@@ -21,6 +22,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import org.mesdag.portlib.event.PortEventHandler;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
 
+import javax.annotation.CheckForNull;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -65,7 +67,7 @@ public class GroupItem extends Item {
     @ApiStatus.Internal
     public static void toggleVisibility(ItemStack group) {
         Stacks stacks = group.get(ConfluenceMagicLib.GROUP_STACKS);
-        if (stacks == null) throw new NullPointerException("Group item stacks must not be null");
+        if (stacks == null) throw new NullPointerException("Stacks must non-null!");
         group.set(ConfluenceMagicLib.GROUP_STACKS, stacks.toggleVisibility());
     }
 
@@ -248,14 +250,7 @@ public class GroupItem extends Item {
     public record DisplayItems(Collection<ItemStack> delegate) implements Collection<ItemStack> {
         @Override
         public int size() {
-            int size = delegate.size();
-            for (ItemStack stack : delegate) {
-                if (stack.is(getInstance())) {
-                    Stacks stacks = stack.getOrDefault(ConfluenceMagicLib.GROUP_STACKS, Stacks.EMPTY);
-                    if (stacks.visible) size += stacks.values.length;
-                }
-            }
-            return size;
+            return delegate.size();
         }
 
         @Override
@@ -265,44 +260,44 @@ public class GroupItem extends Item {
 
         @Override
         public boolean contains(Object o) {
-            for (ItemStack stack : this) {
-                if (Objects.equals(stack, o)) return true;
-            }
-            return false;
+            return delegate.contains(o);
         }
 
         @Override
         public Iterator<ItemStack> iterator() {
-            Iterator<ItemStack> groups = delegate.iterator();
-            return new Iterator<>() {
-                private Iterator<ItemStack> children = Collections.emptyIterator();
+            Iterator<ItemStack> unfiltered = delegate.iterator();
+            return new AbstractIterator<>() {
+                int index = 0;
+                ItemStack[] values = new ItemStack[0];
 
                 @Override
-                public boolean hasNext() {
-                    return children.hasNext() || groups.hasNext();
-                }
-
-                @Override
-                public ItemStack next() {
-                    if (children.hasNext()) return children.next();
-                    ItemStack stack = groups.next();
-                    if (stack.is(getInstance())) {
-                        Stacks stacks = stack.getOrDefault(ConfluenceMagicLib.GROUP_STACKS, Stacks.EMPTY);
-                        if (stacks.visible) children = Arrays.asList(stacks.values).iterator();
+                @CheckForNull
+                protected ItemStack computeNext() {
+                    if (index < values.length) {
+                        return values[index++];
+                    } else if (unfiltered.hasNext()) {
+                        ItemStack element = unfiltered.next();
+                        if (element.is(getInstance())) {
+                            index = 0;
+                            Stacks stacks = element.getOrDefault(ConfluenceMagicLib.GROUP_STACKS, Stacks.EMPTY);
+                            values = stacks.visible ? stacks.values : new ItemStack[0];
+                            return element;
+                        }
+                        return element;
                     }
-                    return stack;
+                    return endOfData();
                 }
             };
         }
 
         @Override
         public Object[] toArray() {
-            return expandedList().toArray();
+            return delegate.toArray();
         }
 
         @Override
         public <T> T[] toArray(T[] ts) {
-            return expandedList().toArray(ts);
+            return delegate.toArray(ts);
         }
 
         @Override
@@ -317,7 +312,7 @@ public class GroupItem extends Item {
 
         @Override
         public boolean containsAll(Collection<?> collection) {
-            return collection.stream().allMatch(this::contains);
+            return delegate.containsAll(collection);
         }
 
         @Override
@@ -338,18 +333,6 @@ public class GroupItem extends Item {
         @Override
         public void clear() {
             delegate.clear();
-        }
-
-        /**
-         * 构建创造栏真正应该看到的物品序列。
-         *
-         * <p>原版创造栏会同时使用 {@link #size()}、{@link #iterator()} 和 {@link #toArray()} 来刷新槽位与滚动范围。
-         * 如果这些入口返回的数量不一致，展开分组后就会出现槽位错位或滚动范围异常。</p>
-         */
-        private List<ItemStack> expandedList() {
-            List<ItemStack> items = new ArrayList<>(size());
-            forEach(items::add);
-            return items;
         }
     }
 }

@@ -8,7 +8,6 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import org.confluence.lib.util.LibUtils;
 import org.mesdag.portlib.wrapper.IPortNBTSerializable;
 
 import javax.annotation.Nullable;
@@ -27,11 +26,6 @@ public class PlayerContainer<C extends BlockEntity & PlayerContainer.ValidEntity
 
     public boolean isActiveContainer(C container) {
         return this.activeContainer == container;
-    }
-
-    @Override
-    public int getMaxStackSize() {
-        return LibUtils.getMaxStackSize(super.getMaxStackSize());
     }
 
     public void setItemNoUpdate(int index, ItemStack stack) {

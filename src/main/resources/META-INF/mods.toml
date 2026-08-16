@@ -22,11 +22,3 @@ mandatory=true
 versionRange = "${minecraft_version_range}"
 ordering = "NONE"
 side = "BOTH"
-
-# MagicLib 的注册、网络、组件、附件与平台事件契约都直接建立在 PortLib 上。
-[[dependencies.${ mod_id }]]
-modId = "portlib"
-mandatory = true
-versionRange = "[${portlib_version},)"
-ordering = "AFTER"
-side = "BOTH"

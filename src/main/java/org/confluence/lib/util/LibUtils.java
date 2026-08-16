@@ -30,7 +30,6 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
-import PortLib.extensions.net.minecraft.world.item.ItemStack.PortItemStackExtension;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.component.NbtComponent;
 import org.jetbrains.annotations.ApiStatus;
@@ -137,7 +136,7 @@ public final class LibUtils {
         };
     }
 
-    // 容器与物品栈的通用桥接尚未收敛到此工具类。
+    // todo Container, ItemStack
     public static int getMaxStackSize(int original) {
         return Math.max(original, MAX_STACK_SIZE);
     }
@@ -157,26 +156,26 @@ public final class LibUtils {
     }
 
     public static CompoundTag getItemStackNbtNoCopy(ItemStack stack) {
-        NbtComponent nbtComponent = PortItemStackExtension.getData(stack, ConfluenceMagicLib.NBT);
+        NbtComponent nbtComponent = stack.get(ConfluenceMagicLib.NBT);
         if (nbtComponent == null) {
             CompoundTag nbt = new CompoundTag();
-            PortItemStackExtension.setData(stack, ConfluenceMagicLib.NBT, new NbtComponent(nbt));
+            stack.set(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
             return nbt;
         }
         return nbtComponent.nbt();
     }
 
     public static @Nullable CompoundTag getItemStackNbtIfPresent(ItemStack stack) {
-        NbtComponent component = PortItemStackExtension.getData(stack, ConfluenceMagicLib.NBT);
+        NbtComponent component = stack.get(ConfluenceMagicLib.NBT);
         if (component == null) return null;
         return component.nbt();
     }
 
     public static void updateItemStackNbt(ItemStack stack, Consumer<CompoundTag> consumer) {
-        NbtComponent nbtComponent = PortItemStackExtension.getData(stack, ConfluenceMagicLib.NBT);
+        NbtComponent nbtComponent = stack.get(ConfluenceMagicLib.NBT);
         CompoundTag nbt = nbtComponent == null ? new CompoundTag() : nbtComponent.nbt().copy();
         consumer.accept(nbt);
-        PortItemStackExtension.setData(stack, ConfluenceMagicLib.NBT, new NbtComponent(nbt));
+        stack.set(ConfluenceMagicLib.NBT, new NbtComponent(nbt));
     }
 
     public static String toTitleCase(String raw) {
@@ -301,14 +300,7 @@ public final class LibUtils {
         return PortEnvironment.isModLoaded(modid);
     }
 
-    /**
-     * 创建区分直接伤害实体与最终归属者的伤害源。
-     *
-     * @param direct  直接命中目标的实体，例如弹幕
-     * @param causing 造成该伤害的归属实体，例如发射玩家
-     */
-    public static DamageSource damageSource(Level level, ResourceKey<DamageType> key,
-                                            @Nullable Entity direct, @Nullable Entity causing) {
+    public static DamageSource damageSource(Level level, ResourceKey<DamageType> key, @Nullable Entity causing, @Nullable Entity direct) {
         return level.damageSources().source(key, direct, causing);
     }
 
