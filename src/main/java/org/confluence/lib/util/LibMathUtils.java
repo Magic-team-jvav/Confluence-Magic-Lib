@@ -8,10 +8,6 @@ import net.minecraft.world.phys.Vec2;
 import org.joml.Vector2f;
 
 import static java.lang.Math.*;
-import static java.lang.Math.atan2;
-import static java.lang.Math.cos;
-import static java.lang.Math.sin;
-import static java.lang.Math.toDegrees;
 
 public final class LibMathUtils {
     public static final float HALF_SQRT_3 = (float) (Math.sqrt(3) / 2.0);
