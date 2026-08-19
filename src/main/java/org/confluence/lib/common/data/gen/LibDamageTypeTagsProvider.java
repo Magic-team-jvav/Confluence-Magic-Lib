@@ -6,8 +6,10 @@ import net.minecraft.data.tags.DamageTypeTagsProvider;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import org.confluence.lib.ConfluenceMagicLib;
+import org.confluence.lib.common.LibDamageTypes;
 import org.confluence.lib.common.LibTags;
 import org.jetbrains.annotations.Nullable;
+import org.mesdag.portlib.wrapper.common.PortTags;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -22,5 +24,6 @@ public final class LibDamageTypeTagsProvider extends DamageTypeTagsProvider {
                 DamageTypes.MOB_ATTACK,
                 DamageTypes.PLAYER_ATTACK
         );
+        tag(PortTags.DamageTypes.IS_PLAYER_ATTACK).add(LibDamageTypes.SUMMON);
     }
 }

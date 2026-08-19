@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(LocalPlayer.class)
 public abstract class LocalPlayerMixin implements SelfGetter<LocalPlayer> {
-    @ModifyExpressionValue(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isPassenger()Z", ordinal = 1))
+    @ModifyExpressionValue(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isPassenger()Z", ordinal = 0))
     private boolean skipSlowdown(boolean original) {
         if (!original && confluence$self().getUseItem().is(LibTags.Items.SKIP_USING_SLOWDOWN)) {
             return true;

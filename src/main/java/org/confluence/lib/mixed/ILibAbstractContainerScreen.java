@@ -2,12 +2,11 @@ package org.confluence.lib.mixed;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.item.GroupItem;
-import org.mesdag.portlib.wrapper.PortUtil;
+import org.mesdag.portlib.client.gui.components.PortSprite;
 
 public interface ILibAbstractContainerScreen {
     void confluence$setShouldRenderGroupBackground(boolean should);
@@ -18,7 +17,7 @@ public interface ILibAbstractContainerScreen {
         return (ILibAbstractContainerScreen) screen;
     }
 
-    ResourceLocation TAB_ITEMS = PortUtil.asGuiSprite(ConfluenceMagicLib.LIB_ID, "creative_inventory_tab_items");
+    PortSprite TAB_ITEMS = new PortSprite(ConfluenceMagicLib.asResource("creative_inventory_tab_items"), 38, 19);
 
     static void renderGroupBackground(GuiGraphics instance, ItemStack stack, int x, int y, Slot slot) {
         int id = getGroupId(stack);
@@ -44,20 +43,20 @@ public interface ILibAbstractContainerScreen {
                 X = x - 1;
                 w = 19;
             }
-            instance.blit(TAB_ITEMS, 38, 19, u, v, X, Y, w, h);
+            instance.blitSprite(TAB_ITEMS, 38, 19, u, v, X, Y, w, h);
         } else {
             if (index % 9 != 8 && hasNeighbour(index + 1, slot, id)) { // 右
                 if (hasNeighbour(index - 9, slot, id)) { // 上
-                    instance.blit(TAB_ITEMS, 38, 19, 36, 1, x + 16, y, 2, 17);
+                    instance.blitSprite(TAB_ITEMS, 38, 19, 36, 1, x + 16, y, 2, 17);
                 } else {
-                    instance.blit(TAB_ITEMS, 38, 19, 36, 0, x + 16, y - 1, 2, 18);
+                    instance.blitSprite(TAB_ITEMS, 38, 19, 36, 0, x + 16, y - 1, 2, 18);
                 }
             }
             if (hasNeighbour(index + 9, slot, id)) { // 下
                 if (index % 9 != 0 && hasNeighbour(index - 1, slot, id)) { // 左
-                    instance.blit(TAB_ITEMS, 38, 19, 20, 17, x, y + 16, 17, 2);
+                    instance.blitSprite(TAB_ITEMS, 38, 19, 20, 17, x, y + 16, 17, 2);
                 } else {
-                    instance.blit(TAB_ITEMS, 38, 19, 19, 17, x - 1, y + 16, 18, 2);
+                    instance.blitSprite(TAB_ITEMS, 38, 19, 19, 17, x - 1, y + 16, 18, 2);
                 }
             }
         }

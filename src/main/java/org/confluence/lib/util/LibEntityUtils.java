@@ -220,14 +220,17 @@ public final class LibEntityUtils {
     /// @see LibEntityUtils#tryFindBeImpacted(Entity) 适合查询直接受影响的实体的方法
     @Contract("null -> null; !null -> !null")
     public static @Nullable Entity getOwner(@Nullable Entity entity) {
+        Entity owner;
         if (entity instanceof PartEntity<?> partEntity) {
-            return partEntity.getParent();
+            owner = partEntity.getParent();
         } else if (entity instanceof OwnableEntity ownableEntity) {
-            return ownableEntity.getOwner();
+            owner = ownableEntity.getOwner();
         } else if (entity instanceof TraceableEntity traceableEntity) {
-            return traceableEntity.getOwner();
+            owner = traceableEntity.getOwner();
+        } else {
+            owner = null;
         }
-        return entity;
+        return owner == null ? entity : owner;
     }
 
     /// 适合查询直接受影响的实体，如攻击本体
