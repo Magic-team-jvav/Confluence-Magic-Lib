@@ -9,10 +9,10 @@ import org.mesdag.portlib.event.PortEventHandler;
 import org.mesdag.portlib.event.client.PortRegisterParticleProvidersEvent;
 import org.mesdag.portlib.event.client.extensions.common.PortRegisterClientExtensionsEvent;
 
-public final class LibModEvents {
+public final class LibClientModEvents {
     public static void init() {
-        PortEventHandler.addListener(LibModEvents::registerParticleProviders);
-        PortEventHandler.addListener(LibModEvents::registerClientExtensions);
+        PortEventHandler.addListener(LibClientModEvents::registerParticleProviders);
+        PortEventHandler.addListener(LibClientModEvents::registerClientExtensions);
     }
 
     private static void registerParticleProviders(PortRegisterParticleProvidersEvent event) {

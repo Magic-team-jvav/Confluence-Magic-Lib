@@ -2,7 +2,7 @@ package org.confluence.lib.mixed;
 
 import net.minecraft.world.entity.Entity;
 import org.confluence.lib.ConfluenceMagicLib;
-import org.confluence.lib.network.SetEntityDataPacketS2C;
+import org.confluence.lib.network.s2c.SetEntityDataPacketS2C;
 
 /// @see SetEntityDataPacketS2C
 public interface ILibExtraSyncedData<T extends Entity> extends SelfGetter<T> {

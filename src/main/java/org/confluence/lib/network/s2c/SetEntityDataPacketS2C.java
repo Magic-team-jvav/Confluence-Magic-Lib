@@ -1,4 +1,4 @@
-package org.confluence.lib.network;
+package org.confluence.lib.network.s2c;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;

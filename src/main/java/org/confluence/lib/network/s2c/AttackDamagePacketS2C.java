@@ -1,4 +1,4 @@
-package org.confluence.lib.network;
+package org.confluence.lib.network.s2c;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.resources.ResourceLocation;

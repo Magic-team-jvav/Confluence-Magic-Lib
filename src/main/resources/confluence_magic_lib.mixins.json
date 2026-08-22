@@ -8,27 +8,32 @@
         "AbstractArrowMixin",
         "CreativeModeTabMixin",
         "DamageSourceMixin",
+        "EntityMixin",
         "FoodDataMixin",
         "FriendlyByteBufMixin",
+        "HoneyBottleItemMixin",
         "ItemEntityMixin",
         "LivingEntityMixin",
         "PlayerMixin",
         "PrimaryLevelDataMixin",
-        "accessor.LanguageProviderAccessor",
         "fixer.ChestBlockEntityAccessor",
         "fixer.RegistryDataLoader$RegistryDataMixin",
         "naturalspawner.MobCategoryMixin",
         "naturalspawner.NaturalSpawnerMixin"
     ],
     "client": [
-        "accessor.KeyMappingAccessor",
         "client.AbstractContainerScreenMixin",
         "client.BlockModelShaperMixin",
+        "client.ClientEntityMixin",
         "client.ClientItemStackMixin",
+        "client.ClientLivingEntityMixin",
+        "client.ClientPlayerMixin",
         "client.CreativeModeInventoryScreenMixin",
         "client.GuiGraphicsMixin",
+        "client.LocalPlayerAccessor",
         "client.LocalPlayerMixin",
-        "client.MissingTextureAtlasSpriteMixin"
+        "client.MissingTextureAtlasSpriteMixin",
+        "client.MouseHandlerMixin"
     ],
     "injectors": {
         "defaultRequire": 1
