@@ -6,6 +6,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.damagesource.*;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,6 +42,14 @@ public final class LibDamageTypes {
 
     public static DamageSource of(Level level, ResourceKey<DamageType> key, @Nullable Entity direct, @Nullable Entity causing) {
         return level.damageSources().source(key, direct, causing);
+    }
+
+    /// 1.20 没有 1.21 的 `minecraft:no_knockback` 伤害类型标签，结算后恢复原速度以保持等效行为。
+    public static boolean hurtWithoutKnockback(Entity target, DamageSource source, float amount) {
+        Vec3 movement = target.getDeltaMovement();
+        boolean hurt = target.hurt(source, amount);
+        target.setDeltaMovement(movement);
+        return hurt;
     }
 
     public static void bootstrap(BootstapContext<DamageType> context) {
