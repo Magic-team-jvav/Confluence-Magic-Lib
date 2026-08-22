@@ -1,17 +1,28 @@
 package org.confluence.lib.mixed;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.item.GroupItem;
+import org.confluence.lib.network.c2s.SwitchEffectEnabledPackedC2S;
+import org.confluence.lib.util.LibUtils;
+import org.jetbrains.annotations.ApiStatus;
 import org.mesdag.portlib.client.gui.components.PortSprite;
+import org.mesdag.portlib.wrapper.common.util.PortTriState;
 
 public interface ILibAbstractContainerScreen {
     void confluence$setShouldRenderGroupBackground(boolean should);
 
     boolean confluence$shouldRenderGroupBackground();
+
+    @ApiStatus.OverrideOnly
+    default PortTriState confluence$onMouseClicked(double mouseX, double mouseY, int button) {
+        return PortTriState.DEFAULT;
+    }
 
     static ILibAbstractContainerScreen of(AbstractContainerScreen<?> screen) {
         return (ILibAbstractContainerScreen) screen;
@@ -71,5 +82,25 @@ public interface ILibAbstractContainerScreen {
             return stack.getOrDefault(ConfluenceMagicLib.GROUP_STACKS, GroupItem.Stacks.EMPTY).getId();
         }
         return ILibClientItemStack.of(stack).confluence$clientGetGroupId();
+    }
+
+    static void switchEnabled(MobEffectInstance instance) {
+        if (LibUtils.isSwitchableEffect(instance)) {
+            ILibMobEffectInstance i = ILibMobEffectInstance.of(instance);
+            i.confluence$setEnabled(!i.confluence$isEnabled());
+            SwitchEffectEnabledPackedC2S.sendToServer(instance.getEffect(), i.confluence$isEnabled());
+        }
+    }
+
+    static void makeTranslucent(GuiGraphics guiGraphics, MobEffectInstance instance, Runnable call) {
+        if (ILibMobEffectInstance.of(instance).confluence$isEnabled()) {
+            call.run();
+        } else {
+            RenderSystem.enableBlend();
+            guiGraphics.setColor(1, 1, 1, 0.5F);
+            call.run();
+            guiGraphics.setColor(1, 1, 1, 1);
+            RenderSystem.disableBlend();
+        }
     }
 }

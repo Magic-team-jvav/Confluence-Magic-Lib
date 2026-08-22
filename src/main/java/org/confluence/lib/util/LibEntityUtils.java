@@ -318,4 +318,9 @@ public final class LibEntityUtils {
         entity.setYRot(angle[0]);
         entity.setXRot(angle[1]);
     }
+
+    // confluence mixin here
+    public static @Nullable Object getTeam(Player player) {
+        return player.getTeam();
+    }
 }

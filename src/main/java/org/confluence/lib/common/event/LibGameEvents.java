@@ -20,10 +20,12 @@ import org.confluence.lib.LibStartupConfig;
 import org.confluence.lib.api.event.PlayerNaturalHealEvent;
 import org.confluence.lib.api.event.SwitchItemFunctionEvent;
 import org.confluence.lib.common.LibAttributes;
+import org.confluence.lib.common.LibEffects;
 import org.confluence.lib.common.data.saved.IGlobalData;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
 import org.confluence.lib.mixed.ILibDamageSource;
 import org.confluence.lib.mixed.ILibExtraSyncedData;
+import org.confluence.lib.mixed.ILibMobEffectInstance;
 import org.confluence.lib.network.s2c.AttackDamagePacketS2C;
 import org.confluence.lib.network.s2c.SetEntityDataPacketS2C;
 import org.confluence.lib.util.DelayTaskHolder;
@@ -59,12 +61,13 @@ public final class LibGameEvents {
         PortEventHandler.addListener(PortEventPriority.HIGHEST, LibGameEvents::entityTickPre);
         PortEventHandler.addListener(PortEventPriority.HIGHEST, LibGameEvents::livingEquipmentChange);
         PortEventHandler.addListener(PortEventPriority.HIGHEST, LibGameEvents::livingSwapItemsHands);
-        PortEventHandler.addListener(PortEventPriority.LOWEST, LibGameEvents::livingDamage);
-        PortEventHandler.addListener(PortEventPriority.LOWEST, LibGameEvents::livingDamageModify);
+        PortEventHandler.addListener(PortEventPriority.LOWEST, LibGameEvents::livingDamage$Post);
+        PortEventHandler.addListener(PortEventPriority.LOWEST, LibGameEvents::livingDamage$Pre);
         PortEventHandler.addListener(LibGameEvents::entityInvulnerabilityCheck);
         PortEventHandler.addListener(LibGameEvents::entityJoinLevel);
         PortEventHandler.addListener(LibGameEvents::livingChangeTarget);
         PortEventHandler.addListener(LibGameEvents::playerTick);
+        PortEventHandler.addListener(LibGameEvents::effectParticleModification);
     }
 
     private static void entityAttributeModification(PortEntityAttributeModificationEvent event) {
@@ -165,13 +168,13 @@ public final class LibGameEvents {
         }
     }
 
-    private static void livingDamage(PortLivingDamageEvent.Post event) {
+    private static void livingDamage$Post(PortLivingDamageEvent.Post event) {
         if (event.getSource().getEntity() instanceof ServerPlayer player) {
             AttackDamagePacketS2C.sendToClient(player, event.getNewDamage());
         }
     }
 
-    private static void livingDamageModify(PortLivingDamageEvent.Pre event) {
+    private static void livingDamage$Pre(PortLivingDamageEvent.Pre event) {
         float amount = event.getNewDamage();
         if (amount <= 0.0F) return;
         LivingEntity victim = event.getEntity();
@@ -182,6 +185,7 @@ public final class LibGameEvents {
         amount = LibAttributes.applyMagicDamage(attacker, damageSource, amount);
         amount = LibAttributes.applyRangedDamage(attacker, damageSource, amount);
         amount = ILibDamageSource.processCritical(attacker, amount, victim, damageSource);
+        amount = LibEffects.applyPaladinsShield(victim, damageSource, amount);
         event.setNewDamage(amount);
     }
 
@@ -223,5 +227,11 @@ public final class LibGameEvents {
 
     private static void playerTick(PortPlayerTickEvent.Post event) {
         LibAttributes.applyPickupRange(event.getEntity());
+    }
+
+    private static void effectParticleModification(PortEffectParticleModificationEvent event) {
+        if (event.isVisible() && !ILibMobEffectInstance.of(event.getEffect()).confluence$isEnabled()) {
+            event.setVisible(false);
+        }
     }
 }

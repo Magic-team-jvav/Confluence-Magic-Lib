@@ -18,6 +18,8 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
@@ -31,11 +33,14 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import org.confluence.lib.ConfluenceMagicLib;
+import org.confluence.lib.api.event.EffectSwitchableCheckEvent;
+import org.confluence.lib.common.LibEffects;
 import org.confluence.lib.common.component.NbtComponent;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.mesdag.portlib.component.PortDataComponentType;
 import org.mesdag.portlib.diff.Diff;
+import org.mesdag.portlib.event.PortEventHandler;
 import org.mesdag.portlib.registries.PortRegistryEntry;
 import org.mesdag.portlib.wrapper.PortEnvironment;
 import org.mesdag.portlib.wrapper.common.PortEffectCure;
@@ -320,5 +325,11 @@ public final class LibUtils {
             }
         }
         return 0;
+    }
+
+    public static boolean isSwitchableEffect(MobEffectInstance instance) {
+        MobEffect effect = instance.getEffect();
+        boolean switchable = effect == LibEffects.GRAVITATION.get() ? instance.getAmplifier() <= 0 : effect.isBeneficial();
+        return PortEventHandler.postEventWithReturn(new EffectSwitchableCheckEvent(instance, switchable)).isSwitchable();
     }
 }

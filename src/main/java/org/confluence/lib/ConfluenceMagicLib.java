@@ -25,6 +25,7 @@ import org.confluence.lib.common.recipe.AmountIngredient;
 import org.confluence.lib.common.worldgen.structure.GridPiece;
 import org.confluence.lib.common.worldgen.structure.SimpleTemplatePiece;
 import org.confluence.lib.network.c2s.GravitationPacketC2S;
+import org.confluence.lib.network.c2s.SwitchEffectEnabledPackedC2S;
 import org.confluence.lib.network.s2c.AttackDamagePacketS2C;
 import org.confluence.lib.network.s2c.BroadcastGravitationRotPacketS2C;
 import org.confluence.lib.network.s2c.SetEntityDataPacketS2C;
@@ -102,11 +103,13 @@ public final class ConfluenceMagicLib {
     public ConfluenceMagicLib(FMLJavaModLoadingContext context) {
         LibStartupConfig.register();
 
-        NETWORK_HANDLER.registerInGameC2S(GravitationPacketC2S.class, GravitationPacketC2S.ID, GravitationPacketC2S.STREAM_CODEC);
+        PortNetworkHandler handler = NETWORK_HANDLER;
+        handler.registerInGameC2S(GravitationPacketC2S.class, GravitationPacketC2S.ID, GravitationPacketC2S.STREAM_CODEC);
+        handler.registerInGameC2S(SwitchEffectEnabledPackedC2S.class, SwitchEffectEnabledPackedC2S.ID, SwitchEffectEnabledPackedC2S.STREAM_CODEC);
 
-        NETWORK_HANDLER.registerInGameS2C(AttackDamagePacketS2C.class, AttackDamagePacketS2C.ID, AttackDamagePacketS2C.STREAM_CODEC);
-        NETWORK_HANDLER.registerInGameS2C(SetEntityDataPacketS2C.class, SetEntityDataPacketS2C.ID, SetEntityDataPacketS2C.STREAM_CODEC);
-        NETWORK_HANDLER.registerInGameS2C(BroadcastGravitationRotPacketS2C.class, BroadcastGravitationRotPacketS2C.ID, BroadcastGravitationRotPacketS2C.STREAM_CODEC);
+        handler.registerInGameS2C(AttackDamagePacketS2C.class, AttackDamagePacketS2C.ID, AttackDamagePacketS2C.STREAM_CODEC);
+        handler.registerInGameS2C(SetEntityDataPacketS2C.class, SetEntityDataPacketS2C.ID, SetEntityDataPacketS2C.STREAM_CODEC);
+        handler.registerInGameS2C(BroadcastGravitationRotPacketS2C.class, BroadcastGravitationRotPacketS2C.ID, BroadcastGravitationRotPacketS2C.STREAM_CODEC);
 
         LibEffects.EFFECTS.register(context.getModEventBus());
 

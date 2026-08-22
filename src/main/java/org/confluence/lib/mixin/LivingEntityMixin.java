@@ -1,24 +1,35 @@
 package org.confluence.lib.mixin;
 
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.phys.Vec3;
 import org.confluence.lib.common.LibAttributes;
 import org.confluence.lib.common.LibEffects;
 import org.confluence.lib.mixed.ILibEntity;
-import org.confluence.lib.mixed.SelfGetter;
+import org.confluence.lib.mixed.ILibLivingEntity;
+import org.confluence.lib.mixed.ILibMobEffectInstance;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
+import java.util.Map;
+
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityMixin implements SelfGetter<LivingEntity> {
+public abstract class LivingEntityMixin implements ILibLivingEntity {
     @Shadow
     public abstract boolean hasEffect(MobEffect effect);
+
+    @Shadow
+    public abstract Map<MobEffect, MobEffectInstance> getActiveEffectsMap();
 
     @ModifyArg(method = "getDamageAfterArmorAbsorb", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/damagesource/CombatRules;getDamageAfterAbsorb(FFF)F"), index = 1)
     private float armorPenetration(float totalArmor, @Local(argsOnly = true) DamageSource damageSource) {
@@ -48,5 +59,20 @@ public abstract class LivingEntityMixin implements SelfGetter<LivingEntity> {
             return new Vec3(-vec3.x, vec3.y, vec3.z);
         }
         return vec3;
+    }
+
+    @WrapMethod(method = "hasEffect")
+    private boolean hasEffect(MobEffect effect, Operation<Boolean> original) {
+        return ILibLivingEntity.hasEffect(getActiveEffectsMap(), effect);
+    }
+
+    @WrapMethod(method = "getEffect")
+    private MobEffectInstance getEffect(MobEffect effect, Operation<MobEffectInstance> original) {
+        return ILibLivingEntity.getEffect(getActiveEffectsMap(), effect);
+    }
+
+    @WrapWithCondition(method = "onEffectUpdated", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/effect/MobEffect;addAttributeModifiers(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/ai/attributes/AttributeMap;I)V"))
+    private boolean shouldAdd(MobEffect instance, LivingEntity livingEntity, AttributeMap attributeMap, int amplifier, @Local(argsOnly = true) MobEffectInstance effectInstance) {
+        return ILibMobEffectInstance.of(effectInstance).confluence$isEnabled();
     }
 }

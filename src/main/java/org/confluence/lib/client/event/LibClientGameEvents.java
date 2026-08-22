@@ -2,11 +2,15 @@ package org.confluence.lib.client.event;
 
 import com.mojang.datafixers.util.Either;
 import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
@@ -15,13 +19,18 @@ import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.registries.ForgeRegistries;
+import org.confluence.lib.api.event.OnGatherEffectScreenTooltipsEvent;
 import org.confluence.lib.client.DPSMeter;
+import org.confluence.lib.client.LibKeyBindings;
 import org.confluence.lib.client.animate.ExpertColorAnimation;
 import org.confluence.lib.client.animate.MasterColorAnimation;
 import org.confluence.lib.client.handler.GravitationHandler;
 import org.confluence.lib.common.LibEffects;
 import org.confluence.lib.common.LibTags;
 import org.confluence.lib.common.component.ModRarity;
+import org.confluence.lib.mixed.ILibMobEffectInstance;
+import org.confluence.lib.util.LibClientUtils;
 import org.mesdag.portlib.event.PortEventHandler;
 import org.mesdag.portlib.event.PortEventPriority;
 import org.mesdag.portlib.event.client.PortGatherEffectScreenTooltipsEvent;
@@ -71,7 +80,22 @@ public final class LibClientGameEvents {
     }
 
     private static void gatherEffectScreenTooltips(PortGatherEffectScreenTooltipsEvent event) {
-        // todo
+        MobEffect effect = event.getEffectInstance().getEffect();
+        ResourceLocation id = ForgeRegistries.MOB_EFFECTS.getKey(effect);
+        List<Component> tooltip = event.getTooltip();
+        if (id != null) {
+            String key = Util.makeDescriptionId("tooltip.effect", id) + ".0";
+            if (!I18n.exists(key) && !PortEventHandler.postEventWithReturn(new OnGatherEffectScreenTooltipsEvent(effect, id, key, tooltip::add)).isCanceled()) {
+                if (effect.equals(LibEffects.GRAVITATION.get())) {
+                    tooltip.add(Component.translatable(key, LibClientUtils.keyMappingComponent(LibKeyBindings.FLIP_GRAVITATION.get())));
+                } else {
+                    tooltip.add(Component.translatable(key).withStyle(ChatFormatting.GRAY));
+                }
+            }
+        }
+        if (!ILibMobEffectInstance.of(event.getEffectInstance()).confluence$isEnabled()) {
+            tooltip.add(Component.translatable("tooltip.confluence.disabled").withStyle(ChatFormatting.DARK_GRAY));
+        }
     }
 
     private static void movementInputUpdate(MovementInputUpdateEvent event) {
