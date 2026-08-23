@@ -4,7 +4,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
 import net.minecraft.world.effect.MobEffectInstance;
-import org.confluence.lib.mixed.IClientboundUpdateMobEffectPacket;
+import org.confluence.lib.mixed.ILibClientboundUpdateMobEffectPacket;
 import org.confluence.lib.mixed.ILibMobEffectInstance;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value = ClientboundUpdateMobEffectPacket.class, priority = 1145)
-public abstract class ClientboundUpdateMobEffectPacketMixin implements IClientboundUpdateMobEffectPacket {
+public abstract class ClientboundUpdateMobEffectPacketMixin implements ILibClientboundUpdateMobEffectPacket {
     @Unique
     private boolean confluence$enabled = true;
 
