@@ -10,16 +10,12 @@ import org.confluence.lib.mixed.ILibEntity;
 import org.confluence.lib.mixed.SelfGetter;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Player.class)
 public abstract class ClientPlayerMixin implements SelfGetter<Player> {
-    @Unique
-    private static final float terra_curio$fix = -(Mth.EPSILON + Mth.EPSILON);
-
     @ModifyExpressionValue(method = "maybeBackOffFromEdge", at = @At(value = "FIELD", target = "Lnet/minecraft/world/phys/Vec3;y:D", opcode = Opcodes.GETFIELD, ordinal = 0))
     private double invert(double original) {
         return ILibEntity.of(confluence$self()).confluence$isShouldRot() ? -original : original;
@@ -30,7 +26,7 @@ public abstract class ClientPlayerMixin implements SelfGetter<Player> {
         float maxUpStep = original.call(instance);
         ILibEntity self = ILibEntity.of(instance);
         if (self.confluence$isShouldRot()) {
-            return terra_curio$fix - maxUpStep - self.confluence$getDimensionHeight();
+            return -(Mth.EPSILON + Mth.EPSILON) - maxUpStep - self.confluence$getDimensionHeight();
         }
         return maxUpStep;
     }
