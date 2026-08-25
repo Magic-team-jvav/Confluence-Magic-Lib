@@ -145,8 +145,7 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
             if (player == null || level == null || pos == null) return false;
             if (!matchesBiome(player, level, pos)) return false;
             if (!matchesBlock(player, level, pos)) return false;
-            if (!matchesGraveyard(player, level, pos)) return false;
-            return true;
+            return matchesGraveyard(player, level, pos);
         }
 
         public boolean matchesBiome(Player player, Level level, BlockPos pos) {
