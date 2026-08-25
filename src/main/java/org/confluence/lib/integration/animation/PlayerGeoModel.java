@@ -2,6 +2,7 @@ package org.confluence.lib.integration.animation;
 
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
@@ -83,14 +84,33 @@ public class PlayerGeoModel extends GeoModel<PlayerGeoAnimatable> {
     }
 
     protected void updateProperties(ModelPart part, GeoBone bone) {
-        part.x += bone.getPosX();
-        part.y -= bone.getPosY();
-        part.z += bone.getPosZ();
-        part.xRot -= bone.getRotX();
-        part.yRot -= bone.getRotY();
-        part.zRot += bone.getRotZ();
-        part.xScale *= bone.getScaleX();
-        part.yScale *= bone.getScaleY();
-        part.zScale *= bone.getScaleZ();
+        // 是否叠加
+        // 是否与原版的进行叠加，也可以与其他通过修改原版模型的一起生效
+        boolean isStacking = true;
+        // 混合权重 0-1
+        // 0~1的时候会逐渐混合，1的时候会完全替换
+        float w = 1;
+        if (isStacking) {
+            part.x += bone.getPosX();
+            part.y -= bone.getPosY();
+            part.z += bone.getPosZ();
+            part.xRot -= bone.getRotX();
+            part.yRot -= bone.getRotY();
+            part.zRot += bone.getRotZ();
+            part.xScale *= bone.getScaleX();
+            part.yScale *= bone.getScaleY();
+            part.zScale *= bone.getScaleZ();
+        } else {
+            PartPose ip = part.getInitialPose();
+            part.x += (ip.x + bone.getPosX() - part.x) * w;
+            part.y += (ip.y + -bone.getPosY() - part.y) * w;
+            part.z += (ip.z + bone.getPosZ() - part.z) * w;
+            part.xRot += (ip.xRot + -bone.getRotX() - part.xRot) * w;
+            part.yRot += (ip.yRot + -bone.getRotY() - part.yRot) * w;
+            part.zRot += (ip.zRot + bone.getRotZ() - part.zRot) * w;
+            part.xScale *= (1f + bone.getScaleX() - part.xScale) * w;
+            part.yScale *= (1f + bone.getScaleY() - part.yScale) * w;
+            part.zScale *= (1f + bone.getScaleZ() - part.zScale) * w;
+        }
     }
 }
