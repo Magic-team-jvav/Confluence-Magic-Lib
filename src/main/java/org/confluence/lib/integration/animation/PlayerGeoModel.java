@@ -32,21 +32,27 @@ public class PlayerGeoModel extends GeoModel<PlayerGeoAnimatable> {
         return animatable.currentGroup.animation();
     }
 
+    private boolean updated;
+
     public void reset(PlayerModel<AbstractClientPlayer> vanillaModel) {
-        vanillaModel.head.resetPose();
-        vanillaModel.hat.resetPose();
-        vanillaModel.body.resetPose();
-        vanillaModel.jacket.resetPose();
-        vanillaModel.rightArm.resetPose();
-        vanillaModel.rightSleeve.resetPose();
-        vanillaModel.leftArm.resetPose();
-        vanillaModel.leftSleeve.resetPose();
-        vanillaModel.rightLeg.resetPose();
-        vanillaModel.rightPants.resetPose();
-        vanillaModel.leftLeg.resetPose();
-        vanillaModel.leftPants.resetPose();
+        if (updated) {
+            vanillaModel.head.resetPose();
+            vanillaModel.hat.resetPose();
+            vanillaModel.body.resetPose();
+            vanillaModel.jacket.resetPose();
+            vanillaModel.rightArm.resetPose();
+            vanillaModel.rightSleeve.resetPose();
+            vanillaModel.leftArm.resetPose();
+            vanillaModel.leftSleeve.resetPose();
+            vanillaModel.rightLeg.resetPose();
+            vanillaModel.rightPants.resetPose();
+            vanillaModel.leftLeg.resetPose();
+            vanillaModel.leftPants.resetPose();
+            this.updated = false;
+        }
     }
 
+    // todo 左右手物品与鞘翅
     public void update(PlayerModel<AbstractClientPlayer> vanillaModel) {
         AnimationProcessor<PlayerGeoAnimatable> processor = getAnimationProcessor();
         updateProperties(vanillaModel.head, vanillaModel.hat, processor.getBone("head"));
@@ -74,6 +80,7 @@ public class PlayerGeoModel extends GeoModel<PlayerGeoAnimatable> {
         // left item
 //        updateProperties(vanillaModel.cloak, processor.getBone("cape"));
         // elytra
+        this.updated = true;
     }
 
     protected void updateProperties(ModelPart inner, ModelPart layer, @Nullable GeoBone bone) {
@@ -83,13 +90,13 @@ public class PlayerGeoModel extends GeoModel<PlayerGeoAnimatable> {
         }
     }
 
+    // todo 自定义开关
     protected void updateProperties(ModelPart part, GeoBone bone) {
         // 是否叠加
         // 是否与原版的进行叠加，也可以与其他通过修改原版模型的一起生效
         boolean isStacking = true;
         // 混合权重 0-1
         // 0~1的时候会逐渐混合，1的时候会完全替换
-        float w = 1;
         if (isStacking) {
             part.x += bone.getPosX();
             part.y -= bone.getPosY();
@@ -102,15 +109,15 @@ public class PlayerGeoModel extends GeoModel<PlayerGeoAnimatable> {
             part.zScale *= bone.getScaleZ();
         } else {
             PartPose ip = part.getInitialPose();
-            part.x += (ip.x + bone.getPosX() - part.x) * w;
-            part.y += (ip.y + -bone.getPosY() - part.y) * w;
-            part.z += (ip.z + bone.getPosZ() - part.z) * w;
-            part.xRot += (ip.xRot + -bone.getRotX() - part.xRot) * w;
-            part.yRot += (ip.yRot + -bone.getRotY() - part.yRot) * w;
-            part.zRot += (ip.zRot + bone.getRotZ() - part.zRot) * w;
-            part.xScale *= (1f + bone.getScaleX() - part.xScale) * w;
-            part.yScale *= (1f + bone.getScaleY() - part.yScale) * w;
-            part.zScale *= (1f + bone.getScaleZ() - part.zScale) * w;
+            part.x += ip.x + bone.getPosX() - part.x;
+            part.y += ip.y + -bone.getPosY() - part.y;
+            part.z += ip.z + bone.getPosZ() - part.z;
+            part.xRot += ip.xRot - bone.getRotX() - part.xRot;
+            part.yRot += ip.yRot - bone.getRotY() - part.yRot;
+            part.zRot += ip.zRot + bone.getRotZ() - part.zRot;
+            part.xScale *= 1f + bone.getScaleX() - part.xScale;
+            part.yScale *= 1f + bone.getScaleY() - part.yScale;
+            part.zScale *= 1f + bone.getScaleZ() - part.zScale;
         }
     }
 }

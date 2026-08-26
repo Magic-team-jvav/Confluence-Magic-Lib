@@ -124,15 +124,25 @@ repositories {
             includeGroup("software.bernie.geckolib")
         }
     }
+    maven {
+        name "org.confluenceReleases"
+        url "https://maven.confluence.ink/releases"
+    }
+    maven {
+        name "org.confluenceSnapshots"
+        url "https://maven.confluence.ink/snapshots"
+    }
 }
 
 dependencies {
-    compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
-    compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
+    compileOnly ("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
+    compileOnly ("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
 
-    compileOnly "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+    compileOnly("software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}")
+    compileOnly("org.mesdag:ParticleStorm-neoforge-${minecraft_version}:${particlestorm_version}")
     if (true) {
-        runtimeOnly "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+        runtimeOnly("software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}")
+        runtimeOnly("org.mesdag:ParticleStorm-neoforge-${minecraft_version}:${particlestorm_version}")
     }
 }
 

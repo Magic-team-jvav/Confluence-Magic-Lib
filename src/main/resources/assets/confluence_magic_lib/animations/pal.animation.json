@@ -563,15 +563,15 @@
 			},
 			"particle_effects": {
 				"0.0": {
-					"effect": "nights_edge_flash",
+					"effect": "confluence_magic_lib:flash",
 					"locator": "sword"
 				},
 				"0.0417": {
-					"effect": "nights_edge_light",
+					"effect": "confluence_magic_lib:light",
 					"locator": "sword"
 				},
 				"0.0833": {
-					"effect": "knife",
+					"effect": "confluence_magic_lib:knife",
 					"locator": "knife"
 				}
 			}

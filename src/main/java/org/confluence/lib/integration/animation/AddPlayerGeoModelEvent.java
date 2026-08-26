@@ -9,8 +9,7 @@ import net.neoforged.neoforge.common.util.MutableHashedLinkedMap;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.*;
 
 import java.util.function.Function;
 
@@ -20,22 +19,28 @@ public class AddPlayerGeoModelEvent extends Event implements IModBusEvent {
     @ApiStatus.Internal
     public AddPlayerGeoModelEvent() {
         RawAnimation idle = RawAnimation.begin().thenLoop("greatsword-idle");
-        RawAnimation attack = RawAnimation.begin().thenLoop("greatsword-attack-1");
+        RawAnimation attack = RawAnimation.begin().then("greatsword-attack-1", Animation.LoopType.PLAY_ONCE);
         Group group = new Group(
                 ConfluenceMagicLib.asResource("geo/pal.geo.json"),
                 ConfluenceMagicLib.asResource("animations/pal.animation.json"),
                 state -> {
-                    PlayerGeoAnimatable animatable = state.getAnimatable();
                     AnimationController<PlayerGeoAnimatable> controller = state.getController();
-                    if (animatable.player.getAttackStrengthScale(state.getPartialTick()) < 1) {
-                        controller.setAnimationSpeedHandler(a -> 20.0 / a.player.getCurrentItemAttackStrengthDelay());
-                        return state.setAndContinue(attack);
+                    if (state.isAttacking) {
+                        if (!attack.equals(controller.getCurrentRawAnimation())) {
+                            state.setAnimation(attack);
+                            controller.setAnimationSpeedHandler(a -> 20.0 / a.player.getCurrentItemAttackStrengthDelay());
+                        }
+                        if (controller.hasAnimationFinished()) {
+                            state.isAttacking = false;
+                        }
+                    } else if (!idle.equals(controller.getCurrentRawAnimation())) {
+                        state.setAnimation(idle);
+                        controller.setAnimationSpeed(1);
                     }
-                    controller.setAnimationSpeed(1);
-                    return state.setAndContinue(idle);
+                    return PlayState.CONTINUE;
                 }
         );
-        add(ConfluenceMagicLib.asResource("test"), player -> player.getMainHandItem().is(Items.NETHERITE_SWORD) ? group : null);
+        add(ConfluenceMagicLib.asResource("test"), player -> player.getMainHandItem().is(Items.DEBUG_STICK) ? group : null);
     }
 
     public void add(ResourceLocation id, Function<Player, @Nullable Group> handler) {
@@ -62,6 +67,16 @@ public class AddPlayerGeoModelEvent extends Event implements IModBusEvent {
     public record Group(
             ResourceLocation model,
             ResourceLocation animation,
-            AnimationController.AnimationStateHandler<PlayerGeoAnimatable> handler
+            PlayerAnimationStateHandler handler
     ) {}
+
+    @FunctionalInterface
+    public interface PlayerAnimationStateHandler extends AnimationController.AnimationStateHandler<PlayerGeoAnimatable> {
+        PlayState handle(PlayerAnimationState state);
+
+        @Override
+        default PlayState handle(AnimationState<PlayerGeoAnimatable> state) {
+            return handle((PlayerAnimationState) state);
+        }
+    }
 }

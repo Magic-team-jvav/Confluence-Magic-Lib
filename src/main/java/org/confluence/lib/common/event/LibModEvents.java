@@ -18,6 +18,7 @@ import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.LibStartupConfig;
@@ -26,6 +27,8 @@ import org.confluence.lib.api.event.NameFixRegisterEvent;
 import org.confluence.lib.common.LibAttributes;
 import org.confluence.lib.common.fluid.FluidBuilder;
 import org.confluence.lib.common.item.GroupItem;
+import org.confluence.lib.integration.animation.AnimationConstants;
+import org.confluence.lib.integration.animation.PlayerAttackingStatePacket;
 import org.confluence.lib.network.AttackDamagePacketS2C;
 import org.confluence.lib.network.SetEntityDataPacketS2C;
 
@@ -46,10 +49,15 @@ public final class LibModEvents {
 
     @SubscribeEvent
     public static void registerPayloadHandlers(RegisterPayloadHandlersEvent event) {
-        event.registrar("1")
+        PayloadRegistrar registrar = event.registrar("1");
+        registrar
                 .playToClient(SetEntityDataPacketS2C.TYPE, SetEntityDataPacketS2C.STREAM_CODEC, SetEntityDataPacketS2C::handle)
                 .playToClient(AttackDamagePacketS2C.TYPE, AttackDamagePacketS2C.STREAM_CODEC, AttackDamagePacketS2C::handle)
         ;
+
+        if (AnimationConstants.SHOULD_APPLY) {
+            registrar.playBidirectional(PlayerAttackingStatePacket.TYPE, PlayerAttackingStatePacket.STREAM_CODEC, PlayerAttackingStatePacket::handle);
+        }
     }
 
     @SubscribeEvent
