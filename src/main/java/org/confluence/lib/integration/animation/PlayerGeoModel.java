@@ -1,16 +1,21 @@
 package org.confluence.lib.integration.animation;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.model.PlayerModel;
-import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.HumanoidArm;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animation.AnimationProcessor;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.model.GeoModel;
 
 public class PlayerGeoModel extends GeoModel<PlayerGeoAnimatable> {
+    private boolean updated;
+    private @Nullable GeoBone rightItem;
+    private @Nullable GeoBone leftItem;
+
     @Override
     public ResourceLocation getModelResource(PlayerGeoAnimatable animatable) {
         if (animatable.currentGroup == null) {
@@ -32,10 +37,14 @@ public class PlayerGeoModel extends GeoModel<PlayerGeoAnimatable> {
         return animatable.currentGroup.animation();
     }
 
-    private boolean updated;
+    public @Nullable GeoBone getItem(HumanoidArm arm) {
+        return arm == HumanoidArm.RIGHT ? rightItem : leftItem;
+    }
 
     public void reset(PlayerModel<AbstractClientPlayer> vanillaModel) {
         if (updated) {
+            this.leftItem = null;
+            this.rightItem = null;
             vanillaModel.head.resetPose();
             vanillaModel.hat.resetPose();
             vanillaModel.body.resetPose();
@@ -52,72 +61,94 @@ public class PlayerGeoModel extends GeoModel<PlayerGeoAnimatable> {
         }
     }
 
-    // todo 左右手物品与鞘翅
-    public void update(PlayerModel<AbstractClientPlayer> vanillaModel) {
+    // todo 鞘翅 (elytra)
+    public void update(PlayerAnimationState state, PlayerModel<AbstractClientPlayer> model) {
         AnimationProcessor<PlayerGeoAnimatable> processor = getAnimationProcessor();
-        updateProperties(vanillaModel.head, vanillaModel.hat, processor.getBone("head"));
+        GeoBone head = processor.getBone("head");
+        if (head != null) {
+            state.headCallback.update(model.head, head);
+            state.headCallback.update(model.hat, head);
+        }
+        GeoBone torso = processor.getBone("torso");
+        if (torso != null) {
+            state.torsoCallback.update(model.body, torso);
+            state.torsoCallback.update(model.jacket, torso);
+        }
+        GeoBone rightArm = processor.getBone("right_arm");
+        if (rightArm != null) {
+            state.rightArmCallback.update(model.rightArm, rightArm);
+            state.rightArmCallback.update(model.rightSleeve, rightArm);
+        }
+        GeoBone leftArm = processor.getBone("left_arm");
+        if (leftArm != null) {
+            state.leftArmCallback.update(model.leftArm, leftArm);
+            state.leftArmCallback.update(model.leftSleeve, leftArm);
+        }
+        GeoBone rightLeg = processor.getBone("right_leg");
+        if (rightLeg != null) {
+            state.rightLegCallback.update(model.rightLeg, rightLeg);
+            state.rightLegCallback.update(model.rightPants, rightLeg);
+        }
+        GeoBone leftLeg = processor.getBone("left_leg");
+        if (leftLeg != null) {
+            state.leftLegCallback.update(model.leftLeg, leftLeg);
+            state.leftLegCallback.update(model.leftPants, leftLeg);
+        }
+        // right item / left item
+        // 物品骨骼无法直接作用到原版 ModelPart 上，这里仅暂存，
+        // 由 PlayerModel#translateToHand 的 mixin 在渲染手持物品时叠加其位姿
+        this.rightItem = processor.getBone("right_item");
+        this.leftItem = processor.getBone("left_item");
+        GeoBone cape = processor.getBone("cape");
+        if (cape != null) {
+            state.capeCallback.update(model.cloak, cape);
+        }
+        // elytra
         GeoBone body = processor.getBone("body");
         if (body != null) {
-            updateProperties(vanillaModel.head, body);
-            updateProperties(vanillaModel.hat, body);
-            updateProperties(vanillaModel.body, body);
-            updateProperties(vanillaModel.jacket, body);
-            updateProperties(vanillaModel.rightArm, body);
-            updateProperties(vanillaModel.rightSleeve, body);
-            updateProperties(vanillaModel.leftArm, body);
-            updateProperties(vanillaModel.leftSleeve, body);
-            updateProperties(vanillaModel.rightLeg, body);
-            updateProperties(vanillaModel.rightPants, body);
-            updateProperties(vanillaModel.leftLeg, body);
-            updateProperties(vanillaModel.leftPants, body);
+            state.bodyCallback.update(model.head, body);
+            state.bodyCallback.update(model.hat, body);
+            state.bodyCallback.update(model.body, body);
+            state.bodyCallback.update(model.jacket, body);
+            state.bodyCallback.update(model.rightArm, body);
+            state.bodyCallback.update(model.rightSleeve, body);
+            state.bodyCallback.update(model.leftArm, body);
+            state.bodyCallback.update(model.leftSleeve, body);
+            state.bodyCallback.update(model.rightLeg, body);
+            state.bodyCallback.update(model.rightPants, body);
+            state.bodyCallback.update(model.leftLeg, body);
+            state.bodyCallback.update(model.leftPants, body);
         }
-        updateProperties(vanillaModel.body, vanillaModel.jacket, processor.getBone("torso"));
-        updateProperties(vanillaModel.rightArm, vanillaModel.rightSleeve, processor.getBone("right_arm"));
-        updateProperties(vanillaModel.leftArm, vanillaModel.leftSleeve, processor.getBone("left_arm"));
-        updateProperties(vanillaModel.rightLeg, vanillaModel.rightPants, processor.getBone("right_leg"));
-        updateProperties(vanillaModel.leftLeg, vanillaModel.leftPants, processor.getBone("left_leg"));
-        // right item
-        // left item
-//        updateProperties(vanillaModel.cloak, processor.getBone("cape"));
-        // elytra
         this.updated = true;
     }
 
-    protected void updateProperties(ModelPart inner, ModelPart layer, @Nullable GeoBone bone) {
-        if (bone != null) {
-            updateProperties(inner, bone);
-            updateProperties(layer, bone);
-        }
-    }
-
-    // todo 自定义开关
-    protected void updateProperties(ModelPart part, GeoBone bone) {
-        // 是否叠加
-        // 是否与原版的进行叠加，也可以与其他通过修改原版模型的一起生效
-        boolean isStacking = true;
-        // 混合权重 0-1
-        // 0~1的时候会逐渐混合，1的时候会完全替换
-        if (isStacking) {
-            part.x += bone.getPosX();
-            part.y -= bone.getPosY();
-            part.z += bone.getPosZ();
-            part.xRot -= bone.getRotX();
-            part.yRot -= bone.getRotY();
-            part.zRot += bone.getRotZ();
-            part.xScale *= bone.getScaleX();
-            part.yScale *= bone.getScaleY();
-            part.zScale *= bone.getScaleZ();
+    public static void applyItemBone(PoseStack poseStack, GeoBone bone) {
+        GeoBone parent = bone.getParent();
+        float pivotX;
+        float pivotY;
+        float pivotZ;
+        if (parent == null) {
+            pivotX = 0;
+            pivotY = 0;
+            pivotZ = 0;
         } else {
-            PartPose ip = part.getInitialPose();
-            part.x += ip.x + bone.getPosX() - part.x;
-            part.y += ip.y + -bone.getPosY() - part.y;
-            part.z += ip.z + bone.getPosZ() - part.z;
-            part.xRot += ip.xRot - bone.getRotX() - part.xRot;
-            part.yRot += ip.yRot - bone.getRotY() - part.yRot;
-            part.zRot += ip.zRot + bone.getRotZ() - part.zRot;
-            part.xScale *= 1f + bone.getScaleX() - part.xScale;
-            part.yScale *= 1f + bone.getScaleY() - part.yScale;
-            part.zScale *= 1f + bone.getScaleZ() - part.zScale;
+            pivotX = parent.getPivotX() - bone.getPivotX();
+            pivotY = -(bone.getPivotY() - parent.getPivotY());
+            pivotZ = bone.getPivotZ() - parent.getPivotZ();
         }
+
+        poseStack.translate(bone.getPosX() / 16.0F, -bone.getPosY() / 16.0F, bone.getPosZ() / 16.0F);
+        poseStack.translate(pivotX / 16.0F, pivotY / 16.0F, pivotZ / 16.0F);
+        if (bone.getRotX() != 0.0F) {
+            poseStack.mulPose(Axis.XP.rotation(-bone.getRotX()));
+        }
+        if (bone.getRotY() != 0.0F) {
+            poseStack.mulPose(Axis.YP.rotation(-bone.getRotY()));
+        }
+        if (bone.getRotZ() != 0.0F) {
+            poseStack.mulPose(Axis.ZP.rotation(bone.getRotZ()));
+        }
+        poseStack.scale(bone.getScaleX(), bone.getScaleY(), bone.getScaleZ());
+        poseStack.translate(-pivotX / 16.0F, -pivotY / 16.0F, -pivotZ / 16.0F);
     }
 }

@@ -15,7 +15,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RenderTooltipEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.client.DPSMeter;
 import org.confluence.lib.client.animate.ExpertColorAnimation;
@@ -23,11 +22,9 @@ import org.confluence.lib.client.animate.MasterColorAnimation;
 import org.confluence.lib.common.LibTags;
 import org.confluence.lib.common.component.ModRarity;
 import org.confluence.lib.integration.animation.AnimationConstants;
-import org.confluence.lib.integration.animation.ILibAbstractClientPlayer;
 import org.confluence.lib.integration.animation.PlayerAttackingStatePacket;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID, value = Dist.CLIENT)
@@ -65,12 +62,7 @@ public final class LibGameEvents {
     @SubscribeEvent
     public static void input$InteractionKeyMappingTriggered(InputEvent.InteractionKeyMappingTriggered event) {
         if (AnimationConstants.SHOULD_APPLY && event.isAttack()) {
-            Minecraft minecraft = Minecraft.getInstance();
-            LocalPlayer player = Objects.requireNonNull(minecraft.player);
-            if (!minecraft.options.getCameraType().isFirstPerson()) {
-                ILibAbstractClientPlayer.of(player).confluence$getAnimatable().state.isAttacking = true;
-            }
-            PacketDistributor.sendToServer(new PlayerAttackingStatePacket(player.getId()));
+            PlayerAttackingStatePacket.sendToServer();
         }
     }
 }

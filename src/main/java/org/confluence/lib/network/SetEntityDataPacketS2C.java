@@ -15,7 +15,7 @@ public record SetEntityDataPacketS2C(
         Entry... entries
 ) implements CustomPacketPayload {
     public static final byte DATA_BOOLEAN = 0;
-    public static final Type<SetEntityDataPacketS2C> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath("cml", "set_entity_data"));
+    public static final Type<SetEntityDataPacketS2C> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath("cml", "sed"));
     public static final StreamCodec<RegistryFriendlyByteBuf, SetEntityDataPacketS2C> STREAM_CODEC = new StreamCodec<>() {
         @Override
         public SetEntityDataPacketS2C decode(RegistryFriendlyByteBuf buffer) {

@@ -6,7 +6,6 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
-import org.mesdag.particlestorm.api.geckolib.GeckoLibHelper;
 import org.mesdag.particlestorm.api.geckolib.WithCurrentEntity;
 import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -15,7 +14,12 @@ import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.animation.PlayState;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PlayerGeoAnimatable implements GeoAnimatable {
+    public static final List<Runnable> reloadCallbacks = new ArrayList<>();
+
     public final AbstractClientPlayer player;
     public final PlayerGeoModel model = new PlayerGeoModel();
     public final PlayerAnimationState state = new PlayerAnimationState(this);
@@ -24,9 +28,9 @@ public class PlayerGeoAnimatable implements GeoAnimatable {
 
     protected @Nullable AddPlayerGeoModelEvent.Group currentGroup;
 
-    PlayerGeoAnimatable(AbstractClientPlayer player) {
+    public PlayerGeoAnimatable(AbstractClientPlayer player) {
         this.player = player;
-        GeckoLibHelper.addRunner(() -> this.vanillaModel = null);
+        reloadCallbacks.add(() -> this.vanillaModel = null);
     }
 
     @Override
@@ -70,7 +74,7 @@ public class PlayerGeoAnimatable implements GeoAnimatable {
             model.getBakedModel(model.getModelResource(this)); // update processor
             state.update(partialTick);
             model.handleAnimations(this, player.getId(), state, partialTick);
-            model.update(getVanillaModel());
+            model.update(state, getVanillaModel());
         }
     }
 
@@ -81,8 +85,8 @@ public class PlayerGeoAnimatable implements GeoAnimatable {
         return vanillaModel;
     }
 
-    public static class WithParticle extends PlayerGeoAnimatable implements WithCurrentEntity {
-        WithParticle(AbstractClientPlayer player) {
+    private static class WithParticle extends PlayerGeoAnimatable implements WithCurrentEntity {
+        private WithParticle(AbstractClientPlayer player) {
             super(player);
         }
 
@@ -97,9 +101,15 @@ public class PlayerGeoAnimatable implements GeoAnimatable {
         }
     }
 
+    private static class Holder {
+        private static PlayerGeoAnimatable withParticle(AbstractClientPlayer player) {
+            return new WithParticle(player);
+        }
+    }
+
     public static PlayerGeoAnimatable choose(AbstractClientPlayer player) {
         if (AnimationConstants.WITH_PARTICLE) {
-            return new WithParticle(player);
+            return Holder.withParticle(player);
         }
         return new PlayerGeoAnimatable(player);
     }

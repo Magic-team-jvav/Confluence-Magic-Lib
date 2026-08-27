@@ -140,7 +140,7 @@ dependencies {
 
     compileOnly("software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}")
     compileOnly("org.mesdag:ParticleStorm-neoforge-${minecraft_version}:${particlestorm_version}")
-    if (true) {
+    if (false) {
         runtimeOnly("software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}")
         runtimeOnly("org.mesdag:ParticleStorm-neoforge-${minecraft_version}:${particlestorm_version}")
     }

@@ -10,7 +10,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import org.confluence.lib.client.DPSMeter;
 
 public record AttackDamagePacketS2C(float amount) implements IPacketS2C {
-    public static final Type<AttackDamagePacketS2C> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath("cml", "attack_damage"));
+    public static final Type<AttackDamagePacketS2C> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath("cml", "ad"));
     public static final StreamCodec<ByteBuf, AttackDamagePacketS2C> STREAM_CODEC = ByteBufCodecs.FLOAT.map(AttackDamagePacketS2C::new, AttackDamagePacketS2C::amount);
 
     @Override

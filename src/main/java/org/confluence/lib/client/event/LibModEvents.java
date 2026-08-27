@@ -5,6 +5,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModLoader;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import org.confluence.lib.ConfluenceMagicLib;
@@ -14,6 +15,9 @@ import org.confluence.lib.client.render.item.GroupItemExtension;
 import org.confluence.lib.common.item.GroupItem;
 import org.confluence.lib.integration.animation.AddPlayerGeoModelEvent;
 import org.confluence.lib.integration.animation.AnimationConstants;
+import org.confluence.lib.integration.animation.PlayerGeoAnimatable;
+
+import java.util.concurrent.CompletableFuture;
 
 @EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID, value = Dist.CLIENT)
 public final class LibModEvents {
@@ -36,5 +40,16 @@ public final class LibModEvents {
                 ModLoader.postEvent(new AddPlayerGeoModelEvent());
             }
         });
+    }
+
+    @SubscribeEvent
+    public static void registerClientReloadListeners(RegisterClientReloadListenersEvent event) {
+        if (AnimationConstants.SHOULD_APPLY) {
+            event.registerReloadListener((pb, rm, pp, rp, be, ge) -> CompletableFuture.runAsync(() -> {
+                for (Runnable callback : PlayerGeoAnimatable.reloadCallbacks) {
+                    callback.run();
+                }
+            }, ge).thenCompose(pb::wait));
+        }
     }
 }
