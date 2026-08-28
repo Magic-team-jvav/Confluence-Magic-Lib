@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(AbstractClientPlayer.class)
 public abstract class AbstractClientPlayerMixin implements ILibAbstractClientPlayer {
     @Unique
-    private final PlayerGeoAnimatable confluence$animatable = new PlayerGeoAnimatable((AbstractClientPlayer) (Object) this);
+    private final PlayerGeoAnimatable confluence$animatable = PlayerGeoAnimatable.choose((AbstractClientPlayer) (Object) this);
 
     @Override
     public PlayerGeoAnimatable confluence$getAnimatable() {

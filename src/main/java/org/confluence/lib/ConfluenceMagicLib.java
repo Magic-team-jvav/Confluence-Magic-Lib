@@ -24,6 +24,8 @@ import org.confluence.lib.common.particle.CrossDustParticleOptions;
 import org.confluence.lib.common.recipe.AmountIngredient;
 import org.confluence.lib.common.worldgen.structure.GridPiece;
 import org.confluence.lib.common.worldgen.structure.SimpleTemplatePiece;
+import org.confluence.lib.integration.animation.AnimationConstants;
+import org.confluence.lib.integration.animation.PlayerAttackingStatePacket;
 import org.confluence.lib.network.c2s.GravitationPacketC2S;
 import org.confluence.lib.network.c2s.SwitchEffectEnabledPackedC2S;
 import org.confluence.lib.network.s2c.AttackDamagePacketS2C;
@@ -110,6 +112,10 @@ public final class ConfluenceMagicLib {
         handler.registerInGameS2C(AttackDamagePacketS2C.class, AttackDamagePacketS2C.ID, AttackDamagePacketS2C.STREAM_CODEC);
         handler.registerInGameS2C(SetEntityDataPacketS2C.class, SetEntityDataPacketS2C.ID, SetEntityDataPacketS2C.STREAM_CODEC);
         handler.registerInGameS2C(BroadcastGravitationRotPacketS2C.class, BroadcastGravitationRotPacketS2C.ID, BroadcastGravitationRotPacketS2C.STREAM_CODEC);
+
+        if (AnimationConstants.SHOULD_APPLY) {
+            handler.registerInGameBidirectional(PlayerAttackingStatePacket.class, PlayerAttackingStatePacket.ID, PlayerAttackingStatePacket.STREAM_CODEC);
+        }
 
         LibEffects.EFFECTS.register(context.getModEventBus());
 

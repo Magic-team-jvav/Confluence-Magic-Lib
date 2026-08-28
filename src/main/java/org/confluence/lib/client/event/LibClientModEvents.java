@@ -1,5 +1,6 @@
 package org.confluence.lib.client.event;
 
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import org.confluence.lib.ConfluenceMagicLib;
@@ -9,14 +10,18 @@ import org.confluence.lib.client.render.item.GroupItemExtension;
 import org.confluence.lib.common.item.GroupItem;
 import org.confluence.lib.integration.animation.AddPlayerGeoModelEvent;
 import org.confluence.lib.integration.animation.AnimationConstants;
+import org.confluence.lib.integration.animation.PlayerGeoAnimatable;
 import org.mesdag.portlib.event.PortEventHandler;
 import org.mesdag.portlib.event.client.extensions.common.PortRegisterClientExtensionsEvent;
+
+import java.util.concurrent.CompletableFuture;
 
 public final class LibClientModEvents {
     public static void init() {
         PortEventHandler.addListener(LibClientModEvents::registerParticleProviders);
         PortEventHandler.addListener(LibClientModEvents::registerClientExtensions);
         PortEventHandler.addListener(LibClientModEvents::fmlClientSetup);
+        PortEventHandler.addListener(LibClientModEvents::registerClientReloadListeners);
     }
 
     private static void registerParticleProviders(RegisterParticleProvidersEvent event) {
@@ -30,10 +35,18 @@ public final class LibClientModEvents {
     }
 
     private static void fmlClientSetup(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> {
-            if (AnimationConstants.SHOULD_APPLY) {
-                PortEventHandler.postEvent(new AddPlayerGeoModelEvent());
-            }
-        });
+        if (AnimationConstants.SHOULD_APPLY) {
+            event.enqueueWork(() -> PortEventHandler.postEvent(new AddPlayerGeoModelEvent()));
+        }
+    }
+
+    private static void registerClientReloadListeners(RegisterClientReloadListenersEvent event) {
+        if (AnimationConstants.SHOULD_APPLY) {
+            event.registerReloadListener((pb, rm, pp, rp, be, ge) -> CompletableFuture.runAsync(() -> {
+                for (Runnable callback : PlayerGeoAnimatable.reloadCallbacks) {
+                    callback.run();
+                }
+            }, ge).thenCompose(pb::wait));
+        }
     }
 }

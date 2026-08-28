@@ -14,10 +14,7 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.client.event.MovementInputUpdateEvent;
-import net.minecraftforge.client.event.RenderTooltipEvent;
-import net.minecraftforge.client.event.ViewportEvent;
+import net.minecraftforge.client.event.*;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.confluence.lib.api.event.OnGatherEffectScreenTooltipsEvent;
@@ -29,6 +26,8 @@ import org.confluence.lib.client.handler.GravitationHandler;
 import org.confluence.lib.common.LibEffects;
 import org.confluence.lib.common.LibTags;
 import org.confluence.lib.common.component.ModRarity;
+import org.confluence.lib.integration.animation.AnimationConstants;
+import org.confluence.lib.integration.animation.PlayerAttackingStatePacket;
 import org.confluence.lib.mixed.ILibMobEffectInstance;
 import org.confluence.lib.util.LibClientUtils;
 import org.mesdag.portlib.event.PortEventHandler;
@@ -48,6 +47,7 @@ public final class LibClientGameEvents {
         PortEventHandler.addListener(LibClientGameEvents::clientPlayerNetwork$LoggingOut);
         PortEventHandler.addListener(LibClientGameEvents::clientTick$Post);
         PortEventHandler.addListener(LibClientGameEvents::cameraSetup);
+        PortEventHandler.addListener(LibClientGameEvents::input$InteractionKeyMappingTriggered);
     }
 
     private static void clientTick(TickEvent.ClientTickEvent event) {
@@ -136,6 +136,12 @@ public final class LibClientGameEvents {
     private static void cameraSetup(ViewportEvent.ComputeCameraAngles event) {
         if (GravitationHandler.isShouldRot()) {
             event.setRoll(180.0F);
+        }
+    }
+
+    private static void input$InteractionKeyMappingTriggered(InputEvent.InteractionKeyMappingTriggered event) {
+        if (AnimationConstants.SHOULD_APPLY && event.isAttack()) {
+            PlayerAttackingStatePacket.sendToServer();
         }
     }
 }
