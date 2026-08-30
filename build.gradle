@@ -115,6 +115,7 @@ dependencies {
 
     modCompileOnly("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}")
     modCompileOnly("com.eliotlash.mclib:mclib:20")
+    modCompileOnly("org.mesdag:ParticleStorm-forge-${minecraft_version}:${particlestorm_version}")
     if (true) {
         modRuntimeOnly("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}")
         modRuntimeOnly("org.mesdag:ParticleStorm-forge-${minecraft_version}:${particlestorm_version}")

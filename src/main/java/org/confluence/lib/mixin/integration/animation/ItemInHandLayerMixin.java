@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import software.bernie.geckolib.cache.object.GeoBone;
+import software.bernie.geckolib.core.animatable.model.CoreGeoBone;
 
 @Mixin(ItemInHandLayer.class)
 public abstract class ItemInHandLayerMixin {
@@ -23,7 +23,7 @@ public abstract class ItemInHandLayerMixin {
             @Local(argsOnly = true) HumanoidArm arm
     ) {
         if (living instanceof ILibAbstractClientPlayer player) {
-            GeoBone item = player.confluence$getAnimatable().model.getItem(arm);
+            CoreGeoBone item = player.confluence$getAnimatable().model.getItem(arm);
             if (item != null) {
                 PlayerGeoModel.applyItemBone(poseStack, item);
             }
