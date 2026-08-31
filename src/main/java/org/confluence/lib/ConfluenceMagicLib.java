@@ -97,9 +97,7 @@ public final class ConfluenceMagicLib {
     /// 仆从标记伤害
     public static final DeferredHolder<Attribute, RangedAttribute> MARK_DAMAGE = registerAttribute("player.mark_damage", 0.0, 0.0, 1024.0, RangedAttribute::new, a -> a.setSyncable(true));
 
-    /**
-     * 虚空侵蚀差值
-     */
+    /// 虚空侵蚀差值
     public static final DeferredHolder<Attribute, RangedAttribute> VOID_EROSION_DELTA = registerAttribute("generic.void_erosion_delta", 0, -1024.0f, 1024.0f, RangedAttribute::new, a -> a.setSyncable(true).setSentiment(Attribute.Sentiment.NEGATIVE));
 
     private static <A extends Attribute> DeferredHolder<Attribute, A> registerAttribute(String name, double defaultValue, double min, double max, Function4<String, Double, Double, Double, A> factory, Consumer<A> consumer) {
