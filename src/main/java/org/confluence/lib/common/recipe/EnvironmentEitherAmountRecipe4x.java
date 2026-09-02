@@ -1,6 +1,5 @@
 package org.confluence.lib.common.recipe;
 
-import PortLib.extensions.net.minecraft.world.item.ItemStack.PortItemStackExtension;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Function3;
 import com.mojang.serialization.Codec;
@@ -12,6 +11,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import org.mesdag.portlib.network.PortRegistryFriendlyByteBuf;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
+import org.mesdag.portlib.wrapper.common.extensions.IPortItemStackExtension;
 import org.mesdag.portlib.wrapper.world.item.crafting.PortShapedRecipePattern;
 
 public abstract class EnvironmentEitherAmountRecipe4x extends EitherAmountRecipe4x<EnvironmentRecipeInput> {
@@ -43,7 +43,7 @@ public abstract class EnvironmentEitherAmountRecipe4x extends EitherAmountRecipe
 
     public static <R extends EnvironmentEitherAmountRecipe4x> MapCodec<R> environmentShapedSerializerMapCodec(Function3<ItemStack, PortShapedRecipePattern, EnvironmentLevelAccess.Matcher, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                PortItemStackExtension.strictCodec().fieldOf("result").forGetter(recipe -> recipe.result),
+                IPortItemStackExtension.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
                 PortShapedRecipePattern.MAP_CODEC.forGetter(recipe -> recipe.either.left().orElseThrow()),
                 EnvironmentLevelAccess.Matcher.MAP_CODEC.forGetter(EnvironmentEitherAmountRecipe4x::getEnvironment)
         ).apply(instance, factory));
@@ -51,7 +51,7 @@ public abstract class EnvironmentEitherAmountRecipe4x extends EitherAmountRecipe
 
     public static <R extends EnvironmentEitherAmountRecipe4x> PortStreamCodec<PortRegistryFriendlyByteBuf, R> environmentShapedSerializerSteamCodec(Function3<ItemStack, PortShapedRecipePattern, EnvironmentLevelAccess.Matcher, R> factory) {
         return PortStreamCodec.composite(
-                PortItemStackExtension.streamCodec(), r -> r.result,
+                IPortItemStackExtension.STREAM_CODEC, r -> r.result,
                 PortShapedRecipePattern.STREAM_CODEC, r -> r.either.left().orElseThrow(),
                 EnvironmentLevelAccess.Matcher.STREAM_CODEC, EnvironmentEitherAmountRecipe4x::getEnvironment,
                 factory
@@ -60,7 +60,7 @@ public abstract class EnvironmentEitherAmountRecipe4x extends EitherAmountRecipe
 
     public static <R extends EnvironmentEitherAmountRecipe4x> MapCodec<R> environmentEitherSerializerMapCodec(Function3<ItemStack, Either<PortShapedRecipePattern, NonNullList<Ingredient>>, EnvironmentLevelAccess.Matcher, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                PortItemStackExtension.strictCodec().fieldOf("result").forGetter(recipe -> recipe.result),
+                IPortItemStackExtension.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
                 Codec.mapEither(PortShapedRecipePattern.MAP_CODEC, INGREDIENTS_CODEC).forGetter(recipe -> recipe.either),
                 EnvironmentLevelAccess.Matcher.MAP_CODEC.forGetter(EnvironmentEitherAmountRecipe4x::getEnvironment)
         ).apply(instance, factory));
@@ -68,7 +68,7 @@ public abstract class EnvironmentEitherAmountRecipe4x extends EitherAmountRecipe
 
     public static <R extends EnvironmentEitherAmountRecipe4x> PortStreamCodec<PortRegistryFriendlyByteBuf, R> environmentEitherSerializerStreamCodec(Function3<ItemStack, Either<PortShapedRecipePattern, NonNullList<Ingredient>>, EnvironmentLevelAccess.Matcher, R> factory) {
         return PortStreamCodec.composite(
-                PortItemStackExtension.streamCodec(), r -> r.result,
+                IPortItemStackExtension.STREAM_CODEC, r -> r.result,
                 EITHER_CODEC, r -> r.either,
                 EnvironmentLevelAccess.Matcher.STREAM_CODEC, EnvironmentEitherAmountRecipe4x::getEnvironment,
                 factory

@@ -88,7 +88,7 @@ public final class LibGameEvents {
     }
 
     private static void playerNaturalHeal(PlayerNaturalHealEvent event) {
-        if (event.getEntity().getActiveEffects().stream().anyMatch(instance -> instance.getPortCures().contains(LibUtils.DENY_HEAL))) {
+        if (event.getEntity().getActiveEffects().stream().anyMatch(instance -> instance.getCures().contains(LibUtils.DENY_HEAL))) {
             event.setCanceled(true);
         }
     }

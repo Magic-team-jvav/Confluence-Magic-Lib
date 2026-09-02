@@ -1,7 +1,6 @@
 package org.confluence.lib.common.recipe;
 
 import PortLib.extensions.java.util.List.PortListExtension;
-import PortLib.extensions.net.minecraft.world.item.ItemStack.PortItemStackExtension;
 import PortLib.extensions.net.minecraft.world.item.crafting.Ingredient.PortIngredientExtension;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Lifecycle;
@@ -26,6 +25,7 @@ import org.joml.Vector2i;
 import org.mesdag.portlib.diff.Diff;
 import org.mesdag.portlib.network.PortRegistryFriendlyByteBuf;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
+import org.mesdag.portlib.wrapper.common.extensions.IPortItemStackExtension;
 import org.mesdag.portlib.wrapper.world.item.crafting.PortRecipe;
 import org.mesdag.portlib.wrapper.world.item.crafting.PortRecipeInput;
 import org.mesdag.portlib.wrapper.world.item.crafting.PortShapedRecipePattern;
@@ -239,15 +239,15 @@ public abstract class AbstractAmountRecipe<I extends PortRecipeInput> implements
 
     public static <R extends AbstractAmountRecipe<?>> MapCodec<R> shapelessSerializerMapCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                PortItemStackExtension.strictCodec().fieldOf("result").forGetter(recipe -> recipe.result),
-                INGREDIENTS_CODEC.forGetter(recipe -> recipe.ingredients)
+                IPortItemStackExtension.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
+                INGREDIENTS_CODEC.forGetter(AbstractAmountRecipe::getIngredients)
         ).apply(instance, factory));
     }
 
     public static <R extends AbstractAmountRecipe<?>> PortStreamCodec<PortRegistryFriendlyByteBuf, R> shapelessSerializerSteamCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
         return PortStreamCodec.composite(
-                PortItemStackExtension.streamCodec(), r -> r.result,
-                LibStreamCodecUtils.INGREDIENTS, r -> r.getIngredients(),
+                IPortItemStackExtension.STREAM_CODEC, r -> r.result,
+                LibStreamCodecUtils.INGREDIENTS, AbstractAmountRecipe::getIngredients,
                 factory
         );
     }
