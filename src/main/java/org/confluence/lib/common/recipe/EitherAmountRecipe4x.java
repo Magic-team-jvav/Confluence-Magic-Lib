@@ -13,7 +13,6 @@ import org.confluence.lib.util.LibStreamCodecUtils;
 import org.mesdag.portlib.network.PortRegistryFriendlyByteBuf;
 import org.mesdag.portlib.network.codec.PortByteBufCodecs;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
-import org.mesdag.portlib.wrapper.common.extensions.IPortItemStackExtension;
 import org.mesdag.portlib.wrapper.world.item.crafting.PortShapedRecipePattern;
 
 import java.util.function.BiFunction;
@@ -76,14 +75,14 @@ public abstract class EitherAmountRecipe4x<I extends MenuRecipeInput> extends Ab
 
     public static <R extends EitherAmountRecipe4x<?>> MapCodec<R> shapedSerializerMapCodec(BiFunction<ItemStack, PortShapedRecipePattern, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                IPortItemStackExtension.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
+                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
                 PortShapedRecipePattern.MAP_CODEC.forGetter(recipe -> recipe.either.left().orElseThrow())
         ).apply(instance, factory));
     }
 
     public static <R extends EitherAmountRecipe4x<?>> PortStreamCodec<PortRegistryFriendlyByteBuf, R> shapedSerializerSteamCodec(BiFunction<ItemStack, PortShapedRecipePattern, R> factory) {
         return PortStreamCodec.composite(
-                IPortItemStackExtension.STREAM_CODEC, r -> r.result,
+                ItemStack.STREAM_CODEC, r -> r.result,
                 PortShapedRecipePattern.STREAM_CODEC, r -> r.either.left().orElseThrow(),
                 factory
         );
@@ -91,14 +90,14 @@ public abstract class EitherAmountRecipe4x<I extends MenuRecipeInput> extends Ab
 
     public static <R extends EitherAmountRecipe4x<?>> MapCodec<R> eitherSerializerMapCodec(BiFunction<ItemStack, Either<PortShapedRecipePattern, NonNullList<Ingredient>>, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                IPortItemStackExtension.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
+                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
                 Codec.mapEither(PortShapedRecipePattern.MAP_CODEC, INGREDIENTS_CODEC).forGetter(recipe -> recipe.either)
         ).apply(instance, factory));
     }
 
     public static <R extends EitherAmountRecipe4x<?>> PortStreamCodec<PortRegistryFriendlyByteBuf, R> eitherSerializerStreamCodec(BiFunction<ItemStack, Either<PortShapedRecipePattern, NonNullList<Ingredient>>, R> factory) {
         return PortStreamCodec.composite(
-                IPortItemStackExtension.STREAM_CODEC, r -> r.result,
+                ItemStack.STREAM_CODEC, r -> r.result,
                 EITHER_CODEC, r -> r.either,
                 factory
         );

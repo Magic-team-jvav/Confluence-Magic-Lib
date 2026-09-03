@@ -25,7 +25,6 @@ import org.joml.Vector2i;
 import org.mesdag.portlib.diff.Diff;
 import org.mesdag.portlib.network.PortRegistryFriendlyByteBuf;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
-import org.mesdag.portlib.wrapper.common.extensions.IPortItemStackExtension;
 import org.mesdag.portlib.wrapper.world.item.crafting.PortRecipe;
 import org.mesdag.portlib.wrapper.world.item.crafting.PortRecipeInput;
 import org.mesdag.portlib.wrapper.world.item.crafting.PortShapedRecipePattern;
@@ -239,14 +238,14 @@ public abstract class AbstractAmountRecipe<I extends PortRecipeInput> implements
 
     public static <R extends AbstractAmountRecipe<?>> MapCodec<R> shapelessSerializerMapCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                IPortItemStackExtension.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
+                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
                 INGREDIENTS_CODEC.forGetter(AbstractAmountRecipe::getIngredients)
         ).apply(instance, factory));
     }
 
     public static <R extends AbstractAmountRecipe<?>> PortStreamCodec<PortRegistryFriendlyByteBuf, R> shapelessSerializerSteamCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
         return PortStreamCodec.composite(
-                IPortItemStackExtension.STREAM_CODEC, r -> r.result,
+                ItemStack.STREAM_CODEC, r -> r.result,
                 LibStreamCodecUtils.INGREDIENTS, AbstractAmountRecipe::getIngredients,
                 factory
         );
