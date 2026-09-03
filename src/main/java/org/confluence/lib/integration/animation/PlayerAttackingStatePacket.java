@@ -1,8 +1,6 @@
 package org.confluence.lib.integration.animation;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -12,18 +10,14 @@ import org.mesdag.portlib.network.IPortPacket;
 import org.mesdag.portlib.network.codec.PortByteBufCodecs;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
 
-import java.util.Objects;
-
 public record PlayerAttackingStatePacket(int playerId) implements IPortPacket {
     public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("cml", "pas");
     public static final PortStreamCodec<ByteBuf, PlayerAttackingStatePacket> STREAM_CODEC = PortByteBufCodecs.VAR_INT
             .map(PlayerAttackingStatePacket::new, PlayerAttackingStatePacket::playerId);
 
-    public static void sendToServer() {
-        Minecraft minecraft = Minecraft.getInstance();
-        LocalPlayer player = Objects.requireNonNull(minecraft.player);
-        if (!minecraft.options.getCameraType().isFirstPerson()) {
-            ILibAbstractClientPlayer.of(player).confluence$getAnimatable().state.isAttacking = true;
+    public static void sendToServer(Player player, boolean isFirstPerson) {
+        if (!isFirstPerson) {
+            ((ILibAbstractClientPlayer) player).confluence$getAnimatable().state.isAttacking = true;
         }
         ConfluenceMagicLib.NETWORK_HANDLER.sendToServer(new PlayerAttackingStatePacket(player.getId()));
     }

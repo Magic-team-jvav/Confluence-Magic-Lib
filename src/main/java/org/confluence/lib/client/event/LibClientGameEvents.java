@@ -35,6 +35,7 @@ import org.mesdag.portlib.event.PortEventPriority;
 import org.mesdag.portlib.event.client.PortGatherEffectScreenTooltipsEvent;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public final class LibClientGameEvents {
@@ -141,7 +142,9 @@ public final class LibClientGameEvents {
 
     private static void input$InteractionKeyMappingTriggered(InputEvent.InteractionKeyMappingTriggered event) {
         if (AnimationConstants.SHOULD_APPLY && event.isAttack()) {
-            PlayerAttackingStatePacket.sendToServer();
+            Minecraft minecraft = Minecraft.getInstance();
+            LocalPlayer player = Objects.requireNonNull(minecraft.player);
+            PlayerAttackingStatePacket.sendToServer(player, minecraft.options.getCameraType().isFirstPerson());
         }
     }
 }
