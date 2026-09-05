@@ -1,7 +1,6 @@
 package org.confluence.lib.common.recipe;
 
 import PortLib.extensions.java.util.List.PortListExtension;
-import PortLib.extensions.net.minecraft.world.item.crafting.Ingredient.PortIngredientExtension;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
@@ -34,7 +33,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 public abstract class AbstractAmountRecipe<I extends PortRecipeInput> implements PortRecipe<I> {
-    public static final MapCodec<NonNullList<Ingredient>> INGREDIENTS_CODEC = PortIngredientExtension.codecNonempty().listOf().fieldOf("ingredients").flatXmap(list -> {
+    public static final MapCodec<NonNullList<Ingredient>> INGREDIENTS_CODEC = Ingredient.CODEC_NONEMPTY.listOf().fieldOf("ingredients").flatXmap(list -> {
         Ingredient[] ingredients = list.toArray(new Ingredient[0]);
         if (ingredients.length == 0) {
             return DataResult.error(() -> "No ingredients for recipe");

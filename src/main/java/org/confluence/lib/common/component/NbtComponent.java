@@ -1,17 +1,17 @@
 package org.confluence.lib.common.component;
 
 import PortLib.extensions.com.mojang.serialization.Codec.PortCodecExtension;
-import PortLib.extensions.net.minecraft.nbt.TagParser.PortTagParserExtension;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
 import org.mesdag.portlib.network.codec.PortByteBufCodecs;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
 
 import java.util.function.Consumer;
 
 public record NbtComponent(CompoundTag nbt) {
-    public static final Codec<NbtComponent> CODEC = PortCodecExtension.withAlternative(CompoundTag.CODEC, PortTagParserExtension.asCodec()).xmap(NbtComponent::new, NbtComponent::nbt);
+    public static final Codec<NbtComponent> CODEC = PortCodecExtension.withAlternative(CompoundTag.CODEC, TagParser.AS_CODEC).xmap(NbtComponent::new, NbtComponent::nbt);
     public static final PortStreamCodec<ByteBuf, NbtComponent> STREAM_CODEC = PortByteBufCodecs.COMPOUND_TAG.map(NbtComponent::new, NbtComponent::nbt);
 
     public boolean equals(Object o) {

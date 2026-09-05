@@ -1,7 +1,6 @@
 package org.confluence.lib.common.recipe;
 
 import PortLib.extensions.com.mojang.serialization.Codec.PortCodecExtension;
-import PortLib.extensions.net.minecraft.advancements.critereon.StatePropertiesPredicate.PortStatePropertiesPredicateExtension;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -208,13 +207,13 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
         public static final Codec<SearchContext> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 ExtraCodecs.POSITIVE_INT.fieldOf("inflate").forGetter(SearchContext::inflate),
                 PortCodecExtension.lenientOptionalFieldOf(RegistryCodecs.homogeneousList(Registries.BLOCK), "blocks").forGetter(SearchContext::blocks),
-                PortCodecExtension.lenientOptionalFieldOf(PortStatePropertiesPredicateExtension.codec().listOf(), "state_predicates", List.of()).forGetter(SearchContext::statePredicates),
+                PortCodecExtension.lenientOptionalFieldOf(StatePropertiesPredicate.CODEC.listOf(), "state_predicates", List.of()).forGetter(SearchContext::statePredicates),
                 PortCodecExtension.lenientOptionalFieldOf(RegistryCodecs.homogeneousList(Registries.FLUID), "fluids").forGetter(SearchContext::fluids)
         ).apply(instance, SearchContext::new));
         public static final PortStreamCodec<PortRegistryFriendlyByteBuf, SearchContext> STREAM_CODEC = PortStreamCodec.composite(
                 PortByteBufCodecs.VAR_INT, SearchContext::inflate,
                 PortByteBufCodecs.optional(PortByteBufCodecs.holderSet(Registries.BLOCK)), SearchContext::blocks,
-                PortStatePropertiesPredicateExtension.streamCodec().apply(PortByteBufCodecs.list()), SearchContext::statePredicates,
+                StatePropertiesPredicate.STREAM_CODEC.apply(PortByteBufCodecs.list()), SearchContext::statePredicates,
                 PortByteBufCodecs.optional(PortByteBufCodecs.holderSet(Registries.FLUID)), SearchContext::fluids,
                 SearchContext::new
         );

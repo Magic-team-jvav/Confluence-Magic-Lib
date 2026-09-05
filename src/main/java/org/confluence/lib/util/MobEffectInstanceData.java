@@ -1,6 +1,5 @@
 package org.confluence.lib.util;
 
-import PortLib.extensions.net.minecraft.world.effect.MobEffectInstance.PortMobEffectInstanceExtension;
 import com.mojang.serialization.Codec;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -15,7 +14,7 @@ public record MobEffectInstanceData(
         boolean visible,
         boolean showIcon
 ) {
-    public static final Codec<MobEffectInstanceData> CODEC = PortMobEffectInstanceExtension.codec().xmap(MobEffectInstanceData::instance2Entry, MobEffectInstanceData::entry2Instance);
+    public static final Codec<MobEffectInstanceData> CODEC = MobEffectInstance.CODEC.xmap(MobEffectInstanceData::instance2Entry, MobEffectInstanceData::entry2Instance);
 
     public MobEffectInstanceData(Supplier<MobEffect> effect, int duration) {
         this(effect, duration, 0);

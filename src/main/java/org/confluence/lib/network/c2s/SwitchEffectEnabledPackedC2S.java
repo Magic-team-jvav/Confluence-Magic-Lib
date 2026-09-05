@@ -1,6 +1,5 @@
 package org.confluence.lib.network.c2s;
 
-import PortLib.extensions.net.minecraft.world.effect.MobEffect.PortMobEffectExtension;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;
@@ -19,7 +18,7 @@ public record SwitchEffectEnabledPackedC2S(
 ) implements IPortPacket.C2S {
     public static final ResourceLocation ID = ConfluenceMagicLib.asResource("switch_effect_enabled");
     public static final PortStreamCodec<PortRegistryFriendlyByteBuf, SwitchEffectEnabledPackedC2S> STREAM_CODEC = PortStreamCodec.composite(
-            PortMobEffectExtension.directStreamCodec(), SwitchEffectEnabledPackedC2S::effect,
+            MobEffect.DIRECT_STREAM_CODEC, SwitchEffectEnabledPackedC2S::effect,
             PortByteBufCodecs.BOOL, SwitchEffectEnabledPackedC2S::enabled,
             SwitchEffectEnabledPackedC2S::new
     );

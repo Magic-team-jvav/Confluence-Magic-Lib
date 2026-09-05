@@ -1,6 +1,5 @@
 package org.confluence.lib.common.item;
 
-import PortLib.extensions.net.minecraft.resources.ResourceLocation.PortResourceLocationExtension;
 import com.google.common.collect.AbstractIterator;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
@@ -233,7 +232,7 @@ public class GroupItem extends Item {
 
     public record BelongsTo(ResourceLocation name) {
         public static final Codec<BelongsTo> CODEC = ResourceLocation.CODEC.xmap(BelongsTo::new, BelongsTo::name);
-        public static final PortStreamCodec<ByteBuf, BelongsTo> STREAM_CODEC = PortResourceLocationExtension.streamCodec().map(BelongsTo::new, BelongsTo::name);
+        public static final PortStreamCodec<ByteBuf, BelongsTo> STREAM_CODEC = ResourceLocation.STREAM_CODEC.map(BelongsTo::new, BelongsTo::name);
 
         @Override
         public boolean equals(Object o) {

@@ -1,7 +1,5 @@
 package org.confluence.lib.util;
 
-import PortLib.extensions.net.minecraft.resources.ResourceLocation.PortResourceLocationExtension;
-import PortLib.extensions.net.minecraft.world.item.crafting.Ingredient.PortIngredientExtension;
 import com.mojang.datafixers.util.*;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.booleans.BooleanObjectMutablePair;
@@ -13,6 +11,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -52,7 +51,7 @@ public final class LibStreamCodecUtils {
         @Override
         public NonNullList<Ingredient> decode(PortRegistryFriendlyByteBuf buffer) {
             NonNullList<Ingredient> nonnulllist = NonNullList.withSize(buffer.readVarInt(), AmountIngredient.EMPTY);
-            nonnulllist.replaceAll(ignore -> PortIngredientExtension.contentsStreamCodec().decode(buffer));
+            nonnulllist.replaceAll(ignore -> Ingredient.CONTENTS_STREAM_CODEC.decode(buffer));
             return nonnulllist;
         }
 
@@ -60,7 +59,7 @@ public final class LibStreamCodecUtils {
         public void encode(PortRegistryFriendlyByteBuf buffer, NonNullList<Ingredient> value) {
             buffer.writeVarInt(value.size());
             for (Ingredient ingredient : value) {
-                PortIngredientExtension.contentsStreamCodec().encode(buffer, ingredient);
+                Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, ingredient);
             }
         }
     };
@@ -116,11 +115,11 @@ public final class LibStreamCodecUtils {
     public static <B extends ByteBuf, V> PortStreamCodec<B, TagKey<V>> tagKey(ResourceKey<Registry<V>> resourceKey) {
         return new PortStreamCodec<>() {
             public TagKey<V> decode(B buffer) {
-                return TagKey.create(resourceKey, PortResourceLocationExtension.streamCodec().decode(buffer));
+                return TagKey.create(resourceKey, ResourceLocation.STREAM_CODEC.decode(buffer));
             }
 
             public void encode(B buffer, TagKey<V> tagKey) {
-                PortResourceLocationExtension.streamCodec().encode(buffer, tagKey.location());
+                ResourceLocation.STREAM_CODEC.encode(buffer, tagKey.location());
             }
         };
     }

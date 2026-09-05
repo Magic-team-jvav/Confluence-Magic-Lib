@@ -1,7 +1,6 @@
 package org.confluence.lib.common.recipe;
 
 import PortLib.extensions.com.mojang.serialization.Codec.PortCodecExtension;
-import PortLib.extensions.net.minecraft.world.item.crafting.Ingredient.PortIngredientExtension;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.tags.TagKey;
@@ -24,7 +23,7 @@ import java.util.stream.Stream;
 public final class AmountIngredient extends PortCustomIngredient {
     public static final Ingredient EMPTY = new AmountIngredient(Ingredient.EMPTY, 0);
     public static final MapCodec<AmountIngredient> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            PortCodecExtension.lenientOptionalFieldOf(PortIngredientExtension.codec(), "ingredient", Ingredient.EMPTY).forGetter(AmountIngredient::ingredient),
+            PortCodecExtension.lenientOptionalFieldOf(Ingredient.CODEC, "ingredient", Ingredient.EMPTY).forGetter(AmountIngredient::ingredient),
             PortCodecExtension.lenientOptionalFieldOf(ExtraCodecs.POSITIVE_INT, "count", 0).forGetter(AmountIngredient::amount)
     ).apply(instance, AmountIngredient::new));
     public static final PortStreamCodec<PortRegistryFriendlyByteBuf, AmountIngredient> STREAM_CODEC = PortByteBufCodecs.fromCodecWithRegistries(CODEC.codec());

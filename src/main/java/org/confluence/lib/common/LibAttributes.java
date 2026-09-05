@@ -1,6 +1,5 @@
 package org.confluence.lib.common;
 
-import PortLib.extensions.net.minecraft.world.entity.ai.attributes.Attribute.PortAttributeExtension;
 import com.google.common.base.Suppliers;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import it.unimi.dsi.fastutil.objects.ObjectDoublePair;
@@ -218,7 +217,7 @@ public final class LibAttributes {
         return getCustomAttribute(ConfluenceMagicLib.ARMOR_PENETRATION);
     }
 
-    private static final Supplier<Holder<Attribute>> ATTACK_DAMAGE = Suppliers.memoize(() -> PortAttributeExtension.wrap(Attributes.ATTACK_DAMAGE));
+    private static final Supplier<Holder<Attribute>> ATTACK_DAMAGE = Suppliers.memoize(() -> Attributes.ATTACK_DAMAGE.wrap());
 
     /// 近战伤害
     public static Holder<Attribute> getAttackDamage() {
