@@ -25,6 +25,7 @@ import org.confluence.lib.integration.animation.AnimationConstants;
 import org.confluence.lib.integration.animation.PlayerAttackingStatePacket;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID, value = Dist.CLIENT)
@@ -62,7 +63,9 @@ public final class LibGameEvents {
     @SubscribeEvent
     public static void input$InteractionKeyMappingTriggered(InputEvent.InteractionKeyMappingTriggered event) {
         if (AnimationConstants.SHOULD_APPLY && event.isAttack()) {
-            PlayerAttackingStatePacket.sendToServer();
+            Minecraft minecraft = Minecraft.getInstance();
+            LocalPlayer player = Objects.requireNonNull(minecraft.player);
+            PlayerAttackingStatePacket.sendToServer(player, minecraft.options.getCameraType().isFirstPerson());
         }
     }
 }
