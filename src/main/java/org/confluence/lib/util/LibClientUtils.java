@@ -12,8 +12,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.client.ConfigScreenHandler;
+import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
 import org.jetbrains.annotations.Nullable;
+import org.mesdag.portlib.client.gui.PortConfigurationScreen;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -147,5 +151,16 @@ public final class LibClientUtils {
 
     public static MutableComponent keyMappingComponent(KeyMapping keyMapping, ChatFormatting color) {
         return MutableComponent.create(keyMapping.getTranslatedKeyMessage().getContents()).withStyle(color);
+    }
+
+    public static void registerConfigScreen(FMLJavaModLoadingContext context) {
+        registerConfigScreen(context.getContainer());
+    }
+
+    public static void registerConfigScreen(ModContainer container) {
+        container.registerExtensionPoint(
+                ConfigScreenHandler.ConfigScreenFactory.class,
+                () -> new ConfigScreenHandler.ConfigScreenFactory(screen -> new PortConfigurationScreen(container, screen))
+        );
     }
 }
