@@ -28,6 +28,7 @@ import org.confluence.lib.common.LibTags;
 import org.confluence.lib.common.component.ModRarity;
 import org.confluence.lib.integration.animation.AnimationConstants;
 import org.confluence.lib.integration.animation.PlayerAttackingStatePacket;
+import org.confluence.lib.integration.animation.PlayerGeoAnimatable;
 import org.confluence.lib.mixed.ILibMobEffectInstance;
 import org.confluence.lib.util.LibClientUtils;
 import org.mesdag.portlib.event.PortEventHandler;
@@ -47,7 +48,7 @@ public final class LibClientGameEvents {
         PortEventHandler.addListener(LibClientGameEvents::playerTick$Pre);
         PortEventHandler.addListener(LibClientGameEvents::clientPlayerNetwork$LoggingOut);
         PortEventHandler.addListener(LibClientGameEvents::clientTick$Post);
-        PortEventHandler.addListener(LibClientGameEvents::cameraSetup);
+        PortEventHandler.addListener(LibClientGameEvents::viewport$ComputeCameraAngles);
         PortEventHandler.addListener(LibClientGameEvents::input$InteractionKeyMappingTriggered);
     }
 
@@ -124,6 +125,9 @@ public final class LibClientGameEvents {
 
     private static void clientPlayerNetwork$LoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         GravitationHandler.reset();
+        if (AnimationConstants.SHOULD_APPLY) {
+            PlayerGeoAnimatable.reloadCallbacks.clear();
+        }
     }
 
     private static void clientTick$Post(TickEvent.ClientTickEvent event) {
@@ -134,9 +138,9 @@ public final class LibClientGameEvents {
         }
     }
 
-    private static void cameraSetup(ViewportEvent.ComputeCameraAngles event) {
+    private static void viewport$ComputeCameraAngles(ViewportEvent.ComputeCameraAngles event) {
         if (GravitationHandler.isShouldRot()) {
-            event.setRoll(180.0F);
+            event.setRoll(event.getRoll() + 180);
         }
     }
 

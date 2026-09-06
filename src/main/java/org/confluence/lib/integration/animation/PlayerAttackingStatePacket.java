@@ -15,13 +15,6 @@ public record PlayerAttackingStatePacket(int playerId) implements IPortPacket {
     public static final PortStreamCodec<ByteBuf, PlayerAttackingStatePacket> STREAM_CODEC = PortByteBufCodecs.VAR_INT
             .map(PlayerAttackingStatePacket::new, PlayerAttackingStatePacket::playerId);
 
-    public static void sendToServer(Player player, boolean isFirstPerson) {
-        if (!isFirstPerson) {
-            ((ILibAbstractClientPlayer) player).confluence$getAnimatable().state.isAttacking = true;
-        }
-        ConfluenceMagicLib.NETWORK_HANDLER.sendToServer(new PlayerAttackingStatePacket(player.getId()));
-    }
-
     @Override
     public void handle(Context context) {
         if (context.player() == null) return;
@@ -36,5 +29,12 @@ public record PlayerAttackingStatePacket(int playerId) implements IPortPacket {
     @Override
     public ResourceLocation identifier() {
         return ID;
+    }
+
+    public static void sendToServer(Player player, boolean isFirstPerson) {
+        if (!isFirstPerson) {
+            ((ILibAbstractClientPlayer) player).confluence$getAnimatable().state.isAttacking = true;
+        }
+        ConfluenceMagicLib.NETWORK_HANDLER.sendToServer(new PlayerAttackingStatePacket(player.getId()));
     }
 }
