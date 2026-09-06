@@ -37,8 +37,7 @@ public abstract class SimpleRecipeSerializer<R extends PortRecipe<?>> implements
         if (streamCodec == null) {
             streamCodec = getStreamCodec();
         }
-        PortRegistryFriendlyByteBuf buf = buffer.wrap();
-        R r = streamCodec.decode(buf);
+        R r = streamCodec.decode(buffer.wrap());
         r.setId(recipeId);
         return r;
     }
@@ -49,8 +48,7 @@ public abstract class SimpleRecipeSerializer<R extends PortRecipe<?>> implements
         if (streamCodec == null) {
             streamCodec = getStreamCodec();
         }
-        PortRegistryFriendlyByteBuf buf = buffer.wrap();
-        streamCodec.encode(buf, recipe);
+        streamCodec.encode(buffer.wrap(), recipe);
     }
 
     protected abstract MapCodec<R> getCodec();

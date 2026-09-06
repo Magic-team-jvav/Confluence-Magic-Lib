@@ -5,6 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.effect.GravitationEffect;
 import org.confluence.lib.mixed.ILibEntity;
@@ -12,7 +13,6 @@ import org.confluence.lib.network.s2c.BroadcastGravitationRotPacketS2C;
 import org.mesdag.portlib.network.IPortPacket;
 import org.mesdag.portlib.network.codec.PortByteBufCodecs;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
-import org.mesdag.portlib.wrapper.common.extensions.IPortAttributesExtension;
 
 import java.util.UUID;
 
@@ -33,7 +33,7 @@ public record GravitationPacketC2S(boolean enable) implements IPortPacket.C2S {
         if (enable) {
             attributeMap.addTransientAttributeModifiers(GravitationEffect.GRAVITY);
         } else {
-            AttributeInstance attributeInstance = attributeMap.getInstance(IPortAttributesExtension.gravity().value());
+            AttributeInstance attributeInstance = attributeMap.getInstance(Attributes.GRAVITY.value());
             if (attributeInstance != null) attributeInstance.removeModifier(GravitationEffect.ID);
         }
         ILibEntity.of(player).confluence$setShouldRot(enable);

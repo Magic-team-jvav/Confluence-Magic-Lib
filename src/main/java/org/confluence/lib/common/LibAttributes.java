@@ -1,6 +1,5 @@
 package org.confluence.lib.common;
 
-import com.google.common.base.Suppliers;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import it.unimi.dsi.fastutil.objects.ObjectDoublePair;
 import net.minecraft.Util;
@@ -30,6 +29,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.mesdag.portlib.event.PortEventHandler;
 import org.mesdag.portlib.wrapper.common.PortTags;
+import org.mesdag.portlib.wrapper.world.entity.ai.attributes.AttributeHolder;
 
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +37,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 public final class LibAttributes {
     private static final Map<Holder<Attribute>, Holder<Attribute>> MAP = Util.make(new HashMap<>(), table -> {
@@ -217,11 +216,11 @@ public final class LibAttributes {
         return getCustomAttribute(ConfluenceMagicLib.ARMOR_PENETRATION);
     }
 
-    private static final Supplier<Holder<Attribute>> ATTACK_DAMAGE = Suppliers.memoize(() -> Attributes.ATTACK_DAMAGE.wrap());
+    private static final Holder<Attribute> ATTACK_DAMAGE = AttributeHolder.wrap(Attributes.ATTACK_DAMAGE);
 
     /// 近战伤害
     public static Holder<Attribute> getAttackDamage() {
-        return ATTACK_DAMAGE.get();
+        return ATTACK_DAMAGE;
     }
 
     /// 远程伤害
