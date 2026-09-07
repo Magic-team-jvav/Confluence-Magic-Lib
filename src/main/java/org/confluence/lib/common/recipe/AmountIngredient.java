@@ -11,6 +11,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.jetbrains.annotations.Nullable;
+import org.mesdag.portlib.diff.Diff;
 import org.mesdag.portlib.network.PortRegistryFriendlyByteBuf;
 import org.mesdag.portlib.network.codec.PortByteBufCodecs;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
@@ -59,6 +60,12 @@ public final class AmountIngredient extends PortCustomIngredient {
     @Override
     public boolean isSimple() {
         return false;
+    }
+
+    @Diff
+    @Override
+    public boolean isEmpty() {
+        return ingredient.isEmpty();
     }
 
     @Override
