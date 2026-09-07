@@ -31,7 +31,7 @@ public interface ILibDamageSource {
         }
         // 检查完箭矢暴击后不再检查暴击
         if (!crit && attacker instanceof Player player && !LibAttributes.hasCustomAttribute(ConfluenceMagicLib.CRITICAL_CHANCE) &&
-                LibMathUtils.checkChance(player.getAttributeValue(ConfluenceMagicLib.CRITICAL_CHANCE), player.getRandom())
+                LibMathUtils.checkChance(player.getAttributeValue(ConfluenceMagicLib.CRITICAL_CHANCE), player.getRandom1211())
         ) {
             player.crit(victim);
             crit = true;

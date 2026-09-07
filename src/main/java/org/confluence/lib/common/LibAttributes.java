@@ -99,7 +99,7 @@ public final class LibAttributes {
         if (!abstractArrow.isCritArrow() && !hasCustomAttribute(ConfluenceMagicLib.CRITICAL_CHANCE)) {
             instance = living.getAttribute(ConfluenceMagicLib.CRITICAL_CHANCE.get());
             if (instance != null) {
-                abstractArrow.setCritArrow(LibMathUtils.checkChance(instance.getValue(), living.getRandom()));
+                abstractArrow.setCritArrow(LibMathUtils.checkChance(instance.getValue(), living.getRandom1211()));
             }
         }
     }
@@ -120,7 +120,7 @@ public final class LibAttributes {
         if (hasCustomAttribute(ConfluenceMagicLib.DODGE_CHANCE)) return false;
         AttributeInstance instance = victim.getAttribute(ConfluenceMagicLib.DODGE_CHANCE.get());
         if (instance == null) return false;
-        return LibMathUtils.checkChance(instance.getValue(), victim.getRandom());
+        return LibMathUtils.checkChance(instance.getValue(), victim.getRandom1211());
     }
 
     @ApiStatus.Internal

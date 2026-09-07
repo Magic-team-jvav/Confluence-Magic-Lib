@@ -260,8 +260,8 @@ public final class LibEntityUtils {
         ItemStack itemStack = item.getDefaultInstance();
         // todo
 //        float enchantChance = (slot.getType() == EquipmentSlot.Type.HAND ? 0.25F : 0.5F) * difficulty.getSpecialMultiplier();
-//        if (mob.getRandom().nextFloat() < enchantChance) {
-//            EnchantmentHelper.enchantItemFromProvider(itemStack, mob.registryAccess(), VanillaEnchantmentProviders.MOB_SPAWN_EQUIPMENT, difficulty, mob.getRandom());
+//        if (mob.getRandom1211().nextFloat() < enchantChance) {
+//            EnchantmentHelper.enchantItemFromProvider(itemStack, mob.registryAccess(), VanillaEnchantmentProviders.MOB_SPAWN_EQUIPMENT, difficulty, mob.getRandom1211());
 //        }
         mob.setItemSlot(slot, itemStack);
         mob.setDropChance(slot, chance);
