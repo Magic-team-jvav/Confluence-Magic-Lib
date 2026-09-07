@@ -6,8 +6,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
+import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.confluence.lib.client.LibKeyBindings;
@@ -20,6 +20,7 @@ import org.confluence.lib.common.component.ToolMode;
 import org.confluence.lib.common.event.LibGameEvents;
 import org.confluence.lib.common.event.LibModEvents;
 import org.confluence.lib.common.item.GroupItem;
+import org.confluence.lib.common.loot.CraftingLootItemCondition;
 import org.confluence.lib.common.particle.CrossDustParticleOptions;
 import org.confluence.lib.common.recipe.AmountIngredient;
 import org.confluence.lib.common.worldgen.structure.GridPiece;
@@ -53,11 +54,10 @@ public final class ConfluenceMagicLib {
     public static final PortNetworkHandler NETWORK_HANDLER = new PortNetworkHandler(LIB_ID, "1");
     public static final boolean IS_CONFLUENCE_LOAD = LibUtils.isModLoaded(CONFLUENCE_ID);
 
-    private static final PortRegistration<Item> ITEMS = PortRegisterHandler.create(LIB_ID, Registries.ITEM);
-    public static final PortRegistryEntry<Item, GroupItem> GROUP_ITEM;
+    private static final PortItemRegistration ITEMS = PortRegisterHandler.item(LIB_ID);
 
     static {
-        GROUP_ITEM = ITEMS.register("group", GroupItem::new);
+        ITEMS.register("group", GroupItem::new);
     }
 
     private static final PortAttributeRegistration ATTRIBUTES = PortRegisterHandler.attribute(LIB_ID);
@@ -101,6 +101,9 @@ public final class ConfluenceMagicLib {
 
     private static final PortAttachmentRegistration ATTACHMENTS = PortRegisterHandler.attachment(LIB_ID);
     public static final PortRegistryEntry<PortAttachmentType<?>, PortAttachmentType<DelayTaskHolder>> DELAY_TASK_HOLDER = ATTACHMENTS.registerSimple("delay_task_holder", () -> PortAttachmentType.builder(DelayTaskHolder::new));
+
+    private static final PortRegistration<LootItemConditionType> LOOT_ITEM_CONDITION_TYPES = PortRegisterHandler.create(LIB_ID, Registries.LOOT_CONDITION_TYPE);
+    public static final PortRegistryEntry<LootItemConditionType, LootItemConditionType> CRAFTING_LOOT_ITEM_CONDITION = LOOT_ITEM_CONDITION_TYPES.register("crafting", () -> new LootItemConditionType(CraftingLootItemCondition.SERIALIZER));
 
     public ConfluenceMagicLib(FMLJavaModLoadingContext context) {
         LibStartupConfig.register();

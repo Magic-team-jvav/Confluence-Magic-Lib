@@ -64,6 +64,7 @@ public class EitherAmountContainerScreen4x<M extends EitherAmountContainerMenu4x
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
+        renderBackground(guiGraphics);
         guiGraphics.blit(background, leftPos, topPos, 0, 0, imageWidth, imageHeight);
         if (menu.getRecipesAmount() > 1) {
             if (upButtonClicked) {
