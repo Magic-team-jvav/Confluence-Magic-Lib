@@ -84,13 +84,10 @@ public final class LibModEvents {
             CustomGroupItemIconEvent.post();
             if (GroupItem.isInvalidCreativeModeTab(tabKey)) {
                 if (tabKey == CreativeModeTabs.SEARCH) {
-                    List<ItemStack> groupStacks = Streams.stream(event.getEntries())
-                            .filter(entry -> PortBuildCreativeModeTabContentsEvent.isParentTab(entry.getValue()))
-                            .map(Map.Entry::getKey)
-                            .filter(stack -> stack.is(GroupItem.getInstance())).toList();
+                    List<ItemStack> groupStacks = Streams.stream(event.getParentEntries()).map(Map.Entry::getKey).filter(stack -> stack.is(GroupItem.getInstance())).toList();
                     for (ItemStack groupStack : groupStacks) {
                         for (ItemStack stack : groupStack.getOrDefault(ConfluenceMagicLib.GROUP_STACKS, GroupItem.Stacks.EMPTY).getValues()) {
-                            if (event.getEntries().contains(stack)) continue;
+                            if (event.getParentEntries().contains(stack)) continue;
                             event.insertBefore(groupStack, stack, CreativeModeTab.TabVisibility.PARENT_TAB_ONLY);
                         }
                         event.remove(groupStack, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
@@ -99,19 +96,17 @@ public final class LibModEvents {
             } else {
                 List<Pair<ItemStack, ResourceLocation>> hasBelongsTo = new ArrayList<>();
                 Map<ResourceLocation, ItemStack> groupItems = new HashMap<>();
-                for (Map.Entry<ItemStack, CreativeModeTab.TabVisibility> entry : event.getEntries()) {
-                    if (PortBuildCreativeModeTabContentsEvent.isParentTab(entry.getValue())) {
-                        ItemStack stack = entry.getKey();
-                        GroupItem.BelongsTo belongsTo = stack.get(ConfluenceMagicLib.BELONGS_TO_GROUP);
-                        if (belongsTo == null) {
-                            if (stack.is(GroupItem.getInstance())) {
-                                GroupItem.Stacks stacks = stack.get(ConfluenceMagicLib.GROUP_STACKS);
-                                if (stacks == null) continue;
-                                groupItems.put(stacks.getName(), stack);
-                            }
-                        } else {
-                            hasBelongsTo.add(new Pair<>(stack, belongsTo.name()));
+                for (Map.Entry<ItemStack, CreativeModeTab.TabVisibility> entry : event.getParentEntries()) {
+                    ItemStack stack = entry.getKey();
+                    GroupItem.BelongsTo belongsTo = stack.get(ConfluenceMagicLib.BELONGS_TO_GROUP);
+                    if (belongsTo == null) {
+                        if (stack.is(GroupItem.getInstance())) {
+                            GroupItem.Stacks stacks = stack.get(ConfluenceMagicLib.GROUP_STACKS);
+                            if (stacks == null) continue;
+                            groupItems.put(stacks.getName(), stack);
                         }
+                    } else {
+                        hasBelongsTo.add(new Pair<>(stack, belongsTo.name()));
                     }
                 }
                 for (Pair<ItemStack, ResourceLocation> pair : hasBelongsTo) {

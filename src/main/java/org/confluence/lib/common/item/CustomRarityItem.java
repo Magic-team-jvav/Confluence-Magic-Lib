@@ -36,6 +36,6 @@ public class CustomRarityItem extends Item {
 
     @Override
     public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack) {
-        return modifiers == null ? super.getAttributeModifiers(slot, stack) : stack.getPortAttributeModifiers().getAttributeModifiers(slot);
+        return modifiers == null ? stack.getPortAttributeModifiers().getAttributeModifiers(slot) : modifiers.getAttributeModifiers(slot);
     }
 }
