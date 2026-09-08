@@ -29,6 +29,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.mesdag.portlib.event.PortEventHandler;
 import org.mesdag.portlib.wrapper.common.PortTags;
+import org.mesdag.portlib.wrapper.common.extensions.IPortHolderExtension;
 import org.mesdag.portlib.wrapper.world.entity.ai.attributes.AttributeHolder;
 
 import java.util.HashMap;
@@ -197,7 +198,7 @@ public final class LibAttributes {
 
     public static boolean hasCustomAttribute(Holder<Attribute> attribute) {
         Holder<Attribute> holder = MAP.get(attribute);
-        return holder != null && !holder.equals(attribute);
+        return holder != null && !IPortHolderExtension.of(holder).is(attribute);
     }
 
     public static Holder<Attribute> getCriticalChance() {
