@@ -2,10 +2,11 @@ package org.confluence.lib.util;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
@@ -19,9 +20,7 @@ public final class LibEnchantmentUtils {
     }
 
     public static ItemStack enchantedBook(Enchantment enchantment, int level) {
-        ItemStack book = Items.ENCHANTED_BOOK.getDefaultInstance();
-        book.enchant(enchantment, level);
-        return book;
+        return EnchantedBookItem.createForEnchantment(new EnchantmentInstance(enchantment, level));
     }
 
     public static void runIterationOnHand(ServerPlayer player, Consumer<ItemStack> consumer) {
