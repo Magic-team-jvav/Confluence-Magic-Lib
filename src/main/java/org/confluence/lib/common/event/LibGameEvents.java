@@ -6,7 +6,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
-import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Enemy;
@@ -14,7 +17,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.EntityAttributeModificationEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.LibStartupConfig;
 import org.confluence.lib.api.event.PlayerNaturalHealEvent;
@@ -34,16 +43,11 @@ import org.confluence.lib.util.NaturalSpawnerUtils;
 import org.jetbrains.annotations.Nullable;
 import org.mesdag.portlib.event.PortEventHandler;
 import org.mesdag.portlib.event.PortEventPriority;
-import org.mesdag.portlib.event.entity.PortEntityAttributeModificationEvent;
 import org.mesdag.portlib.event.entity.PortEntityInvulnerabilityCheckEvent;
-import org.mesdag.portlib.event.entity.PortEntityJoinLevelEvent;
-import org.mesdag.portlib.event.entity.living.*;
+import org.mesdag.portlib.event.entity.living.PortEffectParticleModificationEvent;
+import org.mesdag.portlib.event.entity.living.PortLivingDamageEvent;
 import org.mesdag.portlib.event.other.PortItemStackedOnOtherEvent;
-import org.mesdag.portlib.event.server.PortServerStartingEvent;
-import org.mesdag.portlib.event.server.PortServerStoppedEvent;
 import org.mesdag.portlib.event.tick.PortEntityTickEvent;
-import org.mesdag.portlib.event.tick.PortPlayerTickEvent;
-import org.mesdag.portlib.event.tick.PortServerTickEvent;
 
 public final class LibGameEvents {
     public static void init() {
@@ -70,20 +74,20 @@ public final class LibGameEvents {
         PortEventHandler.addListener(LibGameEvents::effectParticleModification);
     }
 
-    private static void entityAttributeModification(PortEntityAttributeModificationEvent event) {
-        event.add(EntityType.PLAYER, ConfluenceMagicLib.MOB_SPAWN_SPEED_MULTIPLIER);
-        event.add(EntityType.PLAYER, ConfluenceMagicLib.MOB_SPAWN_COUNT_MULTIPLIER);
+    private static void entityAttributeModification(EntityAttributeModificationEvent event) {
+        event.add(EntityType.PLAYER, ConfluenceMagicLib.MOB_SPAWN_SPEED_MULTIPLIER.get());
+        event.add(EntityType.PLAYER, ConfluenceMagicLib.MOB_SPAWN_COUNT_MULTIPLIER.get());
     }
 
-    private static void spawnClusterSize(PortSpawnClusterSizeEvent event) {
-        Mob mob = event.getEntity();
+    private static void spawnClusterSize(LivingPackSizeEvent event) {
+        LivingEntity mob = event.getEntity();
         NaturalSpawnerUtils.ChunkSpawnData data = NaturalSpawnerUtils.getChunkSpawnData(mob.level().dimension(), mob.chunkPosition());
         if (data != NaturalSpawnerUtils.ChunkSpawnData.DEFAULT) {
-            event.setSize(data.getCount(event.getSize()));
+            event.setMaxPackSize(data.getCount(event.getMaxPackSize()));
         }
     }
 
-    private static void livingDrops(PortLivingDropsEvent event) {
+    private static void livingDrops(LivingDropsEvent event) {
         if (event.getEntity().getTags().contains(LibUtils.NO_DROPS_TAG)) event.setCanceled(true);
     }
 
@@ -99,18 +103,23 @@ public final class LibGameEvents {
         }
     }
 
-    private static void serverStarting(PortServerStartingEvent event) {NaturalSpawnerUtils.init(event.getServer());}
+    private static void serverStarting(ServerStartingEvent event) {
+        NaturalSpawnerUtils.init(event.getServer());
+    }
 
-    private static void serverTick(PortServerTickEvent.Post event) {NaturalSpawnerUtils.update(event.getServer());}
+    private static void serverTick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        NaturalSpawnerUtils.update(event.getServer());
+    }
 
-    private static void serverStopped(PortServerStoppedEvent event) {
+    private static void serverStopped(ServerStoppedEvent event) {
         NaturalSpawnerUtils.clear();
         IGlobalData.clearAll();
     }
 
     private static void playerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {LibStartupConfig.checkIfSomeoneHasViolatedEULA(event.getEntity());}
 
-    private static void livingDeath(PortLivingDeathEvent event) {
+    private static void livingDeath(LivingDeathEvent event) {
         LivingEntity livingEntity = event.getEntity();
         DelayTaskHolder holder = livingEntity.getExistingDataOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
         if (holder != null) {
@@ -140,7 +149,7 @@ public final class LibGameEvents {
         }
     }
 
-    private static void livingEquipmentChange(PortLivingEquipmentChangeEvent event) {
+    private static void livingEquipmentChange(LivingEquipmentChangeEvent event) {
         LivingEntity livingEntity = event.getEntity();
         EquipmentSlot slot = event.getSlot();
         if (livingEntity.isAlive()) {
@@ -151,7 +160,7 @@ public final class LibGameEvents {
         }
     }
 
-    private static void livingSwapItemsHands(PortLivingSwapItemsEvent.Hands event) {
+    private static void livingSwapItemsHands(LivingSwapItemsEvent.Hands event) {
         LivingEntity livingEntity = event.getEntity();
         if (livingEntity.isAlive()) {
             DelayTaskHolder holder = livingEntity.getExistingDataOrNull(ConfluenceMagicLib.DELAY_TASK_HOLDER);
@@ -198,15 +207,15 @@ public final class LibGameEvents {
         }
     }
 
-    private static void entityJoinLevel(PortEntityJoinLevelEvent event) {
+    private static void entityJoinLevel(EntityJoinLevelEvent event) {
         if (event.getEntity() instanceof AbstractArrow arrow && arrow.getOwner() instanceof LivingEntity living) {
             LibAttributes.applyToArrow(living, arrow);
         }
     }
 
-    private static void livingChangeTarget(PortLivingChangeTargetEvent event) {
+    private static void livingChangeTarget(LivingChangeTargetEvent event) {
         LivingEntity self = event.getEntity();
-        if (!(self instanceof Enemy) || !(event.getNewAboutToBeSetTarget() instanceof Player playerO))
+        if (!(self instanceof Enemy) || !(event.getNewTarget() instanceof Player playerO))
             return;
         double rangeSqr = Mth.square(self.getAttributeValue(Attributes.FOLLOW_RANGE));
         self.level().players().stream()
@@ -220,13 +229,14 @@ public final class LibGameEvents {
                     AttributeInstance io = playerO.getAttribute(ConfluenceMagicLib.AGGRO.get());
                     AttributeInstance ip = player.getAttribute(ConfluenceMagicLib.AGGRO.get());
                     if (io != null && ip != null && io.getValue() < ip.getValue()) {
-                        event.setNewAboutToBeSetTarget(player);
+                        event.setNewTarget(player);
                     }
                 });
     }
 
-    private static void playerTick(PortPlayerTickEvent.Post event) {
-        LibAttributes.applyPickupRange(event.getEntity());
+    private static void playerTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        LibAttributes.applyPickupRange(event.player);
     }
 
     private static void effectParticleModification(PortEffectParticleModificationEvent event) {

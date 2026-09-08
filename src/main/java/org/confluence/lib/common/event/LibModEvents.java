@@ -12,8 +12,10 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.minecraftforge.event.entity.EntityAttributeModificationEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
+import net.minecraftforge.registries.RegisterEvent;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.LibStartupConfig;
 import org.confluence.lib.api.event.CustomGroupItemIconEvent;
@@ -23,9 +25,7 @@ import org.confluence.lib.common.fluid.FluidBuilder;
 import org.confluence.lib.common.item.GroupItem;
 import org.mesdag.portlib.event.PortEventHandler;
 import org.mesdag.portlib.event.PortEventPriority;
-import org.mesdag.portlib.event.entity.PortEntityAttributeModificationEvent;
 import org.mesdag.portlib.event.other.PortBuildCreativeModeTabContentsEvent;
-import org.mesdag.portlib.event.registries.PortRegisterEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +42,7 @@ public final class LibModEvents {
     private static Map<ResourceLocation, ResourceLocation> blockWithItem;
 
     @SuppressWarnings("UnstableApiUsage")
-    private static void register(PortRegisterEvent event) {
+    private static void register(RegisterEvent event) {
         FluidBuilder.register(event);
         ResourceKey<? extends Registry<?>> registryKey = event.getRegistryKey();
         if (Registries.ATTRIBUTE.equals(registryKey)) {
@@ -61,7 +61,7 @@ public final class LibModEvents {
         }
     }
 
-    private static void entityAttributeModification(PortEntityAttributeModificationEvent event) {
+    private static void entityAttributeModification(EntityAttributeModificationEvent event) {
         LibAttributes.registerAttribute(ConfluenceMagicLib.CRITICAL_CHANCE, event::add);
         LibAttributes.registerAttribute(ConfluenceMagicLib.RANGED_VELOCITY, event::add);
         LibAttributes.registerAttribute(ConfluenceMagicLib.RANGED_DAMAGE, event::add);

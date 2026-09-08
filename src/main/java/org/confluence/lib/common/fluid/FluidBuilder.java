@@ -7,9 +7,9 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegisterEvent;
 import net.minecraftforge.registries.RegistryObject;
 import org.mesdag.portlib.PortLib;
-import org.mesdag.portlib.event.registries.PortRegisterEvent;
 import org.mesdag.portlib.registries.PortRegistryEntry;
 
 import java.util.Hashtable;
@@ -44,7 +44,7 @@ public class FluidBuilder {
         return new FluidTriple(type, fluid, flowing);
     }
 
-    public static void register(PortRegisterEvent event) {
+    public static void register(RegisterEvent event) {
         BUILDERS.forEach((location, builder) -> {
             event.register(ForgeRegistries.Keys.FLUID_TYPES, helper -> {
                 FluidType.Properties properties = FluidType.Properties.create();

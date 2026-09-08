@@ -50,8 +50,8 @@ public final class LibAttributes {
     });
 
     @ApiStatus.Internal
-    public static void registerAttribute(Holder<Attribute> attribute, BiConsumer<EntityType<? extends LivingEntity>, Holder<Attribute>> consumer) {
-        if (!hasCustomAttribute(attribute)) consumer.accept(EntityType.PLAYER, attribute);
+    public static void registerAttribute(Holder<Attribute> attribute, BiConsumer<EntityType<? extends LivingEntity>, Attribute> consumer) {
+        if (!hasCustomAttribute(attribute)) consumer.accept(EntityType.PLAYER, attribute.value());
     }
 
     @ApiStatus.Internal
