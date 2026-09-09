@@ -5,6 +5,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraftforge.common.ForgeHooks;
 
 public class ForgeFuelSlot extends Slot {
     private final RecipeType<?> recipeType;
@@ -16,7 +17,7 @@ public class ForgeFuelSlot extends Slot {
 
     @Override
     public boolean mayPlace(ItemStack stack) {
-        return stack.getBurnTime(recipeType) > 0 || isBucket(stack);
+        return ForgeHooks.getBurnTime(stack, recipeType) > 0 || isBucket(stack);
     }
 
     @Override
