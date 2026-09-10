@@ -22,3 +22,10 @@ mandatory=true
 versionRange = "${minecraft_version_range}"
 ordering = "NONE"
 side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "portlib"
+mandatory = true
+versionRange = "[${portlib_version},)"
+ordering = "AFTER"
+side = "BOTH"
