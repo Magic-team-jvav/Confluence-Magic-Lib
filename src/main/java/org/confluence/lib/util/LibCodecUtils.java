@@ -6,9 +6,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.booleans.BooleanObjectMutablePair;
 import it.unimi.dsi.fastutil.booleans.BooleanObjectPair;
-import it.unimi.dsi.fastutil.objects.Object2BooleanLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2BooleanMap;
+import it.unimi.dsi.fastutil.objects.Reference2BooleanOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.phys.Vec2;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
@@ -88,7 +88,7 @@ public final class LibCodecUtils {
         return tuple(kName, kCodec, vName, vCodec).listOf().xmap(LibUtils::convertTupleListToMap, LibUtils::convertMapToTupleList);
     }
 
-    public static <T> Codec<Object2BooleanMap<T>> object2BooleanLinkedMap(Codec<T> codec) {
-        return Codec.unboundedMap(codec, Codec.BOOL).xmap(Object2BooleanLinkedOpenHashMap::new, Object2ObjectLinkedOpenHashMap::new);
+    public static <A> Codec<Reference2BooleanMap<A>> reference2BooleanMap(Codec<A> codec) {
+        return Codec.unboundedMap(codec, Codec.BOOL).xmap(Reference2BooleanOpenHashMap::new, Reference2ObjectOpenHashMap::new);
     }
 }
