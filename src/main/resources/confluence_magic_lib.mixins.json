@@ -35,6 +35,7 @@
         "client.CreativeModeInventoryScreenMixin",
         "client.GuiGraphicsMixin",
         "client.GuiMixin",
+        "client.KeyMappingAccessor",
         "client.LivingEntityRendererMixin",
         "client.LocalPlayerAccessor",
         "client.LocalPlayerMixin",

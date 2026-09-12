@@ -74,7 +74,7 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
     public ItemStack getUpResult() {
         int index = getUpIndex();
         if (index == -1) return result.getItem(0);
-        return recipes.get(index).getResultItem(player.registryAccess());
+        return recipes.get(index).getResult();
     }
 
     public int getUpIndex() {
@@ -95,7 +95,7 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
     public ItemStack getDownResult() {
         int index = getDownIndex();
         if (index == -1) return result.getItem(0);
-        return recipes.get(index).getResultItem(player.registryAccess());
+        return recipes.get(index).getResult();
     }
 
     public int getDownIndex() {
@@ -130,7 +130,7 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
     public void setupResultSlot() {
         if (isValidRecipeIndex(selectedRecipeIndex.get())) {
             R recipe = recipes.get(selectedRecipeIndex.get());
-            ItemStack itemStack = recipe.getResultItem(player.registryAccess()).copy();
+            ItemStack itemStack = recipe.getResult().copy();
             if (itemStack.isItemEnabled(player.level().enabledFeatures())) {
                 result.setItem(0, itemStack);
                 resultSlot.setCurrentRecipe(recipe);
@@ -167,7 +167,7 @@ public abstract class EitherAmountContainerMenu4x<I extends MenuRecipeInput, R e
                 if (!recipes.isEmpty()) {
                     if (selectedRecipeIndex.get() == -1) selectedRecipeIndex.set(0);
                     R recipe = recipes.get(selectedRecipeIndex.get());
-                    itemStack = recipe.getResultItem(player.registryAccess()).copy();
+                    itemStack = recipe.getResult().copy();
                     resultSlot.setCurrentRecipe(recipe);
                 }
                 result.setItem(0, itemStack);

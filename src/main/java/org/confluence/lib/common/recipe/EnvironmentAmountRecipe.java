@@ -30,15 +30,15 @@ public abstract class EnvironmentAmountRecipe extends AbstractAmountRecipe<Envir
 
     public static <R extends EnvironmentAmountRecipe> MapCodec<R> environmentShapelessSerializerMapCodec(Function3<ItemStack, NonNullList<Ingredient>, EnvironmentLevelAccess.Matcher, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
-                INGREDIENTS_CODEC.forGetter(recipe -> recipe.ingredients),
+                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(AbstractAmountRecipe::getResult),
+                INGREDIENTS_CODEC.forGetter(AbstractAmountRecipe::getIngredients),
                 EnvironmentLevelAccess.Matcher.MAP_CODEC.forGetter(EnvironmentAmountRecipe::getEnvironment)
         ).apply(instance, factory));
     }
 
     public static <R extends EnvironmentAmountRecipe> PortStreamCodec<PortRegistryFriendlyByteBuf, R> environmentShapelessSerializerSteamCodec(Function3<ItemStack, NonNullList<Ingredient>, EnvironmentLevelAccess.Matcher, R> factory) {
         return PortStreamCodec.composite(
-                ItemStack.STREAM_CODEC, r -> r.result,
+                ItemStack.STREAM_CODEC, AbstractAmountRecipe::getResult,
                 LibStreamCodecUtils.INGREDIENTS, AbstractAmountRecipe::getIngredients,
                 EnvironmentLevelAccess.Matcher.STREAM_CODEC, EnvironmentAmountRecipe::getEnvironment,
                 factory

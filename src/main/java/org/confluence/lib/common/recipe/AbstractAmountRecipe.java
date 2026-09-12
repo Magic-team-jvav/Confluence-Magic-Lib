@@ -42,8 +42,8 @@ public abstract class AbstractAmountRecipe<I extends PortRecipeInput> implements
         }
     }, ingredients -> DataResult.success(ingredients, Lifecycle.stable()));
     private static final Object2ObjectFunction<Ingredient, Tuple<Integer, IntArraySet>> FUNCTION = I -> new Tuple<>(I instanceof AmountIngredient ai ? ai.amount() : 1, new IntArraySet());
-    public final ItemStack result;
-    public final NonNullList<Ingredient> ingredients;
+    protected final ItemStack result;
+    protected final NonNullList<Ingredient> ingredients;
 
     protected ResourceLocation id;
 
@@ -71,6 +71,11 @@ public abstract class AbstractAmountRecipe<I extends PortRecipeInput> implements
 
     @Override
     public ItemStack getResultItem(RegistryAccess registryAccess) {
+        return getResult();
+    }
+
+    @Diff
+    public ItemStack getResult() {
         return result;
     }
 
@@ -111,7 +116,7 @@ public abstract class AbstractAmountRecipe<I extends PortRecipeInput> implements
 
     @Override
     public ItemStack assemble(I container, RegistryAccess registryAccess) {
-        return getResultItem(registryAccess).copy();
+        return getResult().copy();
     }
 
     public ItemStack assembleAndExtract(I input, RegistryAccess registryAccess) {
@@ -237,14 +242,14 @@ public abstract class AbstractAmountRecipe<I extends PortRecipeInput> implements
 
     public static <R extends AbstractAmountRecipe<?>> MapCodec<R> shapelessSerializerMapCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
+                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(AbstractAmountRecipe::getResult),
                 INGREDIENTS_CODEC.forGetter(AbstractAmountRecipe::getIngredients)
         ).apply(instance, factory));
     }
 
     public static <R extends AbstractAmountRecipe<?>> PortStreamCodec<PortRegistryFriendlyByteBuf, R> shapelessSerializerSteamCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
         return PortStreamCodec.composite(
-                ItemStack.STREAM_CODEC, r -> r.result,
+                ItemStack.STREAM_CODEC, AbstractAmountRecipe::getResult,
                 LibStreamCodecUtils.INGREDIENTS, AbstractAmountRecipe::getIngredients,
                 factory
         );
