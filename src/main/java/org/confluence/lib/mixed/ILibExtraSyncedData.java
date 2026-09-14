@@ -6,8 +6,12 @@ import org.confluence.lib.network.s2c.SetEntityDataPacketS2C;
 
 /// @see SetEntityDataPacketS2C
 public interface ILibExtraSyncedData<T extends Entity> extends SelfGetter<T> {
+    /// Must Not Be Invoked By Overriders
     default void confluence$setData(byte dataId, Object o) {
-        T self = confluence$self();
+        defaultSetData(confluence$self(), dataId, o);
+    }
+
+    static void defaultSetData(Entity self, byte dataId, Object o) {
         if (!self.level().isClientSide) {
             ConfluenceMagicLib.NETWORK_HANDLER.sendToPlayersTrackingEntity(self, new SetEntityDataPacketS2C(self.getId(), new SetEntityDataPacketS2C.Entry(dataId, o)));
         }
