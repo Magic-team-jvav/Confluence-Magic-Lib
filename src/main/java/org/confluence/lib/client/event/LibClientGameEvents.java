@@ -12,6 +12,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RenderTooltipEvent;
@@ -23,13 +24,14 @@ import org.confluence.lib.common.LibTags;
 import org.confluence.lib.common.component.ModRarity;
 import org.confluence.lib.integration.animation.AnimationConstants;
 import org.confluence.lib.integration.animation.PlayerAttackingStatePacket;
+import org.confluence.lib.integration.animation.PlayerGeoAnimatable;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 @EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID, value = Dist.CLIENT)
-public final class LibGameEvents {
+public final class LibClientGameEvents {
     @SubscribeEvent
     public static void clientTick$Post(ClientTickEvent.Pre event) {
         ExpertColorAnimation.INSTANCE.updateColor();
@@ -66,6 +68,14 @@ public final class LibGameEvents {
             Minecraft minecraft = Minecraft.getInstance();
             LocalPlayer player = Objects.requireNonNull(minecraft.player);
             PlayerAttackingStatePacket.sendToServer(player, minecraft.options.getCameraType().isFirstPerson());
+        }
+    }
+
+    @SubscribeEvent
+    public static void clientPlayerNetwork$LoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
+// todo 类似1.20.1       GravitationHandler.reset();
+        if (AnimationConstants.SHOULD_APPLY) {
+            PlayerGeoAnimatable.reloadCallbacks.clear();
         }
     }
 }

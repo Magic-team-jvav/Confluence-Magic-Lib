@@ -20,7 +20,7 @@ import org.confluence.lib.integration.animation.PlayerGeoAnimatable;
 import java.util.concurrent.CompletableFuture;
 
 @EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID, value = Dist.CLIENT)
-public final class LibModEvents {
+public final class LibClientModEvents {
     @SubscribeEvent
     public static void registerParticleProviders(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(ConfluenceMagicLib.CROSS_DUST_PARTICLE.get(), CrossDustParticle.Provider::new);
