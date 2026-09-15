@@ -87,7 +87,7 @@ public final class LibClientGameEvents {
         List<Component> tooltip = event.getTooltip();
         if (id != null) {
             String key = Util.makeDescriptionId("tooltip.effect", id) + ".0";
-            if (!I18n.exists(key) && !PortEventHandler.postEventWithReturn(new OnGatherEffectScreenTooltipsEvent(effect, id, key, tooltip::add)).isCanceled()) {
+            if (!PortEventHandler.postEventWithReturn(new OnGatherEffectScreenTooltipsEvent(effect, id, key, tooltip::add)).isCanceled() && !I18n.exists(key)) {
                 if (effect.equals(LibEffects.GRAVITATION.get())) {
                     tooltip.add(Component.translatable(key, LibClientUtils.keyMappingComponent(LibKeyBindings.FLIP_GRAVITATION.get())));
                 } else {
