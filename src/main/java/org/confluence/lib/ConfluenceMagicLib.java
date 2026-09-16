@@ -40,7 +40,6 @@ import org.mesdag.portlib.network.PortNetworkHandler;
 import org.mesdag.portlib.registries.*;
 import org.mesdag.portlib.wrapper.common.PortPercentageAttribute;
 import org.mesdag.portlib.wrapper.common.crafting.PortIngredientType;
-import org.mesdag.portlib.wrapper.world.entity.ai.attributes.PortAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,10 +66,10 @@ public final class ConfluenceMagicLib {
     public static final PortRegistryEntry<Attribute, PortPercentageAttribute> DODGE_CHANCE = registerAttribute("generic.dodge_chance", 0.0, 0.0, 1.0, PortPercentageAttribute::new, maker -> maker.setSyncable(true));
     public static final PortRegistryEntry<Attribute, RangedAttribute> MAGIC_DAMAGE = registerAttribute("generic.magic_damage", 1.0, 0.0, 10.0, RangedAttribute::new, maker -> maker.setSyncable(true));
     public static final PortRegistryEntry<Attribute, RangedAttribute> ARMOR_PENETRATION = registerAttribute("generic.armor_penetration", 0.0, 0.0, 10000, RangedAttribute::new, maker -> maker.setSyncable(true));
-    public static final PortRegistryEntry<Attribute, RangedAttribute> MOB_SPAWN_SPEED_MULTIPLIER = registerAttribute("player.mob_spawn_speed_multiplier", 1, 0, 1024, RangedAttribute::new, maker -> maker.setSentiment(PortAttribute.PortSentiment.NEUTRAL));
-    public static final PortRegistryEntry<Attribute, RangedAttribute> MOB_SPAWN_COUNT_MULTIPLIER = registerAttribute("player.mob_spawn_count_multiplier", 1, 0, 1024, RangedAttribute::new, maker -> maker.setSentiment(PortAttribute.PortSentiment.NEUTRAL));
+    public static final PortRegistryEntry<Attribute, RangedAttribute> MOB_SPAWN_SPEED_MULTIPLIER = registerAttribute("player.mob_spawn_speed_multiplier", 1, 0, 1024, RangedAttribute::new, maker -> maker.setSentiment(Attribute.Sentiment.NEUTRAL));
+    public static final PortRegistryEntry<Attribute, RangedAttribute> MOB_SPAWN_COUNT_MULTIPLIER = registerAttribute("player.mob_spawn_count_multiplier", 1, 0, 1024, RangedAttribute::new, maker -> maker.setSentiment(Attribute.Sentiment.NEUTRAL));
     public static final PortRegistryEntry<Attribute, RangedAttribute> PICKUP_RANGE = registerAttribute("player.pickup_range", 0.0, 0.0, 64.0, RangedAttribute::new, maker -> maker.setSyncable(true));
-    public static final PortRegistryEntry<Attribute, RangedAttribute> AGGRO = registerAttribute("player.aggro", 0.0, -10000.0, 10000.0, RangedAttribute::new, maker -> maker.setSentiment(PortAttribute.PortSentiment.NEGATIVE));
+    public static final PortRegistryEntry<Attribute, RangedAttribute> AGGRO = registerAttribute("player.aggro", 0.0, -10000.0, 10000.0, RangedAttribute::new, maker -> maker.setSentiment(Attribute.Sentiment.NEGATIVE));
     public static final PortRegistryEntry<Attribute, RangedAttribute> MINION_CAPACITY = registerAttribute("player.minion_capacity", 1.0, 0.0, 128.0, RangedAttribute::new, maker -> maker.setSyncable(true));
     public static final PortRegistryEntry<Attribute, RangedAttribute> SENTRY_CAPACITY = registerAttribute("player.sentry_capacity", 1.0, 0.0, 128.0, RangedAttribute::new, maker -> maker.setSyncable(true));
     public static final PortRegistryEntry<Attribute, RangedAttribute> SUMMON_DAMAGE = registerAttribute("player.summon_damage", 1.0, 0.0, 2048.0, RangedAttribute::new, maker -> maker.setSyncable(true));
