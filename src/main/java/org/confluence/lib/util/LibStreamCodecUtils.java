@@ -18,6 +18,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import org.confluence.lib.common.recipe.AmountIngredient;
@@ -35,6 +36,12 @@ public final class LibStreamCodecUtils {
             PortByteBufCodecs.FLOAT, vec2 -> vec2.x,
             PortByteBufCodecs.FLOAT, vec2 -> vec2.y,
             Vec2::new
+    );
+    public static final PortStreamCodec<ByteBuf, Vec3> VEC_3 = PortStreamCodec.composite(
+            PortByteBufCodecs.DOUBLE, Vec3::x,
+            PortByteBufCodecs.DOUBLE, Vec3::y,
+            PortByteBufCodecs.DOUBLE, Vec3::z,
+            Vec3::new
     );
     public static final PortStreamCodec<FriendlyByteBuf, java.util.UUID> UUID = new PortStreamCodec<>() {
         @Override
