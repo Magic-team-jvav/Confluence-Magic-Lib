@@ -7,6 +7,7 @@ import net.minecraft.world.entity.player.Player;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.client.DPSMeter;
 import org.mesdag.portlib.network.IPortPacket;
+import org.mesdag.portlib.network.PortPacketDistributor;
 import org.mesdag.portlib.network.codec.PortByteBufCodecs;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
 
@@ -25,6 +26,6 @@ public record AttackDamagePacketS2C(float amount) implements IPortPacket.S2C {
     }
 
     public static void sendToClient(ServerPlayer player, float amount) {
-        ConfluenceMagicLib.NETWORK_HANDLER.sendToPlayer(player, new AttackDamagePacketS2C(amount));
+        PortPacketDistributor.sendToPlayer(player, new AttackDamagePacketS2C(amount));
     }
 }

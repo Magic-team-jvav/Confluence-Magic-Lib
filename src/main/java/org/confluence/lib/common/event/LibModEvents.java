@@ -23,9 +23,18 @@ import org.confluence.lib.api.event.NameFixRegisterEvent;
 import org.confluence.lib.common.LibAttributes;
 import org.confluence.lib.common.fluid.FluidBuilder;
 import org.confluence.lib.common.item.GroupItem;
+import org.confluence.lib.integration.animation.AnimationConstants;
+import org.confluence.lib.integration.animation.PlayerAttackingStatePacket;
+import org.confluence.lib.network.c2s.GravitationPacketC2S;
+import org.confluence.lib.network.c2s.SwitchEffectEnabledPackedC2S;
+import org.confluence.lib.network.s2c.AttackDamagePacketS2C;
+import org.confluence.lib.network.s2c.BroadcastGravitationRotPacketS2C;
+import org.confluence.lib.network.s2c.SetEntityDataPacketS2C;
 import org.mesdag.portlib.event.PortEventHandler;
 import org.mesdag.portlib.event.PortEventPriority;
+import org.mesdag.portlib.event.network.PortRegisterPayloadHandlersEvent;
 import org.mesdag.portlib.event.other.PortBuildCreativeModeTabContentsEvent;
+import org.mesdag.portlib.network.PortPayloadHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,6 +46,7 @@ public final class LibModEvents {
         PortEventHandler.addListener(PortEventPriority.LOWEST, LibModEvents::register);
         PortEventHandler.addListener(LibModEvents::entityAttributeModification);
         PortEventHandler.addListener(PortEventPriority.LOWEST, LibModEvents::buildCreativeModeTabContents);
+        PortEventHandler.addListener(LibModEvents::registerPayloadHandlers);
     }
 
     private static Map<ResourceLocation, ResourceLocation> blockWithItem;
@@ -122,6 +132,21 @@ public final class LibModEvents {
                     groupStack.set(ConfluenceMagicLib.GROUP_STACKS, stacks.withValues(tabKey, stack));
                 }
             }
+        }
+    }
+
+    private static void registerPayloadHandlers(PortRegisterPayloadHandlersEvent event) {
+        PortPayloadHandler handler = event.registrar("1");
+        handler
+                .registerInGameC2S(GravitationPacketC2S.class, GravitationPacketC2S.ID, GravitationPacketC2S.STREAM_CODEC)
+                .registerInGameC2S(SwitchEffectEnabledPackedC2S.class, SwitchEffectEnabledPackedC2S.ID, SwitchEffectEnabledPackedC2S.STREAM_CODEC)
+
+                .registerInGameS2C(AttackDamagePacketS2C.class, AttackDamagePacketS2C.ID, AttackDamagePacketS2C.STREAM_CODEC)
+                .registerInGameS2C(SetEntityDataPacketS2C.class, SetEntityDataPacketS2C.ID, SetEntityDataPacketS2C.STREAM_CODEC)
+                .registerInGameS2C(BroadcastGravitationRotPacketS2C.class, BroadcastGravitationRotPacketS2C.ID, BroadcastGravitationRotPacketS2C.STREAM_CODEC);
+
+        if (AnimationConstants.SHOULD_APPLY) {
+            handler.registerInGameBidirectional(PlayerAttackingStatePacket.class, PlayerAttackingStatePacket.ID, PlayerAttackingStatePacket.STREAM_CODEC);
         }
     }
 }

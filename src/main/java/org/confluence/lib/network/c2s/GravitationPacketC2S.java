@@ -11,6 +11,7 @@ import org.confluence.lib.common.effect.GravitationEffect;
 import org.confluence.lib.mixed.ILibEntity;
 import org.confluence.lib.network.s2c.BroadcastGravitationRotPacketS2C;
 import org.mesdag.portlib.network.IPortPacket;
+import org.mesdag.portlib.network.PortPacketDistributor;
 import org.mesdag.portlib.network.codec.PortByteBufCodecs;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
 
@@ -37,10 +38,10 @@ public record GravitationPacketC2S(boolean enable) implements IPortPacket.C2S {
             if (attributeInstance != null) attributeInstance.removeModifier(GravitationEffect.ID);
         }
         ILibEntity.of(player).confluence$setShouldRot(enable);
-        ConfluenceMagicLib.NETWORK_HANDLER.sendToAllPlayers(new BroadcastGravitationRotPacketS2C(player.getId(), enable));
+        PortPacketDistributor.sendToAllPlayers(new BroadcastGravitationRotPacketS2C(player.getId(), enable));
     }
 
     public static void sendToServer(boolean enable) {
-        ConfluenceMagicLib.NETWORK_HANDLER.sendToServer(new GravitationPacketC2S(enable));
+        PortPacketDistributor.sendToServer(new GravitationPacketC2S(enable));
     }
 }

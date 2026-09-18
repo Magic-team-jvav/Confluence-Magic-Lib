@@ -5,8 +5,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import org.confluence.lib.ConfluenceMagicLib;
 import org.mesdag.portlib.network.IPortPacket;
+import org.mesdag.portlib.network.PortPacketDistributor;
 import org.mesdag.portlib.network.codec.PortByteBufCodecs;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
 
@@ -20,7 +20,7 @@ public record PlayerAttackingStatePacket(int playerId) implements IPortPacket {
         if (context.player() == null) return;
         Entity player = context.player().level().getEntity(playerId);
         if (player instanceof ServerPlayer sp) {
-            sp.serverLevel().getChunkSource().broadcast(sp, ConfluenceMagicLib.NETWORK_HANDLER.toVanillaClientbound(this));
+            sp.serverLevel().getChunkSource().broadcast(sp, toVanillaClientbound());
         } else if (player instanceof Player) {
             ((ILibAbstractClientPlayer) player).confluence$getAnimatable().state.isAttacking = true;
         }
@@ -35,6 +35,6 @@ public record PlayerAttackingStatePacket(int playerId) implements IPortPacket {
         if (!isFirstPerson) {
             ((ILibAbstractClientPlayer) player).confluence$getAnimatable().state.isAttacking = true;
         }
-        ConfluenceMagicLib.NETWORK_HANDLER.sendToServer(new PlayerAttackingStatePacket(player.getId()));
+        PortPacketDistributor.sendToServer(new PlayerAttackingStatePacket(player.getId()));
     }
 }

@@ -48,6 +48,7 @@ import org.mesdag.portlib.event.entity.living.PortEffectParticleModificationEven
 import org.mesdag.portlib.event.entity.living.PortLivingDamageEvent;
 import org.mesdag.portlib.event.other.PortItemStackedOnOtherEvent;
 import org.mesdag.portlib.event.tick.PortEntityTickEvent;
+import org.mesdag.portlib.network.PortPacketDistributor;
 
 public final class LibGameEvents {
     public static void init() {
@@ -99,7 +100,7 @@ public final class LibGameEvents {
 
     private static void playerStartTracking(PlayerEvent.StartTracking event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer && event.getTarget() instanceof ILibExtraSyncedData<?> extraSyncedData) {
-            ConfluenceMagicLib.NETWORK_HANDLER.sendToPlayer(serverPlayer, new SetEntityDataPacketS2C(extraSyncedData.confluence$self().getId(), extraSyncedData.confluence$getAllEntries()));
+            PortPacketDistributor.sendToPlayer(serverPlayer, new SetEntityDataPacketS2C(extraSyncedData.confluence$self().getId(), extraSyncedData.confluence$getAllEntries()));
         }
     }
 

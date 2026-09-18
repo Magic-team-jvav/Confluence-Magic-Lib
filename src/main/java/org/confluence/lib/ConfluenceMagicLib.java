@@ -25,18 +25,10 @@ import org.confluence.lib.common.particle.CrossDustParticleOptions;
 import org.confluence.lib.common.recipe.AmountIngredient;
 import org.confluence.lib.common.worldgen.structure.GridPiece;
 import org.confluence.lib.common.worldgen.structure.SimpleTemplatePiece;
-import org.confluence.lib.integration.animation.AnimationConstants;
-import org.confluence.lib.integration.animation.PlayerAttackingStatePacket;
-import org.confluence.lib.network.c2s.GravitationPacketC2S;
-import org.confluence.lib.network.c2s.SwitchEffectEnabledPackedC2S;
-import org.confluence.lib.network.s2c.AttackDamagePacketS2C;
-import org.confluence.lib.network.s2c.BroadcastGravitationRotPacketS2C;
-import org.confluence.lib.network.s2c.SetEntityDataPacketS2C;
 import org.confluence.lib.util.DelayTaskHolder;
 import org.confluence.lib.util.LibUtils;
 import org.mesdag.portlib.attachment.PortAttachmentType;
 import org.mesdag.portlib.component.PortDataComponentType;
-import org.mesdag.portlib.network.PortNetworkHandler;
 import org.mesdag.portlib.registries.*;
 import org.mesdag.portlib.wrapper.common.PortPercentageAttribute;
 import org.mesdag.portlib.wrapper.common.crafting.PortIngredientType;
@@ -50,7 +42,6 @@ public final class ConfluenceMagicLib {
     public static final String LIB_ID = "confluence_magic_lib";
     public static final String CONFLUENCE_ID = "confluence";
     public static final Logger LOGGER = LoggerFactory.getLogger("Confluence Magic Lib");
-    public static final PortNetworkHandler NETWORK_HANDLER = new PortNetworkHandler(LIB_ID, "1");
     public static final boolean IS_CONFLUENCE_LOAD = LibUtils.isModLoaded(CONFLUENCE_ID);
 
     private static final PortItemRegistration ITEMS = PortRegisterHandler.item(LIB_ID);
@@ -106,18 +97,6 @@ public final class ConfluenceMagicLib {
 
     public ConfluenceMagicLib(FMLJavaModLoadingContext context) {
         LibStartupConfig.register();
-
-        PortNetworkHandler handler = NETWORK_HANDLER;
-        handler.registerInGameC2S(GravitationPacketC2S.class, GravitationPacketC2S.ID, GravitationPacketC2S.STREAM_CODEC);
-        handler.registerInGameC2S(SwitchEffectEnabledPackedC2S.class, SwitchEffectEnabledPackedC2S.ID, SwitchEffectEnabledPackedC2S.STREAM_CODEC);
-
-        handler.registerInGameS2C(AttackDamagePacketS2C.class, AttackDamagePacketS2C.ID, AttackDamagePacketS2C.STREAM_CODEC);
-        handler.registerInGameS2C(SetEntityDataPacketS2C.class, SetEntityDataPacketS2C.ID, SetEntityDataPacketS2C.STREAM_CODEC);
-        handler.registerInGameS2C(BroadcastGravitationRotPacketS2C.class, BroadcastGravitationRotPacketS2C.ID, BroadcastGravitationRotPacketS2C.STREAM_CODEC);
-
-        if (AnimationConstants.SHOULD_APPLY) {
-            handler.registerInGameBidirectional(PlayerAttackingStatePacket.class, PlayerAttackingStatePacket.ID, PlayerAttackingStatePacket.STREAM_CODEC);
-        }
 
         LibEffects.EFFECTS.register(context.getModEventBus());
 

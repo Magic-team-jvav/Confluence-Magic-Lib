@@ -8,6 +8,7 @@ import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.mixed.ILibMobEffectInstance;
 import org.confluence.lib.util.LibUtils;
 import org.mesdag.portlib.network.IPortPacket;
+import org.mesdag.portlib.network.PortPacketDistributor;
 import org.mesdag.portlib.network.PortRegistryFriendlyByteBuf;
 import org.mesdag.portlib.network.codec.PortByteBufCodecs;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
@@ -44,6 +45,6 @@ public record SwitchEffectEnabledPackedC2S(
     }
 
     public static void sendToServer(MobEffect effect, boolean enabled) {
-        ConfluenceMagicLib.NETWORK_HANDLER.sendToServer(new SwitchEffectEnabledPackedC2S(effect, enabled));
+        PortPacketDistributor.sendToServer(new SwitchEffectEnabledPackedC2S(effect, enabled));
     }
 }
