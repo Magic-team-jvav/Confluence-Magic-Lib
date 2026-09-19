@@ -124,6 +124,9 @@ public final class LibModEvents {
                             GroupItem.Stacks stacks = stack.get(ConfluenceMagicLib.GROUP_STACKS);
                             if (stacks == null) continue;
                             groupItems.put(stacks.getName(), stack);
+                            for (ItemStack inside : stacks.getValues()) {
+                                event.accept(inside, CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY);
+                            }
                         }
                     } else {
                         hasBelongsTo.add(new Pair<>(stack, belongsTo.name()));
