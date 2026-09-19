@@ -33,9 +33,11 @@
         "client.ClientPacketListenerMixin",
         "client.ClientPlayerMixin",
         "client.CreativeModeInventoryScreenMixin",
+        "client.EntityRendererMixin",
         "client.GuiGraphicsMixin",
         "client.GuiMixin",
         "client.KeyMappingAccessor",
+        "client.LevelRendererMixin",
         "client.LivingEntityRendererMixin",
         "client.LocalPlayerAccessor",
         "client.LocalPlayerMixin",
@@ -47,5 +49,5 @@
     },
     "mixinextras": {
         "minVersion": "0.5.0"
-    }
+  }
 }

@@ -19,6 +19,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.confluence.lib.api.event.OnGatherEffectScreenTooltipsEvent;
 import org.confluence.lib.client.DPSMeter;
+import org.confluence.lib.client.DynamicLightDispatcher;
 import org.confluence.lib.client.LibKeyBindings;
 import org.confluence.lib.client.animate.ExpertColorAnimation;
 import org.confluence.lib.client.animate.MasterColorAnimation;
@@ -50,6 +51,7 @@ public final class LibClientGameEvents {
         PortEventHandler.addListener(LibClientGameEvents::clientTick$Post);
         PortEventHandler.addListener(LibClientGameEvents::viewport$ComputeCameraAngles);
         PortEventHandler.addListener(LibClientGameEvents::input$InteractionKeyMappingTriggered);
+        PortEventHandler.addListener(DynamicLightDispatcher::update);
     }
 
     private static void clientTick(TickEvent.ClientTickEvent event) {
