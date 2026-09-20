@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -21,7 +22,6 @@ import org.confluence.lib.mixed.ILibChunkSpawnDataAccess;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,8 +57,9 @@ public final class NaturalSpawnerUtils {
                 ResourceKey<Level> dimension = player.level().dimension();
                 if (!CHUNK_DATA.containsKey(dimension)) {
                     if (UNKNOWN_DIMENSIONS == null) {
-                        UNKNOWN_DIMENSIONS = new HashSet<>();
+                        UNKNOWN_DIMENSIONS = new ReferenceOpenHashSet<>();
                     }
+
                     if (UNKNOWN_DIMENSIONS.add(dimension)) {
                         ConfluenceMagicLib.LOGGER.warn("Why there's a new dimension '{}' here?", dimension.location());
                     }
