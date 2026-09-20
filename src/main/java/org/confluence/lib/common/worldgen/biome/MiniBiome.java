@@ -9,9 +9,7 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 import org.confluence.lib.mixed.ILevelChunkSection;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /// 迷你生物群系：叠加在原版群系之上、**不影响**原版群系的「标记」。
 ///
@@ -19,7 +17,7 @@ import java.util.List;
 ///
 /// 判定范围是**以查询点为中心的一个窗口**内的方块计数，而不是「某一个方块 / 某一个区块属于谁」：
 ///
-/// - 窗口是全局的（见 {@link #WINDOW_RADIUS} / {@link #WINDOW_HALF_HEIGHT}），
+/// - 每种标记可声明独立窗口；同位置同范围共享计数缓存，
 ///   泰拉用的是 `Main.buffScanAreaWidth × buffScanAreaHeight`（约 169×116 格）。
 ///   所以「离微光池中心有一定距离也能判定成微光」来自窗口足够大，而不是空间渐变。
 /// - 每种迷你群系 = 若干计数器按权重累加后与自己的阈值比较（{@link MiniBiomeType}）。
@@ -36,7 +34,7 @@ import java.util.List;
 ///
 /// ## 开销
 ///
-/// 一次查询要遍历窗口覆盖到的所有 section（默认半径 64、半高 48 ≈ 567 个 section），
+/// 缓存失效时才重新求和；同 tick 复用结果，下一个 tick 再检查计数版本。
 /// 所以**不要**每个实体每 tick 调用。做法参照泰拉：每个玩家每隔若干 tick 算一次并缓存，
 /// 实体 / 刷怪读缓存。{@link #windowCounts} 可以直接拿来自己缓存。
 public final class MiniBiome {
@@ -46,6 +44,10 @@ public final class MiniBiome {
     public static final int WINDOW_HALF_HEIGHT = 48;
 
     private static final List<MiniBiomeType> TYPES = new ArrayList<>();
+    /// 每个世界独立且容量有界；同一个 4 格查询位置和范围共用计数，不缓存 NPC provider 的结果。
+    private static final Map<LevelAccessor, Map<Window, CachedCounts>> CACHE = Collections.synchronizedMap(new WeakHashMap<>());
+    private static final int CACHE_LIMIT = 256;
+    private static final int CACHE_LIFETIME = 200;
 
     private MiniBiome() {}
 
@@ -72,13 +74,10 @@ public final class MiniBiome {
     /// 未启用计数机制或没有注册任何迷你群系时返回空表。
     public static List<Marker> markersAt(LevelAccessor level, BlockPos pos) {
         if (TYPES.isEmpty() || !BlockCounters.isEnabled()) return List.of();
-        int[] windowCounts = windowCounts(level, pos);
         List<Marker> markers = new ArrayList<>(2);
         for (MiniBiomeType type : TYPES) {
-            int count = type.count(level, pos, windowCounts);
-            if (type.matches(count)) {
-                markers.add(new Marker(type.id(), count, type.threshold(), type.max(), type.priority()));
-            }
+            Marker marker = markerAt(level, pos, type);
+            if (marker != null) markers.add(marker);
         }
         return markers;
     }
@@ -89,12 +88,18 @@ public final class MiniBiome {
         return markers.isEmpty() ? null : markers.get(0);
     }
 
+    /// 查询指定环境，不受其他同时命中的环境及其表现优先级影响。
+    public static @Nullable Marker markerAt(LevelAccessor level, BlockPos pos, MiniBiomeType type) {
+        if (!BlockCounters.isEnabled() || !type.allows(level, pos)) return null;
+        int[] counts = type.usesBlocks() ? windowCounts(level, pos, type.horizontalRadius(), type.verticalRadius()) : null;
+        int count = type.count(level, pos, counts);
+        return type.matches(count) ? new Marker(type.id(), count, type.threshold(), type.max(), type.priority()) : null;
+    }
+
     /// 是否处于指定迷你群系内。交错场景下「是否在 X 内」与「是不是 X」是两回事。
     public static boolean isInside(LevelAccessor level, BlockPos pos, ResourceLocation id) {
-        for (Marker marker : markersAt(level, pos)) {
-            if (marker.id().equals(id)) return true;
-        }
-        return false;
+        MiniBiomeType type = type(id);
+        return type != null && markerAt(level, pos, type) != null;
     }
 
     /// 窗口内所有计数器的求和（把窗口覆盖到的每个 section 的 {@link BlockCounts} 相加）。
@@ -102,31 +107,111 @@ public final class MiniBiome {
     /// 未加载的区块会被跳过（用 `hasChunk` 判断，不会强制加载）。需要自己缓存的消费方
     /// 可以直接用这个：拿到的数组按 {@link BlockCounters} 的注册顺序索引。
     public static int[] windowCounts(LevelAccessor level, BlockPos pos) {
-        int[] sums = new int[BlockCounters.size()];
-        int minChunkX = (pos.getX() - WINDOW_RADIUS) >> 4;
-        int maxChunkX = (pos.getX() + WINDOW_RADIUS) >> 4;
-        int minChunkZ = (pos.getZ() - WINDOW_RADIUS) >> 4;
-        int maxChunkZ = (pos.getZ() + WINDOW_RADIUS) >> 4;
-        int minY = pos.getY() - WINDOW_HALF_HEIGHT;
-        int maxY = pos.getY() + WINDOW_HALF_HEIGHT;
+        return windowCounts(level, pos, WINDOW_RADIUS, WINDOW_HALF_HEIGHT);
+    }
 
-        for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
-            for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
+    /// 主线程查询；返回共享只读计数。4 格单元边缘裁切，内部整段直接使用总计数。
+    public static int[] windowCounts(LevelAccessor level, BlockPos pos, int horizontalRadius, int verticalRadius) {
+        Window window = new Window(pos.getX() >> 2, pos.getY() >> 2, pos.getZ() >> 2, horizontalRadius, verticalRadius);
+        Map<Window, CachedCounts> cache = CACHE.computeIfAbsent(level, ignored -> new LinkedHashMap<>(16, 0.75F, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<Window, CachedCounts> entry) {
+                return size() > CACHE_LIMIT;
+            }
+        });
+        long tick = level.getLevelData().getGameTime();
+        CachedCounts existing = cache.get(window);
+        if (existing != null && existing.valid(tick)) return existing.sums;
+        int[] sums = new int[BlockCounters.size()];
+        List<Dependency> dependencies = new ArrayList<>();
+        int minX = (window.x << 2) - horizontalRadius;
+        int maxX = (window.x << 2) + horizontalRadius + 3;
+        int minZ = (window.z << 2) - horizontalRadius;
+        int maxZ = (window.z << 2) + horizontalRadius + 3;
+        int minY = (window.y << 2) - verticalRadius;
+        int maxY = (window.y << 2) + verticalRadius + 3;
+        if (minY < level.getMinBuildHeight()) minY = level.getMinBuildHeight();
+        if (maxY >= level.getMaxBuildHeight()) maxY = level.getMaxBuildHeight() - 1;
+        for (int chunkX = minX >> 4; chunkX <= maxX >> 4; chunkX++)
+            for (int chunkZ = minZ >> 4; chunkZ <= maxZ >> 4; chunkZ++) {
                 if (!level.hasChunk(chunkX, chunkZ)) continue;
                 ChunkAccess chunk = level.getChunk(chunkX, chunkZ);
-                int sectionsCount = chunk.getSectionsCount();
-                int from = Mth.clamp(level.getSectionIndex(minY), 0, sectionsCount - 1);
-                int to = Mth.clamp(level.getSectionIndex(maxY), 0, sectionsCount - 1);
-                for (int index = from; index <= to; index++) {
-                    LevelChunkSection section = chunk.getSection(index);
+                for (int sy = minY >> 4; sy <= maxY >> 4; sy++) {
+                    LevelChunkSection section = chunk.getSection(level.getSectionIndexFromSectionY(sy));
                     BlockCounts counts = ILevelChunkSection.of(section).confluence$getBlockCounts();
-                    for (int counter = 0; counter < sums.length; counter++) {
-                        sums[counter] += counts.get(counter);
-                    }
+                    dependencies.add(new Dependency(counts, counts.revision()));
+                    int x0 = minX > (chunkX << 4) ? minX - (chunkX << 4) : 0;
+                    int x1 = maxX < (chunkX << 4) + 15 ? maxX - (chunkX << 4) : 15;
+                    int z0 = minZ > (chunkZ << 4) ? minZ - (chunkZ << 4) : 0;
+                    int z1 = maxZ < (chunkZ << 4) + 15 ? maxZ - (chunkZ << 4) : 15;
+                    int y0 = minY > (sy << 4) ? minY - (sy << 4) : 0;
+                    int y1 = maxY < (sy << 4) + 15 ? maxY - (sy << 4) : 15;
+                    addBox(section, counts, sums, x0, y0, z0, x1, y1, z1);
                 }
             }
-        }
+        cache.put(window, new CachedCounts(sums, dependencies, tick));
         return sums;
+    }
+
+    private static void addBox(LevelChunkSection section, BlockCounts counts, int[] sums,
+                               int x0, int y0, int z0, int x1, int y1, int z1) {
+        if (x0 == 0 && y0 == 0 && z0 == 0 && x1 == 15 && y1 == 15 && z1 == 15) {
+            for (int counter = 0; counter < sums.length; counter++)
+                sums[counter] += counts.get(counter);
+            return;
+        }
+        counts.prepareCells(section);
+        boolean scanUnindexed = false;
+        for (int counter = 0; counter < sums.length; counter++) {
+            if (counts.get(counter) == 0) continue;
+            if (!BlockCounters.isSpatial(counter)) {
+                scanUnindexed = true;
+                continue;
+            }
+            for (int y = y0 >> 2; y <= y1 >> 2; y++)
+                for (int z = z0 >> 2; z <= z1 >> 2; z++)
+                    for (int x = x0 >> 2; x <= x1 >> 2; x++)
+                        sums[counter] += counts.cell(counter, x, y, z);
+        }
+        /// 保留公共 windowCounts 对未声明空间索引的第三方计数器的正确结果。
+        if (scanUnindexed)
+            for (int y = y0; y <= y1; y++)
+                for (int z = z0; z <= z1; z++)
+                    for (int x = x0; x <= x1; x++)
+                        for (int counter : BlockCounters.matched(section.getBlockState(x, y, z)))
+                            if (!BlockCounters.isSpatial(counter)) sums[counter]++;
+    }
+
+    /// 区块到达或卸载会改变窗口的可用范围，不能只依据方块 revision 判断缓存有效。
+    public static void invalidate(LevelAccessor level) {
+        CACHE.remove(level);
+    }
+
+    private record Window(int x, int y, int z, int horizontalRadius, int verticalRadius) {}
+
+    private record Dependency(BlockCounts counts, long revision) {}
+
+    private static final class CachedCounts {
+        private final int[] sums;
+        private final List<Dependency> dependencies;
+        private final long createdTick;
+        private long checkedTick;
+
+        private CachedCounts(int[] sums, List<Dependency> dependencies, long tick) {
+            this.sums = sums;
+            this.dependencies = dependencies;
+            createdTick = tick;
+            checkedTick = tick;
+        }
+
+        private boolean valid(long tick) {
+            if (tick == checkedTick) return true;
+            if (tick < createdTick || tick - createdTick >= CACHE_LIFETIME) return false;
+            for (Dependency dependency : dependencies)
+                if (dependency.counts.revision() != dependency.revision) return false;
+            checkedTick = tick;
+            return true;
+        }
     }
 
     /// 一次命中结果。

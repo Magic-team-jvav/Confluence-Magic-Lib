@@ -8,6 +8,7 @@ import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.worldgen.biome.BlockCounters;
 import org.confluence.lib.common.worldgen.biome.BlockCounts;
 import org.confluence.lib.mixed.ILevelChunkSection;
+import org.confluence.lib.mixed.IPalettedContainer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -77,7 +78,7 @@ public abstract class LevelChunkSectionMixin implements ILevelChunkSection {
     /// 由 `DynamicBiomeUtils.applyDynamicBiome` 在区块成型时补一次完整重算。
     @Inject(method = "<init>(Lnet/minecraft/core/Registry;)V", at = @At("TAIL"))
     private void constrNew(CallbackInfo ci) {
-        this.confluence$backupBiome = biomes.recreate();
+        this.confluence$backupBiome = IPalettedContainer.copyBiomes(biomes);
         // 启用后即时分配：避免区块生成时首次访问的写入竞争。
         // 注意别覆盖构造过程中（recalcBlockCounts 里）已经懒分配出来的实例，否则会丢掉刚算好的计数。
         if (BlockCounters.isEnabled() && this.confluence$blockCounts == null) {
@@ -90,7 +91,7 @@ public abstract class LevelChunkSectionMixin implements ILevelChunkSection {
     /// 不需要 `applyDynamicBiome` 再算一遍。
     @Inject(method = "<init>(Lnet/minecraft/world/level/chunk/PalettedContainer;Lnet/minecraft/world/level/chunk/PalettedContainerRO;)V", at = @At("TAIL"))
     private void constrLoaded(CallbackInfo ci) {
-        this.confluence$backupBiome = biomes.recreate();
+        this.confluence$backupBiome = IPalettedContainer.copyBiomes(biomes);
         if (BlockCounters.isEnabled() && this.confluence$blockCounts == null) {
             this.confluence$blockCounts = new BlockCounts();
         }
@@ -106,6 +107,12 @@ public abstract class LevelChunkSectionMixin implements ILevelChunkSection {
     private void clearCounts(CallbackInfo ci) {
         if (!BlockCounters.isEnabled()) return;
         confluence$getBlockCounts().clear();
+    }
+
+    /// 平坦世界等生成器同样经过这里，不能只在噪声生成器里保留底图。
+    @Inject(method = "fillBiomesFromNoise", at = @At("RETURN"))
+    private void captureGeneratedBiomes(CallbackInfo ci) {
+        this.confluence$backupBiome = IPalettedContainer.copyBiomes(biomes);
     }
 
     /// 客户端从网络读到 section 后补一次重算（vanilla 的 read 不算方块数），

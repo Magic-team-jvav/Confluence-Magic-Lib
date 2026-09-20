@@ -14,4 +14,13 @@ public interface IPalettedContainer<T> {
     static <T> PalettedContainer<T> recreateSingle(PalettedContainerRO<T> container, T t) {
         return ((IPalettedContainer<T>) container).confluence$recreateSingle(t);
     }
+
+    static <T> PalettedContainer<T> copyBiomes(PalettedContainerRO<T> source) {
+        PalettedContainer<T> result = source.recreate();
+        for (int y = 0; y < 4; y++)
+            for (int z = 0; z < 4; z++)
+                for (int x = 0; x < 4; x++)
+                    result.set(x, y, z, source.get(x, y, z));
+        return result;
+    }
 }

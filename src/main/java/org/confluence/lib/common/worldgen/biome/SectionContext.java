@@ -4,6 +4,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+import org.confluence.lib.mixed.ILevelChunkSection;
 
 import java.util.function.Predicate;
 
@@ -11,10 +12,15 @@ import java.util.function.Predicate;
 public record SectionContext(
         LevelChunkSection section,
         BlockCounts counts,
-        HolderLookup.RegistryLookup<Biome> lookup
+        HolderLookup.RegistryLookup<Biome> lookup,
+        Holder<Biome> originalBiome,
+        Holder<Biome> currentBiome
 ) {
+    public SectionContext(LevelChunkSection section, BlockCounts counts, HolderLookup.RegistryLookup<Biome> lookup) {
+        this(section, counts, lookup, ILevelChunkSection.of(section).confluence$getBackupBiome().get(0, 0, 0), section.getBiomes().get(0, 0, 0));
+    }
     /// 该 section 原有的群系是否满足条件（原版群系被替换前保留的信息）
     public boolean originalBiomeIs(Predicate<Holder<Biome>> predicate) {
-        return section.getBiomes().maybeHas(predicate);
+        return predicate.test(originalBiome);
     }
 }

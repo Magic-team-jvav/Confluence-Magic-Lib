@@ -7,12 +7,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.LevelAccessor;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
+import java.util.function.BiPredicate;
 
 /// 一种迷你生物群系的定义。
 ///
 /// 判定模型见 {@link MiniBiome}：以查询点为中心的一个窗口内的方块计数（泰拉瑞亚 `SceneMetrics`
-/// 的做法），达标即命中。**窗口是全局的**，每种迷你群系只需要给出自己的阈值与强度上限，
+/// 的做法），达标即命中。每种迷你群系声明自己的窗口、附加条件、阈值与强度上限，
 /// 以及由哪些计数器按什么权重累加（权重可以是负数，用来表达抵消，例如向日葵抵消墓碑）。
 ///
 /// 除方块计数外，还可以用 {@link Provider} 接入别的数据来源（例如「小镇」按 region 内的 NPC 数量判定）。
@@ -23,6 +23,9 @@ public final class MiniBiomeType {
     private final int max;
     private final Object2IntMap<BlockCounters.Counter> contributions;
     private final @Nullable Provider provider;
+    private final int horizontalRadius;
+    private final int verticalRadius;
+    private final BiPredicate<LevelAccessor, BlockPos> condition;
 
     private MiniBiomeType(Builder builder) {
         this.id = builder.id;
@@ -32,6 +35,9 @@ public final class MiniBiomeType {
         this.contributions = new Object2IntOpenHashMap<>(builder.contributions);
         this.contributions.defaultReturnValue(0);
         this.provider = builder.provider;
+        this.horizontalRadius = builder.horizontalRadius;
+        this.verticalRadius = builder.verticalRadius;
+        this.condition = builder.condition;
     }
 
     public static Builder builder(ResourceLocation id) {
@@ -55,6 +61,14 @@ public final class MiniBiomeType {
     public int max() {
         return max;
     }
+
+    public int horizontalRadius() {return horizontalRadius;}
+
+    public int verticalRadius() {return verticalRadius;}
+
+    public boolean usesBlocks() {return provider == null;}
+
+    public boolean allows(LevelAccessor level, BlockPos pos) {return condition.test(level, pos);}
 
     /// 加权计数。方块来源用窗口求和，{@link Provider} 来源直接问它。
     public int count(LevelAccessor level, BlockPos pos, int[] windowCounts) {
@@ -88,13 +102,29 @@ public final class MiniBiomeType {
         private int priority = 1000;
         private int threshold = 1;
         private int max = 1;
+        private int horizontalRadius = MiniBiome.WINDOW_RADIUS;
+        private int verticalRadius = MiniBiome.WINDOW_HALF_HEIGHT;
+        private BiPredicate<LevelAccessor, BlockPos> condition = (level, pos) -> true;
 
         private Builder(ResourceLocation id) {
-            this.id = Objects.requireNonNull(id);
+            this.id = id;
         }
 
         public Builder priority(int priority) {
             this.priority = priority;
+            return this;
+        }
+
+        /// 查询半径，单位方块；局部计数以 4 格单元为精度，范围填写 4 的倍数。
+        public Builder window(int horizontalRadius, int verticalRadius) {
+            this.horizontalRadius = horizontalRadius;
+            this.verticalRadius = verticalRadius;
+            return this;
+        }
+
+        /// 附加成立条件，例如地下高度或结构条件；不影响其他同时成立的标记。
+        public Builder condition(BiPredicate<LevelAccessor, BlockPos> condition) {
+            this.condition = condition;
             return this;
         }
 
@@ -107,6 +137,7 @@ public final class MiniBiomeType {
 
         /// 加一个正贡献的计数器
         public Builder count(BlockCounters.Counter counter, int weight) {
+            counter.spatial();
             contributions.mergeInt(counter, weight, Integer::sum);
             return this;
         }

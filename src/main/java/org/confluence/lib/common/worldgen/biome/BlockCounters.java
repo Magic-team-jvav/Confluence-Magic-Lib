@@ -60,6 +60,17 @@ public final class BlockCounters {
         return ENTRIES.size();
     }
 
+    public static boolean isSpatial(int index) {
+        return ENTRIES.get(index).counter.spatial;
+    }
+
+    /// 空间计数仅为声明需要局部查询的计数器分配。
+    public static boolean hasSpatialCounts(BlockCounts counts) {
+        for (Entry entry : ENTRIES)
+            if (entry.counter.spatial && counts.get(entry.counter.index) != 0) return true;
+        return false;
+    }
+
     /// 冻结注册表。由 {@link BlockCounts} 首次分配时调用。
     static synchronized void freeze() {
         frozen = true;
@@ -116,6 +127,7 @@ public final class BlockCounters {
     public static final class Counter {
         private final ResourceLocation id;
         private final int index;
+        private boolean spatial;
 
         Counter(ResourceLocation id, int index) {
             this.id = id;
@@ -128,6 +140,14 @@ public final class BlockCounters {
 
         public int index() {
             return index;
+        }
+
+        /// 在世界加载前声明该计数器需要 4 格单元分布。
+        public Counter spatial() {
+            if (frozen)
+                throw new IllegalStateException("Spatial counters must be declared before loading worlds");
+            spatial = true;
+            return this;
         }
 
         /// 读取某个 section 的该计数。
