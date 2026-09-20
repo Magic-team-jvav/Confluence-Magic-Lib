@@ -9,15 +9,17 @@ import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.core.animation.AnimationController;
 
 public final class HandAnimationApi {
+    public static final String IDLE_ACTION = "idle";
+
     private HandAnimationApi() {}
 
-    public static boolean play(GeoItem animatable, ItemStack itemStack, ServerPlayer serverPlayer, HandAnimationProfile profile, HandAnimationAction action) {
+    public static boolean play(GeoItem animatable, ItemStack itemStack, ServerPlayer serverPlayer, HandAnimationProfile profile, String action) {
         boolean played = false;
         for (HandAnimationChannel channel : profile.channels()) {
             if (channel.clip(action).isEmpty()) {
                 continue;
             }
-            stopAndPlayAnim(animatable, itemStack, serverPlayer, channel.name(), action.id());
+            stopAndPlayAnim(animatable, itemStack, serverPlayer, channel.name(), action);
             played = true;
         }
         return played;
@@ -26,14 +28,14 @@ public final class HandAnimationApi {
     /// Stop a triggered action on every channel that declares it. Actions are
     /// channel-local in GeckoLib, so stopping one controller is not enough for
     /// profiles that split hand/camera and weapon animations.
-    public static boolean stop(GeoItem animatable, ItemStack itemStack, ServerPlayer serverPlayer, HandAnimationProfile profile, HandAnimationAction action) {
+    public static boolean stop(GeoItem animatable, ItemStack itemStack, ServerPlayer serverPlayer, HandAnimationProfile profile, String action) {
         long instanceId = GeoItem.getOrAssignId(itemStack, serverPlayer.serverLevel());
         boolean stopped = false;
         for (HandAnimationChannel channel : profile.channels()) {
             if (channel.clip(action).isEmpty()) {
                 continue;
             }
-            animatable.stopTriggeredAnim(serverPlayer, instanceId, channel.name(), action.id());
+            animatable.stopTriggeredAnim(serverPlayer, instanceId, channel.name(), action);
             stopped = true;
         }
         return stopped;

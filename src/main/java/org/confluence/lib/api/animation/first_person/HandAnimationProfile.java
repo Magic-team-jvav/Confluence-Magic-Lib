@@ -15,7 +15,7 @@ public record HandAnimationProfile(List<HandAnimationChannel> channels) {
         return channels.channels;
     }
 
-    public boolean isAnimation(HandAnimationAction action, String animationName) {
+    public boolean isAnimation(String action, String animationName) {
         if (animationName == null) {
             return false;
         }
