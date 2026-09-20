@@ -5,7 +5,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
-import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.api.event.ProcessCriticalDamageEvent;
 import org.confluence.lib.common.LibAttributes;
@@ -20,10 +19,8 @@ public interface ILibDamageSource {
     boolean confluence$isCritical();
 
     @ApiStatus.Internal
-    MutableBoolean WARNED = new MutableBoolean();
-
-    @ApiStatus.Internal
     static float processCritical(@Nullable Entity attacker, float amount, LivingEntity victim, DamageSource damageSource) {
+        if (of(damageSource).confluence$isCritical()) return amount; // 只有原先不是暴击才继续暴击逻辑
         boolean crit = false;
         /// [LibAttributes#applyToArrow]
         if (damageSource.getDirectEntity() instanceof AbstractArrow arrow) {
@@ -36,33 +33,16 @@ public interface ILibDamageSource {
             player.crit(victim);
             crit = true;
         }
-        ProcessCriticalDamageEvent event;
-        ILibDamageSource lds = of(damageSource);
-        boolean original;
-        if (lds == null) {
-            original = crit;
-            event = PortEventHandler.postEventWithReturn(new ProcessCriticalDamageEvent(victim, damageSource, amount, crit));
-            if (WARNED.isFalse()) {
-                WARNED.setTrue();
-                ConfluenceMagicLib.LOGGER.warn("DamageSource had remodified by unknown mod, so critical damage indicator expired now");
-            }
-        } else {
-            original = lds.confluence$isCritical();
-            crit |= original;
-            event = PortEventHandler.postEventWithReturn(new ProcessCriticalDamageEvent(victim, damageSource, amount, crit));
-            lds.confluence$setCritical(event.isCritical());
-        }
+        ProcessCriticalDamageEvent event = PortEventHandler.postEventWithReturn(new ProcessCriticalDamageEvent(victim, damageSource, amount, crit));
+        of(damageSource).confluence$setCritical(event.isCritical());
         amount = event.getAmount();
-        if (event.isCritical() && !original) {
+        if (event.isCritical()) {
             amount *= event.getCriticalDamageMultiplier();
         }
         return amount;
     }
 
-    static @Nullable ILibDamageSource of(DamageSource damageSource) {
-        if (damageSource instanceof ILibDamageSource lds) {
-            return lds;
-        }
-        return null;
+    static ILibDamageSource of(DamageSource damageSource) {
+        return (ILibDamageSource) damageSource;
     }
 }
