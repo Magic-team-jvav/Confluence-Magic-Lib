@@ -1,4 +1,4 @@
-package org.confluence.lib.integration.animation;
+package org.confluence.lib.api.animation.third_person;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;

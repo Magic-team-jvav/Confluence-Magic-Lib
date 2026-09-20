@@ -57,7 +57,7 @@ public final class MiniBiome {
 
     /// 已注册的全部迷你群系，按 `priority` 升序。
     public static List<MiniBiomeType> types() {
-        return List.copyOf(TYPES);
+        return TYPES;
     }
 
     public static @Nullable MiniBiomeType type(ResourceLocation id) {

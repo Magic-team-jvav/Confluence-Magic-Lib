@@ -1,4 +1,4 @@
-package org.confluence.lib.client.animate;
+package org.confluence.lib.client.color;
 
 public class MasterColorAnimation extends ColorAnimation {
     public static final MasterColorAnimation INSTANCE = new MasterColorAnimation();

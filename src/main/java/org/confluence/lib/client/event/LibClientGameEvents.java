@@ -17,19 +17,20 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.confluence.lib.api.animation.first_person.CameraAnimation;
+import org.confluence.lib.api.animation.third_person.AnimationConstants;
+import org.confluence.lib.api.animation.third_person.PlayerAttackingStatePacket;
+import org.confluence.lib.api.animation.third_person.PlayerGeoAnimatable;
 import org.confluence.lib.api.event.OnGatherEffectScreenTooltipsEvent;
 import org.confluence.lib.client.DPSMeter;
 import org.confluence.lib.client.DynamicLightDispatcher;
 import org.confluence.lib.client.LibKeyBindings;
-import org.confluence.lib.client.animate.ExpertColorAnimation;
-import org.confluence.lib.client.animate.MasterColorAnimation;
+import org.confluence.lib.client.color.ExpertColorAnimation;
+import org.confluence.lib.client.color.MasterColorAnimation;
 import org.confluence.lib.client.handler.GravitationHandler;
 import org.confluence.lib.common.LibEffects;
 import org.confluence.lib.common.LibTags;
 import org.confluence.lib.common.component.ModRarity;
-import org.confluence.lib.integration.animation.AnimationConstants;
-import org.confluence.lib.integration.animation.PlayerAttackingStatePacket;
-import org.confluence.lib.integration.animation.PlayerGeoAnimatable;
 import org.confluence.lib.mixed.ILibMobEffectInstance;
 import org.confluence.lib.util.LibClientUtils;
 import org.mesdag.portlib.event.PortEventHandler;
@@ -127,6 +128,7 @@ public final class LibClientGameEvents {
 
     private static void clientPlayerNetwork$LoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         GravitationHandler.reset();
+        CameraAnimation.clear();
         if (AnimationConstants.SHOULD_APPLY) {
             PlayerGeoAnimatable.reloadCallbacks.clear();
         }
@@ -141,6 +143,7 @@ public final class LibClientGameEvents {
     }
 
     private static void viewport$ComputeCameraAngles(ViewportEvent.ComputeCameraAngles event) {
+        CameraAnimation.apply(event);
         if (GravitationHandler.isShouldRot()) {
             event.setRoll(event.getRoll() + 180);
         }

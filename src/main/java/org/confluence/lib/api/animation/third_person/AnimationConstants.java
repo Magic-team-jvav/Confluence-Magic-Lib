@@ -1,4 +1,4 @@
-package org.confluence.lib.integration.animation;
+package org.confluence.lib.api.animation.third_person;
 
 import net.minecraftforge.fml.loading.LoadingModList;
 

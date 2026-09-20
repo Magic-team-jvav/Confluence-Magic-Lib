@@ -1,4 +1,4 @@
-package org.confluence.lib.integration.animation;
+package org.confluence.lib.api.animation.third_person;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.resources.ResourceLocation;
