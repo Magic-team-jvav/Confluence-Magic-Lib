@@ -61,7 +61,6 @@ public class PlayerGeoModel extends GeoModel<PlayerGeoAnimatable> {
         }
     }
 
-    // todo 鞘翅 (elytra)
     public void update(PlayerAnimationState state, PlayerModel<AbstractClientPlayer> model) {
         AnimationProcessor<PlayerGeoAnimatable> processor = getAnimationProcessor();
         CoreGeoBone head = processor.getBone("head");
@@ -103,7 +102,7 @@ public class PlayerGeoModel extends GeoModel<PlayerGeoAnimatable> {
         if (cape != null) {
             state.capeCallback.update(model.cloak, cape);
         }
-        // elytra
+        // todo elytra
         CoreGeoBone body = processor.getBone("body");
         if (body != null) {
             state.bodyCallback.update(model.head, body);

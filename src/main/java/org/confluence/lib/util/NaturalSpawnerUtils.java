@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
 import com.llamalad7.mixinextras.sugar.ref.LocalIntRef;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -19,11 +20,14 @@ import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.mixed.ILibChunkSpawnDataAccess;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /// 生物刷新工具类
 public final class NaturalSpawnerUtils {
-    private static final Map<ResourceKey<Level>, Long2ObjectMap<ChunkSpawnData>> CHUNK_DATA = new IdentityHashMap<>();
+    private static final Map<ResourceKey<Level>, Long2ObjectMap<ChunkSpawnData>> CHUNK_DATA = new Reference2ObjectOpenHashMap<>();
     private static Set<ResourceKey<Level>> UNKNOWN_DIMENSIONS;
     private static int maxDataDistance;
 
