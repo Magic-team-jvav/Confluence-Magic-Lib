@@ -24,6 +24,7 @@ import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.ChunkEvent;
+import net.minecraftforge.event.level.ChunkWatchEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
@@ -67,6 +68,10 @@ public final class LibGameEvents {
         PortEventHandler.addListener(LibGameEvents::serverStopped);
         PortEventHandler.addListener(LibGameEvents::chunkLoaded);
         PortEventHandler.addListener(LibGameEvents::chunkUnloaded);
+        PortEventHandler.addListener(LibGameEvents::chunkWatch);
+        PortEventHandler.addListener(LibGameEvents::chunkUnwatch);
+        PortEventHandler.addListener(LibGameEvents::playerLoggedOut);
+        PortEventHandler.addListener(LibGameEvents::playerCloned);
         PortEventHandler.addListener(LibGameEvents::levelUnloaded);
         PortEventHandler.addListener(LibGameEvents::playerLoggedIn);
         PortEventHandler.addListener(LibGameEvents::livingDeath);
@@ -133,6 +138,25 @@ public final class LibGameEvents {
 
     private static void chunkUnloaded(ChunkEvent.Unload event) {
         MiniBiome.invalidate(event.getLevel());
+    }
+
+    private static void chunkWatch(ChunkWatchEvent.Watch event) {
+        if (DynamicBiomeUtils.isEnabled())
+            DynamicBiomeUtils.watch(event.getLevel(), event.getPlayer(), event.getPos());
+    }
+
+    private static void chunkUnwatch(ChunkWatchEvent.UnWatch event) {
+        DynamicBiomeUtils.unwatch(event.getLevel(), event.getPlayer(), event.getPos());
+    }
+
+    private static void playerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player)
+            DynamicBiomeUtils.forgetPlayer(player);
+    }
+
+    private static void playerCloned(PlayerEvent.Clone event) {
+        if (event.getOriginal() instanceof ServerPlayer player)
+            DynamicBiomeUtils.forgetPlayer(player);
     }
 
     private static void levelUnloaded(LevelEvent.Unload event) {

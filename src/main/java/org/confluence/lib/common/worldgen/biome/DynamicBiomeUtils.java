@@ -1,14 +1,18 @@
 package org.confluence.lib.common.worldgen.biome;
 
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.protocol.game.ClientboundChunksBiomesPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
@@ -32,6 +36,8 @@ public final class DynamicBiomeUtils {
     private static final Object2IntOpenHashMap<ResourceKey<Biome>> PRIORITY = new Object2IntOpenHashMap<>();
     private static final Map<ResourceKey<Biome>, ResourceKey<Biome>> PURE_BIOMES = new HashMap<>();
     private static final Map<ServerLevel, LongLinkedOpenHashSet> PENDING = new IdentityHashMap<>();
+    /// Watch 在完整区块包发送后触发；视距范围不能代表区块已发送。
+    private static final Map<ServerLevel, Map<ServerPlayer, LongOpenHashSet>> WATCHED = new IdentityHashMap<>();
     private static Predicate<Holder<Biome>> spreadable = biome -> false;
     /// 暂定时间预算；完成当前 section 后检查，不是严格的单 tick 耗时上限。
     private static final long TIME_BUDGET_NS = 2_000_000;
@@ -263,16 +269,52 @@ public final class DynamicBiomeUtils {
         }
         if (pending.isEmpty()) PENDING.remove(level);
         /// 当 tick 有实际变化才按区块去重同步，不保留跨 tick 的同步队列。
-        if (!changedChunks.isEmpty())
-            level.getChunkSource().chunkMap.resendBiomesForChunks(new ArrayList<>(changedChunks));
+        Map<ServerPlayer, LongOpenHashSet> watchers = WATCHED.get(level);
+        if (!changedChunks.isEmpty() && watchers != null) {
+            for (var entry : watchers.entrySet()) {
+                ServerPlayer player = entry.getKey();
+                if (player.level() != level) continue;
+                List<LevelChunk> updates = new ArrayList<>();
+                for (ChunkAccess chunk : changedChunks) {
+                    if (entry.getValue().contains(chunk.getPos().toLong()))
+                        updates.add((LevelChunk) chunk);
+                }
+                if (!updates.isEmpty())
+                    player.connection.send(ClientboundChunksBiomesPacket.forChunks(updates));
+            }
+        }
+    }
+
+    /// 未 Watch 的区块无需补发：之后的完整区块包自带最新群系。
+    public static void watch(ServerLevel level, ServerPlayer player, ChunkPos pos) {
+        WATCHED.computeIfAbsent(level, key -> new IdentityHashMap<>()).computeIfAbsent(player, key -> new LongOpenHashSet()).add(pos.toLong());
+    }
+
+    public static void unwatch(ServerLevel level, ServerPlayer player, ChunkPos pos) {
+        var watchers = WATCHED.get(level);
+        if (watchers == null) return;
+        var chunks = watchers.get(player);
+        if (chunks == null) return;
+        chunks.remove(pos.toLong());
+        if (chunks.isEmpty()) watchers.remove(player);
+        if (watchers.isEmpty()) WATCHED.remove(level);
+    }
+
+    public static void forgetPlayer(ServerPlayer player) {
+        WATCHED.values().removeIf(watchers -> {
+            watchers.remove(player);
+            return watchers.isEmpty();
+        });
     }
 
     public static void unload(ServerLevel level) {
         PENDING.remove(level);
+        WATCHED.remove(level);
     }
 
     public static void clear() {
         PENDING.clear();
+        WATCHED.clear();
     }
 
     /// 生成阶段只补计数；跨区块覆盖等到加载事件统一计算，不再复制下层群系。
