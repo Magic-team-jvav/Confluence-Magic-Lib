@@ -38,19 +38,22 @@ public interface ILibDamageSource {
         }
         ProcessCriticalDamageEvent event;
         ILibDamageSource lds = of(damageSource);
+        boolean original;
         if (lds == null) {
+            original = crit;
             event = NeoForge.EVENT_BUS.post(new ProcessCriticalDamageEvent(victim, damageSource, amount, crit));
             if (WARNED.isFalse()) {
                 WARNED.setTrue();
                 ConfluenceMagicLib.LOGGER.warn("DamageSource had remodified by unknown mod, so critical damage indicator expired now");
             }
         } else {
-            crit |= lds.confluence$isCritical();
+            original = lds.confluence$isCritical();
+            crit |= original;
             event = NeoForge.EVENT_BUS.post(new ProcessCriticalDamageEvent(victim, damageSource, amount, crit));
             lds.confluence$setCritical(event.isCritical());
         }
         amount = event.getAmount();
-        if (event.isCritical()) {
+        if (event.isCritical() && !original) {
             amount *= event.getCriticalDamageMultiplier();
         }
         return amount;
