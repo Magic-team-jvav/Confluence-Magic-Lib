@@ -21,8 +21,8 @@ public abstract class ItemEntityMixin {
     private boolean fireResistant(Item instance, DamageSource damageSource, Operation<Boolean> original) {
         boolean canBeHurt = original.call(instance, damageSource);
         if (canBeHurt && damageSource.is(DamageTypeTags.IS_FIRE)) {
-            ModRarity rarity = ModRarity.getRarity(getItem());
-            return rarity != null && rarity != ModRarity.WHITE && rarity != ModRarity.GRAY;
+            ModRarity rarity = ModRarity.getModRarity(getItem(), false);
+            return rarity == null || ModRarity.WHITE.equals(rarity) || ModRarity.GRAY.equals(rarity);
         }
         return canBeHurt;
     }
