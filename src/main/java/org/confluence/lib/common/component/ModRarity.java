@@ -3,20 +3,19 @@ package org.confluence.lib.common.component;
 import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.Util;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.item.ItemStack;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.client.color.ExpertColorAnimation;
 import org.confluence.lib.client.color.MasterColorAnimation;
 import org.jetbrains.annotations.Nullable;
-import org.mesdag.portlib.network.PortRegistryFriendlyByteBuf;
 import org.mesdag.portlib.network.codec.PortByteBufCodecs;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
 
-public class ModRarity {
+public record ModRarity(String name, int color) {
     public static final ModRarity COMMON = new ModRarity("common", 16777215);
     public static final ModRarity UNCOMMON = new ModRarity("uncommon", 16777045);
     public static final ModRarity RARE = new ModRarity("rare", 5636095);
@@ -36,18 +35,11 @@ public class ModRarity {
     public static final ModRarity RED = new ModRarity("red", 0xFF2864);
     public static final ModRarity PURPLE = new ModRarity("purple", 0xB428FF);
 
-    public static final ModRarity EXPERT = new ModRarity("expert", -1, true);
-    public static final ModRarity MASTER = new ModRarity("master", -2, true);
+    public static final ModRarity EXPERT = new ModRarity("expert", -1);
+    public static final ModRarity MASTER = new ModRarity("master", -2);
     public static final ModRarity QUEST = new ModRarity("quest", 0xFFAF00);
 
-    public static final HashBiMap<Integer, ModRarity> ID_MAP = Util.make(HashBiMap.create(), map -> {
-        map.put(-13, MASTER);
-        map.put(-12, EXPERT);
-        map.put(-11, QUEST);
-        map.put(-10, COMMON);
-        map.put(-9, UNCOMMON);
-        map.put(-8, RARE);
-        map.put(-7, EPIC);
+    public static final HashBiMap<Integer, ModRarity> TIER = Util.make(HashBiMap.create(), map -> {
         map.put(-1, GRAY);
         map.put(0, WHITE);
         map.put(1, BLUE);
@@ -67,37 +59,11 @@ public class ModRarity {
             Codec.STRING.fieldOf("name").forGetter(ModRarity::name),
             Codec.INT.fieldOf("color").forGetter(ModRarity::color)
     ).apply(instance, ModRarity::new));
-    public static final PortStreamCodec<PortRegistryFriendlyByteBuf, ModRarity> STREAM_CODEC = PortStreamCodec.composite(
+    public static final PortStreamCodec<ByteBuf, ModRarity> STREAM_CODEC = PortStreamCodec.composite(
             PortByteBufCodecs.STRING_UTF8, ModRarity::name,
             PortByteBufCodecs.INT, ModRarity::color,
             ModRarity::new
     );
-    private final String name;
-    private final int color;
-    private final boolean special;
-    private TextColor textColor;
-
-    public ModRarity(String name, int color) {
-        this.name = name;
-        this.color = color;
-        this.special = false;
-    }
-
-    public ModRarity(String name, int color, boolean special) {
-        this.name = name;
-        this.color = color;
-        this.special = special;
-    }
-
-    public TextColor asTextColor() {
-        if (special) {
-            return TextColor.fromRgb(color());
-        }
-        if (textColor == null) {
-            this.textColor = TextColor.fromRgb(color);
-        }
-        return textColor;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -113,10 +79,6 @@ public class ModRarity {
         if (color == -1) return ExpertColorAnimation.INSTANCE.getColor();
         if (color == -2) return MasterColorAnimation.INSTANCE.getColor();
         return color;
-    }
-
-    public boolean isSpecial() {
-        return special;
     }
 
     public static @Nullable ModRarity getRarity(ItemStack stack, boolean prototype) {
@@ -142,18 +104,14 @@ public class ModRarity {
         return stack.get(ConfluenceMagicLib.MOD_RARITY);
     }
 
-    public static Style withColor(ItemStack itemStack, Style style) {
-        ModRarity rarity = getRarity(itemStack);
-        if (rarity == null) return itemStack.getRarity().getStyleModifier().apply(style);
+    public static Style withColor(ItemStack stack, Style style) {
+        ModRarity rarity = getRarity(stack);
+        if (rarity == null) return stack.getRarity().getStyleModifier().apply(style);
         return style.withColor(rarity.color);
     }
 
-    public static MutableComponent withColor(ItemStack itemStack, MutableComponent component) {
-        return component.withStyle(style -> withColor(itemStack, style));
-    }
-
-    public String name() {
-        return name;
+    public static MutableComponent withColor(ItemStack stack, MutableComponent component) {
+        return component.withStyle(style -> withColor(stack, style));
     }
 
     @Override
