@@ -127,6 +127,7 @@ public final class LibClientGameEvents {
     }
 
     private static void clientPlayerNetwork$LoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
+        DynamicLightDispatcher.clearWorld();
         GravitationHandler.reset();
         CameraAnimation.clear();
         if (AnimationConstants.SHOULD_APPLY) {
