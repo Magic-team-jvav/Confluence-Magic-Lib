@@ -19,6 +19,9 @@ public final class LibDamageTypes {
     /// 对应的 `src/generated/resources/data/confluence_magic_lib/damage_type/frost_burn.json`
     /// 已从 1.20 逐字节拷入。
     public static final ResourceKey<DamageType> FROST_BURN = register("frost_burn");
+    /// 随 WP2 批次 13 补入（1.20 侧 `LibDamageTypes.java:19` + `:60`，`DamageScaling.ALWAYS` / 0.1F）；
+    /// 使用者是 `common/entity/boss/DungeonGuardian`（地牢守卫的接触伤害）。
+    public static final ResourceKey<DamageType> DUNGEON_GUARDIAN = register("dungeon_guardian");
 
     private static ResourceKey<DamageType> register(String id) {
         return ResourceKey.create(Registries.DAMAGE_TYPE, ConfluenceMagicLib.asResource(id));
@@ -40,5 +43,6 @@ public final class LibDamageTypes {
         context.register(STAR_CLOAK, new DamageType("star_cloak", DamageScaling.ALWAYS, 5));
         context.register(GUN_BULLET, new DamageType("gun_bullet", DamageScaling.NEVER, 0.1F));
         context.register(FROST_BURN, new DamageType("frost_burn_damage_type", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1F));
+        context.register(DUNGEON_GUARDIAN, new DamageType("dungeon_guardian", DamageScaling.ALWAYS, 0.1F));
     }
 }
