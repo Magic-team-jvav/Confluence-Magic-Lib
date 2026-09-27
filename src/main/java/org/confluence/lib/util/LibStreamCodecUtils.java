@@ -22,6 +22,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import org.confluence.lib.common.recipe.AmountIngredient;
@@ -36,6 +37,16 @@ public final class LibStreamCodecUtils {
             ByteBufCodecs.FLOAT, vec2 -> vec2.x,
             ByteBufCodecs.FLOAT, vec2 -> vec2.y,
             Vec2::new
+    );
+    /// 1.20 分支的 `LibStreamCodecUtils` 本来就有 `VEC_3`（1.20 侧 `LibStreamCodecUtils.java:40-44`，
+    /// 用 `PortStreamCodec.composite(PortByteBufCodecs.DOUBLE, …)`），1.21 侧此前只搬了 `VEC_2`。
+    /// WP5 召唤体系（`common/summoner/LyraStreamCodecs`、`network/SummonerBatchedInfoPayload`）
+    /// 与后续需要 `Vec3` 网络编解码的批次都要用它，按 1.20 对齐补齐。
+    public static final StreamCodec<ByteBuf, Vec3> VEC_3 = StreamCodec.composite(
+            ByteBufCodecs.DOUBLE, vec3 -> vec3.x,
+            ByteBufCodecs.DOUBLE, vec3 -> vec3.y,
+            ByteBufCodecs.DOUBLE, vec3 -> vec3.z,
+            Vec3::new
     );
     public static final StreamCodec<FriendlyByteBuf, java.util.UUID> UUID = new StreamCodec<>() {
         @Override
