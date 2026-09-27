@@ -4,7 +4,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Vector2f;
 
 import static java.lang.Math.*;
@@ -256,5 +258,11 @@ public final class LibMathUtils {
             return min + (value - min);
         }
         return value;
+    }
+
+    /// 从 A 指向 B 的单位向量（1.20 `LibMathUtils:502` 同名方法；1.21 侧此前缺这一支，
+    /// 由枪械 G3′ 的 `BaseBulletEntity` 回补，见 `notes/WP4-BATCH25-WIP.md`）。
+    public static Vec3 getVectorA2B(Entity a, Entity b) {
+        return b.position().subtract(a.position()).normalize();
     }
 }

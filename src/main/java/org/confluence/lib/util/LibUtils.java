@@ -25,6 +25,8 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -456,6 +458,30 @@ public final class LibUtils {
 
     public static boolean isSingleplayerOwner(ServerPlayer player) {
         return player.server.isSingleplayerOwner(player.getGameProfile());
+    }
+
+    /// 把 A 对 B 的击退动量结算成实际位移：先按被击退者的 `KNOCKBACK_RESISTANCE` 折减，
+    /// 再按攻击者的 `ATTACK_KNOCKBACK` 放大，方向取 A→B 单位向量，另加 `motionY` 的纵向分量。
+    ///
+    /// 1.20 侧在 `org.confluence.lib.util.LibEntityUtils:166`（别名表把 `LibEntityUtils` 等价到 1.21 的
+    /// `LibUtils`）；1.21 侧此前缺这一支，枪械 G3′ 的 `BaseBulletEntity:393` 要用，故按 1.20 逐字回补
+    /// （依赖同批补的 `LibMathUtils.getVectorA2B`）。
+    public static void knockBackA2B(Entity a, Entity b, double scale, double motionY) {
+        if (b instanceof LivingEntity living) {
+            AttributeInstance instance = living.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
+            if (instance != null) scale *= (1.0 - instance.getValue());
+        }
+        if (scale > 0.0) {
+            LivingEntity living = null;
+            if (a instanceof TraceableEntity traceable && traceable.getOwner() instanceof LivingEntity living1)
+                living = living1;
+            else if (a instanceof LivingEntity living1) living = living1;
+            if (living != null) {
+                AttributeInstance instance = living.getAttribute(Attributes.ATTACK_KNOCKBACK);
+                if (instance != null) scale *= (1.0 + instance.getValue());
+            }
+            b.addDeltaMovement(LibMathUtils.getVectorA2B(a, b).scale(scale).add(0.0, motionY, 0.0));
+        }
     }
 
     /// 可于游戏加载早期阶段判断
