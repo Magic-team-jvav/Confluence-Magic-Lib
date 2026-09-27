@@ -21,6 +21,8 @@ import net.neoforged.neoforge.common.crafting.IngredientType;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import org.confluence.lib.common.LibAttributes;
+import org.confluence.lib.common.LibEffects;
 import org.confluence.lib.common.component.ModRarity;
 import org.confluence.lib.common.component.NbtComponent;
 import org.confluence.lib.common.component.ToolMode;
@@ -169,6 +171,17 @@ public final class ConfluenceMagicLib {
         PIECE_TYPES.register(eventBus);
         DATA_COMPONENT_TYPES.register(eventBus);
         PARTICLES.register(eventBus);
+        {
+            // 效果层从 1.21 的 TerraCurio（TCEffects）迁到本模块，见 LibEffects 的类注释。
+            // 旧 id 登记别名，与上面属性的做法一致：1.21 早期存下来的存档/数据包里
+            // 写的是 terra_curio:confused 这类名字，别名让它们仍然解得开。
+            LibEffects.EFFECTS.register(eventBus);
+            LibEffects.EFFECTS.addAlias(ResourceLocation.fromNamespaceAndPath("terra_curio", "confused"), LibEffects.CONFUSED.getId());
+            LibEffects.EFFECTS.addAlias(ResourceLocation.fromNamespaceAndPath("terra_curio", "gravitation"), LibEffects.GRAVITATION.getId());
+            LibEffects.EFFECTS.addAlias(ResourceLocation.fromNamespaceAndPath("terra_curio", "paladins_shield"), LibEffects.PALADINS_SHIELD.getId());
+            LibEffects.EFFECTS.addAlias(ResourceLocation.fromNamespaceAndPath("terra_curio", "cerebral_mindtrick"), LibEffects.CEREBRAL_MINDTRICK.getId());
+            LibEffects.EFFECTS.addAlias(ResourceLocation.fromNamespaceAndPath("terra_curio", "honey"), LibEffects.HONEY.getId());
+        }
     }
 
     public static ResourceLocation asResource(String path) {
