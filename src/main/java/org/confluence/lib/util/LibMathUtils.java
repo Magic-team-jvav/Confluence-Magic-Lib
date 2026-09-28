@@ -33,6 +33,17 @@ public final class LibMathUtils {
         return value >= 1.0 || (value > 0.0 && random.nextDouble() < value);
     }
 
+    /// 计算暴击伤害，如果触发暴击则伤害×1.5。
+    ///
+    /// 1.20 侧同名方法在 `Confluence-Magic-Lib` 的 `LibMathUtils.java`（紧接着 `checkChance` 之后），
+    /// 逐字搬运。1.21 侧此前缺这个成员（又一个「成员级盲区」）。
+    ///
+    /// 消费点：**枪械内联 G4′** 的服务端开火管线 `GunFiringService.java:39`
+    /// （1.20 `common/combat/gun/GunFiringService.java:37` 同一行）。
+    public static float criticalDamageTotal(float critical, float damage, RandomSource random) {
+        return checkChance(critical, random) ? damage * 1.5F : damage;
+    }
+
     /// 整数乘正数小数得到新整数
     public static int multiplyInt(int original, float factor, RandomSource random) {
         if (factor <= 0) return 0;
