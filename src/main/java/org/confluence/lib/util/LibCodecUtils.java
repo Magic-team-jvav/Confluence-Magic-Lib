@@ -10,6 +10,9 @@ import it.unimi.dsi.fastutil.booleans.BooleanObjectPair;
 import it.unimi.dsi.fastutil.objects.Object2BooleanLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2BooleanMap;
+import it.unimi.dsi.fastutil.objects.Reference2BooleanOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.phys.Vec2;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
@@ -93,5 +96,14 @@ public final class LibCodecUtils {
 
     public static <T> Codec<Object2BooleanMap<T>> object2BooleanLinkedMap(Codec<T> codec) {
         return Codec.unboundedMap(codec, Codec.BOOL).xmap(Object2BooleanLinkedOpenHashMap::new, Object2ObjectLinkedOpenHashMap::new);
+    }
+
+    /// `Reference2BooleanMap` 版的 unboundedMap codec。
+    ///
+    /// 1.20 侧同名方法在 `Confluence-Magic-Lib` 的 `LibCodecUtils.java:93`，逐字搬运：
+    /// 键按**引用**比较（`EntityType` 之类单例键的正确做法，`Object2BooleanMap` 会走 equals）。
+    /// 消费点：`NPCSpawner.java:92` 的 `NPC_ALIVE_CODEC`。
+    public static <A> Codec<Reference2BooleanMap<A>> reference2BooleanMap(Codec<A> codec) {
+        return Codec.unboundedMap(codec, Codec.BOOL).xmap(Reference2BooleanOpenHashMap::new, Reference2ObjectOpenHashMap::new);
     }
 }

@@ -19,6 +19,10 @@ public final class LibDateUtils {
     public static final int _00$00 = getDayTime(0, 0);
     public static final int _04$30 = getDayTime(4, 30);
     public static final int _06$00 = getDayTime(6, 0);
+    /// 1.20 侧同名常量（`Confluence-Magic-Lib` 的 `LibDateUtils.java:23`），逐字。
+    /// 1.21 侧此前只有 `_00$00`/`_04$30`/`_06$00`/`_18$00`/`_19$30`，NPC 层的
+    /// 「白天 4:30~12:00 才允许生成」判据（`NPCSpawner.java:598`）需要它。
+    public static final int _12$00 = getDayTime(12, 0);
     public static final int _18$00 = getDayTime(18, 0);
     public static final int _19$30 = getDayTime(19, 30);
 
