@@ -9,6 +9,8 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector2f;
 
+import java.util.function.ToDoubleFunction;
+
 import static java.lang.Math.*;
 
 public final class LibMathUtils {
@@ -275,5 +277,128 @@ public final class LibMathUtils {
     /// 由枪械 G3′ 的 `BaseBulletEntity` 回补，见 `notes/WP4-BATCH25-WIP.md`）。
     public static Vec3 getVectorA2B(Entity a, Entity b) {
         return b.position().subtract(a.position()).normalize();
+    }
+
+    // ------------------------------------------------------------------
+    // 追踪弹道基：`interpolateBasis` 家族（1.20 `LibMathUtils:366-479` 逐字搬入）
+    // ------------------------------------------------------------------
+    //
+    // 1.21 侧此前**这四个方法都没有**；消费方是主模组的 `TheDestroyer`（1.20 `:228` 用它算追踪
+    // 转向/加速），随「WP3 客户端族批」的服务端半一起补。四个方法互相依赖：
+    // `interpolateBasis` → `vectorProjection`，`getLerp`/`getThresholdInterpolator` 是喂给它的插值器工厂。
+
+    /// 将currDir方向的单位向量记为v1, 我们使用向量投影的方式构造单位向量v2，使得v1与v2为currDir, targetDir平面上的基，且v1垂直于v2.
+    ///
+    /// 将currDir的长度写为c，则currDir=cv1+0v2；另，有a,b使得targetDir可被写成av1+bv2.
+    ///
+    /// 注意到，\[c,0\]转换到\[a,b\]需要一个旋转+缩放；同样的，对于基{v1,v2}中，这一系数的变换也将currDir变换到targetDir.
+    ///
+    /// 然而，一般而言，我们希望追踪弹幕每次只进行这一变换的一部分以获得更合理的弹道。
+    ///
+    /// 因此，我们对旋转角和缩放长度进行插值。至此，我们即可获得最终的方向向量。
+    ///
+    /// 注：若我们把v1看做x轴，v2看做y轴，则角度插值和角度均应在一二象限。
+    ///
+    /// 另，从以上过程中可知，**targetDir的方向和长度都至关重要**。
+    ///
+    /// @param currDir            当前弹幕的方向向量
+    /// @param targetDir          方向向量，记录了追踪的最终方向与长度（想要达到的速度）
+    /// @param angleInterpolator  提供角度插值；输入为当前方向和追踪方向的角度差，输出为追踪所变换的角度
+    /// @param lengthInterpolator 提供向量长度（即速度）插值；输入为当前方向和追踪方向的长度差，输出为追踪所变换的向量长度
+    /// @return 变换完毕的向量
+    public static Vec3 interpolateBasis(
+            Vec3 currDir,
+            Vec3 targetDir,
+            ToDoubleFunction<Double> angleInterpolator,
+            ToDoubleFunction<Double> lengthInterpolator
+    ) {
+        double currDirLen = currDir.length();
+        double targetDirLen = targetDir.length();
+        // 以下多次用到仅单次使用的乘数的设计，干脆公用同一个变量
+        double multi;
+        // 起始向量与目标向量均为0，直接返回原向量
+        if (currDirLen < 1e-5 && targetDirLen < 1e-5) {
+            return currDir;
+        }
+        // 若仅有起始速度为0，则直接返回0向量到目标向量的插值
+        if (currDir.lengthSqr() < 1e-9) {
+            multi = lengthInterpolator.applyAsDouble(targetDirLen) / targetDirLen;
+            return targetDir.multiply(multi, multi, multi);
+        }
+        // 若仅有终止速度为0，则直接返回起始向量到0向量的线性插值，即起始向量*(1-进度)。
+        if (targetDir.lengthSqr() < 1e-9) {
+            multi = 1 - (lengthInterpolator.applyAsDouble(currDirLen) / currDirLen);
+            return currDir.multiply(multi, multi, multi);
+        }
+        // 此时，起始终止速度均不为0，后续操作不会造成NaN值。按照注释中的步骤获得结果。
+        multi = 1 / currDirLen;
+        Vec3 v1 = currDir.multiply(multi, multi, multi);
+        Vec3 v1Component = vectorProjection(targetDir, v1);
+        Vec3 v2 = targetDir.subtract(v1Component);
+        double a, b; // 此处的a,b见上方的方法注释中说明
+        double v1CompLen = v1Component.length();
+        double v2Len = v2.length();
+        // 夹角大于pi/2时，即cos(theta)<0或v1·v1Component<0时，a是负数
+        a = v1CompLen * Math.signum(v1.dot(v1Component));
+        // 此处的v2方向正确，但尚未转化为单位向量；若v2近似地为0, 即v1与v2共线。
+        if (v2Len < 1e-5) {
+            b = 0;
+        } else {
+            b = v2Len;
+            multi = 1 / v2Len;
+            v2 = v2.multiply(multi, multi, multi);
+        }
+        // targetDir = [a,b]·[v1,v2]; angleRad = angle([1,0], [a,b]) = atan2(b,a)
+        double angleRad = Math.atan2(b, a);
+        // 计算角度插值
+        double angleDelta = angleInterpolator.applyAsDouble(angleRad);
+        // 获得旋转后的方向；此时方向向量为单位向量。
+        multi = Math.cos(angleDelta);
+        Vec3 result = v1.multiply(multi, multi, multi);
+        multi = Math.sin(angleDelta);
+        result = result.add(v2.multiply(multi, multi, multi));
+        // 计算长度插值
+        double length = currDirLen + lengthInterpolator.applyAsDouble(targetDirLen - currDirLen);
+        return result.multiply(length, length, length);
+    }
+
+    /// 返回一个可以被interpolateBasis作为angleInterpolator或lengthInterpolator使用的线性插值。
+    ///
+    /// 即，若progress为0，则插值一定提供0，在追踪中表现为不追踪；
+    ///
+    /// 若progress为1，则插值一定提供全额变化值，在追踪中表现为瞬间完全调整方向。
+    ///
+    /// 例：progress为0.5，则插值一定提供变化值的一半，在追踪中表现为方向（弧度）/速度 *误差越大，调整速度越快*。
+    ///
+    /// @param progress 插值强度；越接近0越弱，越接近1越强。取值范围 - [0, 1]
+    /// @return 插值ToDoubleFunction
+    public static ToDoubleFunction<Double> getLerp(double progress) {
+        return x -> x * progress;
+    }
+
+    /// 返回一个可以被interpolateBasis作为angleInterpolator或lengthInterpolator使用的阈值式插值。
+    ///
+    /// 即，若progress为0，则插值一定提供0，在追踪中表现为不追踪；
+    ///
+    /// 否则，插值提供 变化值 与 阈值 中更小的一者，在追踪中表现为方向（弧度）/速度的误差以 *恒定的效率* 被修正。
+    ///
+    /// **再次注意：方向（弧度）的插值单位为弧度而非角度！**
+    ///
+    /// @param efficiency 插值强度；越接近0越弱，越高越强。取值范围 - [0, inf)
+    /// @return 插值ToDoubleFunction
+    public static ToDoubleFunction<Double> getThresholdInterpolator(double efficiency) {
+        return x -> Math.min(x, efficiency);
+    }
+
+    /// 向量投影；**toProjectOnto不可以为0向量**！
+    ///
+    /// @param vector        被投影的向量
+    /// @param toProjectOnto 投影的目标向量
+    /// @return 投影结果
+    public static Vec3 vectorProjection(Vec3 vector, Vec3 toProjectOnto) {
+        double sqr = toProjectOnto.lengthSqr();
+        if (sqr == 0.0)
+            throw new IllegalArgumentException("Length of toProjectOnto could not be zero");
+        return toProjectOnto.scale(toProjectOnto.dot(vector) / sqr);
     }
 }
