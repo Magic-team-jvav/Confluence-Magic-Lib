@@ -8,6 +8,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 
 import java.util.function.ToDoubleFunction;
 
@@ -400,5 +401,57 @@ public final class LibMathUtils {
         if (sqr == 0.0)
             throw new IllegalArgumentException("Length of toProjectOnto could not be zero");
         return toProjectOnto.scale(toProjectOnto.dot(vector) / sqr);
+    }
+
+    // ------------------------------------------------------------------
+    // `LibGeometryUtils` 依赖的 3 个方法（1.20 `LibMathUtils` 同名方法逐字搬入）
+    // ------------------------------------------------------------------
+    //
+    // 1.21 侧此前没有这三个；消费方是本次一并搬入的 `LibGeometryUtils`（`roundPos` 与
+    // `getProjectionOnLineSegment` 家族），而 `LibGeometryUtils` 又是 1.20 worldgen
+    // carver / feature / structure 与 Lib VFX（`ThunderboltVFX`）的共同前置。
+
+    /// 方块中心坐标转 `Vector3f`（+0.5）。
+    public static Vector3f toVector3f(BlockPos pos) {
+        return new Vector3f(pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F);
+    }
+
+    /// 计算点到线段的距离。
+    public static float getDistanceToLineSegment(Vector3f pointA, Vector3f pointB, Vector3f pointP) {
+        Vector3f projection = getProjectionOnLineSegment(pointA, pointB, pointP);
+        Vector3f distanceVector = new Vector3f(pointP);
+        distanceVector.sub(projection);
+        return distanceVector.length();
+    }
+
+    /// 投影点是否落在（外扩 0.5 的）线段包围盒内。
+    public static boolean isProjectionBetweenPoints(Vector3f pointA, Vector3f pointB, Vector3f projection) {
+        Vector3f point2 = getProjectionOnLineSegment(pointA, pointB, projection);
+        float xMax = Math.max(pointA.x, pointB.x) + 0.5F;
+        float xMin = Math.min(pointA.x, pointB.x) - 0.5F;
+        float yMax = Math.max(pointA.y, pointB.y) + 0.5F;
+        float yMin = Math.min(pointA.y, pointB.y) - 0.5F;
+        float zMax = Math.max(pointA.z, pointB.z) + 0.5F;
+        float zMin = Math.min(pointA.z, pointB.z) - 0.5F;
+        return point2.x < xMax && point2.x > xMin && point2.y < yMax && point2.y > yMin && point2.z < zMax && point2.z > zMin;
+    }
+
+    /// 点在线段上的投影。
+    public static Vector3f getProjectionOnLineSegment(Vector3f pointA, Vector3f pointB, Vector3f pointP) {
+        Vector3f direction = new Vector3f(pointB);
+        direction.sub(pointA);
+
+        Vector3f pointToP = new Vector3f(pointP);
+        pointToP.sub(pointA);
+
+        float dotProduct = pointToP.dot(direction);
+        float directionLengthSquared = direction.dot(direction);
+
+        float t = dotProduct / directionLengthSquared;
+
+        Vector3f projection = new Vector3f(direction);
+        projection = new Vector3f(projection.x * t, projection.y * t, projection.z * t);
+        projection.add(pointA);
+        return projection;
     }
 }
