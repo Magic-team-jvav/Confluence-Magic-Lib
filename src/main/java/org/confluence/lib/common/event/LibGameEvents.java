@@ -1,5 +1,6 @@
 package org.confluence.lib.common.event;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
@@ -24,6 +25,9 @@ import net.neoforged.neoforge.event.entity.EntityInvulnerabilityCheckEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.*;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.level.ChunkEvent;
+import net.neoforged.neoforge.event.level.ChunkWatchEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
@@ -40,6 +44,8 @@ import org.confluence.lib.common.LibAttributes;
 import org.confluence.lib.common.LibDamageTypes;
 import org.confluence.lib.common.data.saved.IGlobalData;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
+import org.confluence.lib.common.worldgen.biome.DynamicBiomeUtils;
+import org.confluence.lib.common.worldgen.biome.MiniBiome;
 import org.confluence.lib.mixed.ILibDamageSource;
 import org.confluence.lib.mixed.ILibExtraSyncedData;
 import org.confluence.lib.network.AttackDamagePacketS2C;
@@ -98,10 +104,56 @@ public final class LibGameEvents {
     @SubscribeEvent
     public static void serverTick$Post(ServerTickEvent.Post event) {
         NaturalSpawnerUtils.update(event.getServer());
+        for (ServerLevel level : event.getServer().getAllLevels()) DynamicBiomeUtils.tick(level);
+    }
+
+    @SubscribeEvent
+    public static void chunkLoaded(ChunkEvent.Load event) {
+        MiniBiome.invalidate(event.getLevel());
+        if (!(event.getLevel() instanceof ServerLevel level) || !DynamicBiomeUtils.isEnabled())
+            return;
+        var pos = event.getChunk().getPos();
+        /// 区块加载事件可能来自加载线程，队列只在服务端主线程读写。
+        level.getServer().execute(() -> DynamicBiomeUtils.markLoaded(level, pos.x, pos.z));
+    }
+
+    @SubscribeEvent
+    public static void chunkUnloaded(ChunkEvent.Unload event) {
+        MiniBiome.invalidate(event.getLevel());
+    }
+
+    @SubscribeEvent
+    public static void chunkWatch(ChunkWatchEvent.Watch event) {
+        if (DynamicBiomeUtils.isEnabled())
+            DynamicBiomeUtils.watch(event.getLevel(), event.getPlayer(), event.getPos());
+    }
+
+    @SubscribeEvent
+    public static void chunkUnwatch(ChunkWatchEvent.UnWatch event) {
+        DynamicBiomeUtils.unwatch(event.getLevel(), event.getPlayer(), event.getPos());
+    }
+
+    @SubscribeEvent
+    public static void playerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player)
+            DynamicBiomeUtils.forgetPlayer(player);
+    }
+
+    @SubscribeEvent
+    public static void playerCloned(PlayerEvent.Clone event) {
+        if (event.getOriginal() instanceof ServerPlayer player)
+            DynamicBiomeUtils.forgetPlayer(player);
+    }
+
+    @SubscribeEvent
+    public static void levelUnloaded(LevelEvent.Unload event) {
+        MiniBiome.invalidate(event.getLevel());
+        if (event.getLevel() instanceof ServerLevel level) DynamicBiomeUtils.unload(level);
     }
 
     @SubscribeEvent
     public static void serverStopped(ServerStoppedEvent event) {
+        DynamicBiomeUtils.clear();
         NaturalSpawnerUtils.clear();
         IGlobalData.clearAll();
     }
