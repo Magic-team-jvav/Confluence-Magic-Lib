@@ -1,4 +1,4 @@
-package org.confluence.lib.mixin.accessor;
+package org.confluence.lib.mixin.client;
 
 import net.minecraft.client.KeyMapping;
 import org.spongepowered.asm.mixin.Mixin;

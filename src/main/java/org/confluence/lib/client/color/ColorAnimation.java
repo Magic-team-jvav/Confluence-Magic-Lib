@@ -1,4 +1,4 @@
-package org.confluence.lib.client.animate;
+package org.confluence.lib.client.color;
 
 import net.minecraft.util.Mth;
 

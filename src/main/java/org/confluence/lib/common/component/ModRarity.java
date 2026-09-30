@@ -13,8 +13,8 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import org.confluence.lib.ConfluenceMagicLib;
-import org.confluence.lib.client.animate.ExpertColorAnimation;
-import org.confluence.lib.client.animate.MasterColorAnimation;
+import org.confluence.lib.client.color.ExpertColorAnimation;
+import org.confluence.lib.client.color.MasterColorAnimation;
 import org.jetbrains.annotations.Nullable;
 
 public class ModRarity implements DataComponentType<ModRarity> {

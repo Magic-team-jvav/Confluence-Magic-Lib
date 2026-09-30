@@ -26,7 +26,6 @@
         "naturalspawner.NaturalSpawnerMixin"
     ],
     "client": [
-        "accessor.KeyMappingAccessor",
         "client.AbstractContainerScreenMixin",
         "client.BlockModelShaperMixin",
         "client.ClientEntityMixin",
@@ -35,6 +34,7 @@
         "client.ClientPlayerMixin",
         "client.CreativeModeInventoryScreenMixin",
         "client.GuiGraphicsMixin",
+        "client.KeyMappingAccessor",
         "client.LivingEntityRendererMixin",
         "client.LocalPlayerAccessor",
         "client.LocalPlayerMixin",

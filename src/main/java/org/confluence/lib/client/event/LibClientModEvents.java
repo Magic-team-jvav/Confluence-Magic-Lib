@@ -15,9 +15,9 @@ import org.confluence.lib.client.LibKeyBindings;
 import org.confluence.lib.client.particle.CrossDustParticle;
 import org.confluence.lib.client.render.item.GroupItemExtension;
 import org.confluence.lib.common.item.GroupItem;
-import org.confluence.lib.integration.animation.AddPlayerGeoModelEvent;
-import org.confluence.lib.integration.animation.AnimationConstants;
-import org.confluence.lib.integration.animation.PlayerGeoAnimatable;
+import org.confluence.lib.api.animation.third_person.AddPlayerGeoModelEvent;
+import org.confluence.lib.api.animation.third_person.AnimationConstants;
+import org.confluence.lib.api.animation.third_person.PlayerGeoAnimatable;
 
 import java.util.concurrent.CompletableFuture;
 

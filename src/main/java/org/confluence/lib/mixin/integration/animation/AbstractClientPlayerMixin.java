@@ -1,8 +1,8 @@
 package org.confluence.lib.mixin.integration.animation;
 
 import net.minecraft.client.player.AbstractClientPlayer;
-import org.confluence.lib.integration.animation.ILibAbstractClientPlayer;
-import org.confluence.lib.integration.animation.PlayerGeoAnimatable;
+import org.confluence.lib.api.animation.third_person.ILibAbstractClientPlayer;
+import org.confluence.lib.api.animation.third_person.PlayerGeoAnimatable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 

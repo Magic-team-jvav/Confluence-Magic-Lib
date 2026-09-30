@@ -1,4 +1,4 @@
-package org.confluence.lib.client.animate;
+package org.confluence.lib.client.color;
 
 public class ExpertColorAnimation extends ColorAnimation {
     public static final ExpertColorAnimation INSTANCE = new ExpertColorAnimation();

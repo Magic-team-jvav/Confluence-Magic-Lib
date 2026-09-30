@@ -1,6 +1,6 @@
 package org.confluence.lib.mixin.integration.animation;
 
-import org.confluence.lib.integration.animation.AnimationConstants;
+import org.confluence.lib.api.animation.third_person.AnimationConstants;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
