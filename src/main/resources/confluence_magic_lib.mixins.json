@@ -33,6 +33,7 @@
         "client.ClientLivingEntityMixin",
         "client.ClientPlayerMixin",
         "client.CreativeModeInventoryScreenMixin",
+        "client.EntityRendererMixin",
         "client.GuiGraphicsMixin",
         "client.KeyMappingAccessor",
         "client.LivingEntityRendererMixin",

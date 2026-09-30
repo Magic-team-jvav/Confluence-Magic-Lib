@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
+import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -27,6 +28,7 @@ import org.confluence.lib.common.component.ModRarity;
 import org.confluence.lib.common.component.NbtComponent;
 import org.confluence.lib.common.component.ToolMode;
 import org.confluence.lib.common.item.GroupItem;
+import org.confluence.lib.common.loot.CraftingLootItemCondition;
 import org.confluence.lib.common.particle.CrossDustParticleOptions;
 import org.confluence.lib.common.recipe.AmountIngredient;
 import org.confluence.lib.common.worldgen.structure.GridPiece;
@@ -141,6 +143,9 @@ public final class ConfluenceMagicLib {
     });
     // endregion
 
+    private static final DeferredRegister<LootItemConditionType> LOOT_ITEM_CONDITION_TYPES = DeferredRegister.create(Registries.LOOT_CONDITION_TYPE, LIB_ID);
+    public static final DeferredHolder<LootItemConditionType, LootItemConditionType> CRAFTING_LOOT_ITEM_CONDITION = LOOT_ITEM_CONDITION_TYPES.register("crafting", () -> new LootItemConditionType(CraftingLootItemCondition.CODEC));
+
     public ConfluenceMagicLib(IEventBus eventBus, ModContainer container) {
         LibStartupConfig.register(container);
         ITEMS.register(eventBus);
@@ -166,6 +171,7 @@ public final class ConfluenceMagicLib {
         PIECE_TYPES.register(eventBus);
         DATA_COMPONENT_TYPES.register(eventBus);
         PARTICLES.register(eventBus);
+        LOOT_ITEM_CONDITION_TYPES.register(eventBus);
         {
             // 效果层从 1.21 的 TerraCurio（TCEffects）迁到本模块，见 LibEffects 的类注释。
             // 旧 id 登记别名，与上面属性的做法一致：1.21 早期存下来的存档/数据包里
