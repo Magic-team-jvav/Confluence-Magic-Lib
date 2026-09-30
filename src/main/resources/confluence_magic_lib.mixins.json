@@ -36,6 +36,7 @@
         "client.EntityRendererMixin",
         "client.GuiGraphicsMixin",
         "client.KeyMappingAccessor",
+        "client.LevelRendererMixin",
         "client.LivingEntityRendererMixin",
         "client.LocalPlayerAccessor",
         "client.LocalPlayerMixin",

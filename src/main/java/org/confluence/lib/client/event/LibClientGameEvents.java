@@ -17,11 +17,13 @@ import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.RenderTooltipEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.client.DPSMeter;
+import org.confluence.lib.client.DynamicLightDispatcher;
 import org.confluence.lib.client.color.ExpertColorAnimation;
 import org.confluence.lib.client.color.MasterColorAnimation;
 import org.confluence.lib.client.handler.GravitationHandler;
@@ -154,11 +156,17 @@ public final class LibClientGameEvents {
 
     @SubscribeEvent
     public static void clientPlayerNetwork$LoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
+        DynamicLightDispatcher.clearWorld();
         // 1.20 原文：`LibClientGameEvents.java:131` 的 `GravitationHandler.reset();`
         // （1.21 侧此前只有一行 `// todo 类似1.20.1 GravitationHandler.reset();`，本步落地它）。
         GravitationHandler.reset();
         if (AnimationConstants.SHOULD_APPLY) {
             PlayerGeoAnimatable.reloadCallbacks.clear();
         }
+    }
+
+    @SubscribeEvent
+    public static void renderLevelStage$DynamicLight(RenderLevelStageEvent event) {
+        DynamicLightDispatcher.update(event);
     }
 }
