@@ -22,6 +22,7 @@ public final class LibDamageTypes {
     /// 随 WP2 批次 13 补入（1.20 侧 `LibDamageTypes.java:19` + `:60`，`DamageScaling.ALWAYS` / 0.1F）；
     /// 使用者是 `common/entity/boss/DungeonGuardian`（地牢守卫的接触伤害）。
     public static final ResourceKey<DamageType> DUNGEON_GUARDIAN = register("dungeon_guardian");
+    public static final ResourceKey<DamageType> SUMMON = register("summon");
     /// 随坐骑簇的前置一起补入（1.20 侧 `LibDamageTypes.java` 的 `SUMMONER` 声明 + bootstrap
     /// `damageType(context, SUMMONER, "summoner_damage_type", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1F)`，
     /// 注意 `message_id` 是 `summoner_damage_type` 而不是 `summoner`）。
@@ -49,6 +50,7 @@ public final class LibDamageTypes {
         context.register(GUN_BULLET, new DamageType("gun_bullet", DamageScaling.NEVER, 0.1F));
         context.register(FROST_BURN, new DamageType("frost_burn_damage_type", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1F));
         context.register(DUNGEON_GUARDIAN, new DamageType("dungeon_guardian", DamageScaling.ALWAYS, 0.1F));
+        context.register(SUMMON, new DamageType("summon_damage_type", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1F));
         context.register(SUMMONER, new DamageType("summoner_damage_type", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1F));
     }
 }
