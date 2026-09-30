@@ -11,7 +11,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.*;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
@@ -252,12 +251,6 @@ public final class LibUtils {
         return ServerLifecycleHooks.getCurrentServer() != null && ServerLifecycleHooks.getCurrentServer().isSameThread();
     }
 
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static float cubicBezier(float t, float p0, float p1, float p2, float p3) {
-        return LibMathUtils.cubicBezier(t, p0, p1, p2, p3);
-    }
-
     public static <T> void resetDataComponent(ItemStack itemStack, DataComponentType<T> type) {
         T value = itemStack.getPrototype().get(type);
         if (value == null) {
@@ -265,18 +258,6 @@ public final class LibUtils {
         } else {
             itemStack.set(type, value);
         }
-    }
-
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static boolean checkChance(float value, RandomSource random) {
-        return LibMathUtils.checkChance(value, random);
-    }
-
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static boolean checkChance(double value, RandomSource random) {
-        return LibMathUtils.checkChance(value, random);
     }
 
     public static <K, V> Map<K, V> convertTupleListToMap(List<Tuple<K, V>> list) {
@@ -337,18 +318,6 @@ public final class LibUtils {
             if (access == null) return level.registryAccess().holderOrThrow(Biomes.THE_VOID);
             return access.getNoiseBiome(qx, qy, qz);
         });
-    }
-
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static int multiplyInt(int original, float factor, RandomSource random) {
-        return LibMathUtils.multiplyInt(original, factor, random);
-    }
-
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static int divideInt(int original, float factor, RandomSource random) {
-        return LibMathUtils.divideInt(original, factor, random);
     }
 
     /// 可于游戏加载早期阶段判断

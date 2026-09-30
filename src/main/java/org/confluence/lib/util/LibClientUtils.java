@@ -22,11 +22,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
-import org.joml.Quaternionf;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -35,40 +33,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class LibClientUtils {
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static final float HALF_SQRT_3 = LibMathUtils.HALF_SQRT_3;
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static final Quaternionf ANGLE_45 = LibRenderUtils.ANGLE_45;
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static final Quaternionf ANGLE_180 = LibRenderUtils.ANGLE_180;
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static final Quaternionf ANGLE_N90 = LibRenderUtils.ANGLE_N90;
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static final int[] FULL_BRIGHT = LibRenderUtils.FULL_BRIGHT;
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static final float INV_255 = LibMathUtils.INV_255;
     public static final ClampedItemPropertyFunction COULD_ENABLE_PROPERTY_FUNCTION = (stack, level, living, seed) -> {
         CompoundTag tag = LibUtils.getItemStackNbtIfPresent(stack);
         return tag != null && tag.getBoolean(IFunctionCouldEnable.DISABLE_KEY) ? 0 : 1;
     };
-
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static void setupOverlayRenderState(boolean blend, boolean depthTest) {
-        LibRenderUtils.setupOverlayRenderState(blend, depthTest);
-    }
-
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static boolean shouldDrawSurvivalElements(Minecraft minecraft) {
-        return LibRenderUtils.shouldDrawSurvivalElements(minecraft);
-    }
 
     /// 将游戏缓存的贴图写入文件
     ///

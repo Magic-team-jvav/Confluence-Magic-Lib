@@ -33,12 +33,10 @@ import org.confluence.lib.common.worldgen.structure.GridPiece;
 import org.confluence.lib.common.worldgen.structure.SimpleTemplatePiece;
 import org.confluence.lib.util.DelayTaskHolder;
 import org.confluence.lib.util.LibUtils;
-import org.jetbrains.annotations.ApiStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 @Mod(ConfluenceMagicLib.LIB_ID)
 public final class ConfluenceMagicLib {
@@ -46,9 +44,6 @@ public final class ConfluenceMagicLib {
     public static final String CONFLUENCE_ID = "confluence";
     public static final Logger LOGGER = LoggerFactory.getLogger("Confluence Magic Lib");
     public static final boolean IS_CONFLUENCE_LOAD = LibUtils.isModLoaded(CONFLUENCE_ID);
-    @Deprecated(since = "1.3.0", forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.4.0")
-    public static final Supplier<Boolean> IS_CONFLUENCE_LOADED = () -> IS_CONFLUENCE_LOAD;
 
     // region 物品
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(LIB_ID);
