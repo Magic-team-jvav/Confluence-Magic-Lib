@@ -454,4 +454,10 @@ public final class LibMathUtils {
         projection.add(pointA);
         return projection;
     }
+
+    ///
+    /// @return degree
+    public static double angleBetween(Vec3 v1, Vec3 v2) {
+        return Math.acos(v1.dot(v2) / v1.length() / v2.length());
+    }
 }
