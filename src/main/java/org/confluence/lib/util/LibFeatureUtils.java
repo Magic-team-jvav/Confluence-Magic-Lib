@@ -28,7 +28,7 @@ import java.util.Queue;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public final class FeatureUtils {
+public final class LibFeatureUtils {
 
     public static BlockState[] DEBUG_COLOR = new BlockState[]{
             Blocks.BLUE_CONCRETE.defaultBlockState(),

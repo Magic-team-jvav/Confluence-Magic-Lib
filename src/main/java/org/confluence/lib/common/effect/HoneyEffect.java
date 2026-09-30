@@ -7,7 +7,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.entity.player.Player;
 import org.confluence.lib.common.LibEffects;
-import org.confluence.lib.util.LibUtils;
+import org.confluence.lib.util.LibEntityUtils;
 
 /// 蜂蜜效果：每 10 tick 回 0.1 点血。
 ///
@@ -36,7 +36,7 @@ public class HoneyEffect extends MobEffect {
     }
 
     public static void applyHoneyEffect(LivingEntity living) {
-        if (LibUtils.isAnimal(living) || living instanceof Player) {
+        if (LibEntityUtils.isAnimal(living) || living instanceof Player) {
             MobEffectInstance effect = living.getEffect(LibEffects.HONEY);
             if (effect == null || effect.getDuration() < 220) {
                 living.addEffect(new MobEffectInstance(LibEffects.HONEY, 600));
