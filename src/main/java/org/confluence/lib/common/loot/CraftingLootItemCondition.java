@@ -27,7 +27,11 @@ public record CraftingLootItemCondition(ICondition condition) implements LootIte
 
         @Override
         public <T> RecordBuilder<T> encode(CraftingLootItemCondition input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
-            return ICondition.CODEC.encode(input.condition(), ops, prefix);
+            DataResult<MapLike<T>> encodedMapResult = ICondition.CODEC.encodeStart(ops, input.condition()).flatMap(ops::getMap);
+            return encodedMapResult.map(encodedMap -> {
+                encodedMap.entries().forEach(pair -> prefix.add(pair.getFirst(), pair.getSecond()));
+                return prefix;
+            }).result().orElseGet(() -> prefix.withErrorsFrom(encodedMapResult));
         }
     };
 
