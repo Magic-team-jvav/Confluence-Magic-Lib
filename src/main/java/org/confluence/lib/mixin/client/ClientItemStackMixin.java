@@ -11,12 +11,12 @@ public class ClientItemStackMixin implements ILibClientItemStack {
     private int confluence$groupId = -1;
 
     @Override
-    public void confluence$setGroupId(int id) {
+    public void confluence$clientSetGroupId(int id) {
         this.confluence$groupId = id;
     }
 
     @Override
-    public int confluence$getGroupId() {
+    public int confluence$clientGetGroupId() {
         return confluence$groupId;
     }
 }
