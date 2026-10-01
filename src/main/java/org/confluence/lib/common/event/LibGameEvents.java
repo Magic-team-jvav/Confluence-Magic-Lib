@@ -42,6 +42,7 @@ import org.confluence.lib.api.event.PlayerNaturalHealEvent;
 import org.confluence.lib.api.event.SwitchItemFunctionEvent;
 import org.confluence.lib.common.LibAttributes;
 import org.confluence.lib.common.LibDamageTypes;
+import org.confluence.lib.common.LibEffects;
 import org.confluence.lib.common.data.saved.IGlobalData;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
 import org.confluence.lib.common.worldgen.biome.DynamicBiomeUtils;
@@ -252,6 +253,7 @@ public final class LibGameEvents {
         amount = LibAttributes.applyMagicDamage(attacker, damageSource, amount);
         amount = LibAttributes.applyRangedDamage(attacker, damageSource, amount);
         amount = ILibDamageSource.processCritical(attacker, amount, victim, damageSource);
+        amount = LibEffects.applyPaladinsShield(victim, damageSource, amount);
 
         event.setNewDamage(amount);
     }
