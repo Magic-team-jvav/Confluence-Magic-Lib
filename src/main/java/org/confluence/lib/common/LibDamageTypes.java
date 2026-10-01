@@ -23,7 +23,6 @@ public final class LibDamageTypes {
     public static final ResourceKey<DamageType> MAGICAL_PROJECTILE = register("magical_projectile");
     public static final ResourceKey<DamageType> SPEAR_PROJECTILE = register("spear_projectile");
     public static final ResourceKey<DamageType> STAR_CLOAK = register("star_cloak");
-    // todo 统一这俩召唤师标签
     public static final ResourceKey<DamageType> SUMMON = register("summon");
     public static final ResourceKey<DamageType> SUMMONER = register("summoner");
     public static final ResourceKey<DamageType> SWORD_PROJECTILE = register("sword_projectile");

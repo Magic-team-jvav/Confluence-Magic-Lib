@@ -24,29 +24,6 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 import java.util.Map;
 
-/// `LivingEntity` 上的注入。
-///
-/// ## 1.21 既有内容（**未改动**）
-///
-/// `armorPenetration` —— 护甲穿透（`getDamageAfterArmorAbsorb` 的 `CombatRules.getDamageAfterAbsorb`）。
-///
-/// ## WP6c 合并进来的「重力反转」两处（来自 1.20 `Confluence-Magic-Lib` 的
-/// `lib/mixin/LivingEntityMixin.java`）
-///
-/// | 处理器 | 1.20 位置 | 1.21 目标（实测） |
-/// |---|---|---|
-/// | `modifyParticlePosY` | 1.20 `LivingEntityMixin:47-54` | `LivingEntity#checkFallDamage(double,boolean,BlockState,BlockPos)` 里的 `ServerLevel#sendParticles(ParticleOptions,DDDIDDDD)I`：实参序 `(粒子, x, y, z, 数量, ...)` → `index = 2` 是 **y** |
-/// | `reversed` | 1.20 `LivingEntityMixin:56-62` | `LivingEntity#travel(Vec3)` 的 `argsOnly` 首参 |
-///
-/// 1.20 那两处的 `confused` 成员 **1.21 已经没有了**（`LibEffects.CONFUSED` 那套走的是别的实现），
-/// 所以只合并这两处，其余保持 1.21 原样；`hasEffect` / `getEffect` / `shouldAdd` / `getActiveEffectsMap`
-/// 则随「可开关的药水效果」从 root 迁入本类。
-///
-/// 为此本类改为 `implements ILibLivingEntity`（它继承 `SelfGetter<LivingEntity>`）。
-///
-/// ⚠️ **合并进来的两处已落地但尚未接线，接线见 WP6c 第二步。**
-/// `confluence$isShouldRot()` 恒为 `false` → 两处都是 no-op（`modifyParticlePosY` 原样返回、
-/// `reversed` 原样返回），行为与合并前**零变化**。
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin implements ILibLivingEntity {
     @WrapOperation(method = "getDamageAfterArmorAbsorb", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/damagesource/CombatRules;getDamageAfterAbsorb(Lnet/minecraft/world/entity/LivingEntity;FLnet/minecraft/world/damagesource/DamageSource;FF)F"))
@@ -54,9 +31,6 @@ public abstract class LivingEntityMixin implements ILibLivingEntity {
         return original.call(entity, damage, damageSource, LibAttributes.applyArmorPenetration(entity, damageSource, armorValue), armorToughness);
     }
 
-    // ===== WP6c：下面两个处理器来自 1.20 Lib 的 LivingEntityMixin（重力反转） =====
-
-    /// 1.20 `LivingEntityMixin:47-54`，逐字（只把 `ILibEntity` 的 import 换到 Lib 新位置）。
     @ModifyArg(method = "checkFallDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;sendParticles(Lnet/minecraft/core/particles/ParticleOptions;DDDIDDDD)I"), index = 2)
     private double modifyParticlePosY(double posY) {
         ILibEntity self = ILibEntity.of(confluence$self());
@@ -66,7 +40,6 @@ public abstract class LivingEntityMixin implements ILibLivingEntity {
         return posY;
     }
 
-    /// 1.20 `LivingEntityMixin:56-62`，逐字。
     @ModifyVariable(method = "travel", at = @At("HEAD"), argsOnly = true)
     private Vec3 reversed(Vec3 vec3) {
         if (ILibEntity.of(confluence$self()).confluence$isShouldRot()) {
