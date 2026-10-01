@@ -7,10 +7,13 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.common.util.TriState;
 import org.confluence.lib.mixed.ILibAbstractContainerScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AbstractContainerScreen.class)
 public abstract class AbstractContainerScreenMixin implements ILibAbstractContainerScreen {
@@ -33,5 +36,11 @@ public abstract class AbstractContainerScreenMixin implements ILibAbstractContai
             ILibAbstractContainerScreen.renderGroupBackground(instance, stack, x, y, slot);
         }
         original.call(instance, stack, x, y, seed);
+    }
+
+    @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
+    private void onMouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
+        TriState triState = confluence$onMouseClicked(mouseX, mouseY, button);
+        if (!triState.isDefault()) cir.setReturnValue(triState.isTrue());
     }
 }

@@ -32,6 +32,7 @@ import org.confluence.lib.api.animation.third_person.PlayerAttackingStatePacket;
 import org.confluence.lib.network.AttackDamagePacketS2C;
 import org.confluence.lib.network.SetEntityDataPacketS2C;
 import org.confluence.lib.network.c2s.GravitationPacketC2S;
+import org.confluence.lib.network.c2s.SwitchEffectEnabledPackedC2S;
 import org.confluence.lib.network.s2c.BroadcastGravitationRotPacketS2C;
 
 import java.util.ArrayList;
@@ -61,6 +62,7 @@ public final class LibModEvents {
                 // 1.20 归属：`Confluence-Magic-Lib` 的 `lib/network/{c2s/GravitationPacketC2S,s2c/BroadcastGravitationRotPacketS2C}`。
                 .playToServer(GravitationPacketC2S.TYPE, GravitationPacketC2S.STREAM_CODEC, GravitationPacketC2S::handle)
                 .playToClient(BroadcastGravitationRotPacketS2C.TYPE, BroadcastGravitationRotPacketS2C.STREAM_CODEC, BroadcastGravitationRotPacketS2C::handle)
+                .playToServer(SwitchEffectEnabledPackedC2S.TYPE, SwitchEffectEnabledPackedC2S.STREAM_CODEC, SwitchEffectEnabledPackedC2S::handle)
         ;
 
         if (AnimationConstants.SHOULD_APPLY) {

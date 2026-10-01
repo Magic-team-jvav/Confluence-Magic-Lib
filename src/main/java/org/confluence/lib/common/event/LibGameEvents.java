@@ -48,6 +48,7 @@ import org.confluence.lib.common.worldgen.biome.DynamicBiomeUtils;
 import org.confluence.lib.common.worldgen.biome.MiniBiome;
 import org.confluence.lib.mixed.ILibDamageSource;
 import org.confluence.lib.mixed.ILibExtraSyncedData;
+import org.confluence.lib.mixed.ILibMobEffectInstance;
 import org.confluence.lib.network.AttackDamagePacketS2C;
 import org.confluence.lib.network.SetEntityDataPacketS2C;
 import org.confluence.lib.util.DelayTaskHolder;
@@ -325,6 +326,13 @@ public final class LibGameEvents {
         if (ConfluenceMagicLib.IS_CONFLUENCE_LOAD) return;
         if (event.getSource().is(LibDamageTypes.GUN_BULLET)) {
             event.setInvulnerabilityTicks(0);
+        }
+    }
+
+    @SubscribeEvent
+    public static void effectParticleModification(EffectParticleModificationEvent event) {
+        if (event.isVisible() && !ILibMobEffectInstance.of(event.getEffect()).confluence$isEnabled()) {
+            event.setVisible(false);
         }
     }
 }

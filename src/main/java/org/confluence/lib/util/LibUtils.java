@@ -14,6 +14,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -32,8 +34,11 @@ import net.minecraft.world.phys.Vec2;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.neoforge.common.EffectCure;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.confluence.lib.ConfluenceMagicLib;
+import org.confluence.lib.api.event.EffectSwitchableCheckEvent;
+import org.confluence.lib.common.LibEffects;
 import org.confluence.lib.common.component.NbtComponent;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -325,5 +330,11 @@ public final class LibUtils {
     /// 不能在mixin plugin中使用
     public static boolean isModLoaded(String modid) {
         return LoadingModList.get().getModFileById(modid) != null;
+    }
+
+    public static boolean isSwitchableEffect(MobEffectInstance instance) {
+        MobEffect effect = instance.getEffect().value();
+        boolean switchable = effect == LibEffects.GRAVITATION.get() ? instance.getAmplifier() <= 0 : effect.isBeneficial();
+        return NeoForge.EVENT_BUS.post(new EffectSwitchableCheckEvent(instance, switchable)).isSwitchable();
     }
 }
