@@ -10,18 +10,14 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.*;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
@@ -31,7 +27,6 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
-import net.minecraft.world.phys.Vec2;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.neoforge.common.EffectCure;
@@ -65,34 +60,6 @@ public final class LibUtils {
     @ApiStatus.Internal
     public static <T> T forMixin$ModifyExpression(T value) {
         return value;
-    }
-
-    /**
-     * 获取两个向量的角度（弧度）
-     *
-     * @param a 向量a
-     * @param b 向量b
-     * @return 两个向量的角度（弧度）
-     */
-    public static float getAngleRadians(Vec2 a, Vec2 b) {
-        return getAngleRadians(a.x, a.y, b.x, b.y);
-    }
-
-    /**
-     * 获取两个向量的角度（弧度）
-     *
-     * @param ax 向量a的x坐标
-     * @param ay 向量a的y坐标
-     * @param bx 向量b的x坐标
-     * @param by 向量b的y坐标
-     * @return 角度（弧度）
-     */
-    public static float getAngleRadians(double ax, double ay, double bx, double by) {
-        return (float) (Math.atan2(by - ay, bx - ax)) + 3.141f;// + (a.x > b.x ? Math.PI : 0));
-    }
-
-    public static float rotLerp(float a, float from, float to) {
-        return Mth.rotLerp(a, from, to);
     }
 
     /// @param a 形参的方块实体类型
@@ -178,16 +145,6 @@ public final class LibUtils {
         if (isDev()) {
             runnable.run();
         }
-    }
-
-    public static void setItemAndDropChance(Mob mob, DifficultyInstance difficulty, EquipmentSlot slot, Item item, float chance) {
-        ItemStack itemStack = item.getDefaultInstance();
-        float enchantChance = (slot.getType() == EquipmentSlot.Type.HAND ? 0.25F : 0.5F) * difficulty.getSpecialMultiplier();
-        if (mob.getRandom().nextFloat() < enchantChance) {
-            EnchantmentHelper.enchantItemFromProvider(itemStack, mob.registryAccess(), VanillaEnchantmentProviders.MOB_SPAWN_EQUIPMENT, difficulty, mob.getRandom());
-        }
-        mob.setItemSlot(slot, itemStack);
-        mob.setDropChance(slot, chance);
     }
 
     public static CompoundTag getItemStackNbt(ItemStack stack) {
