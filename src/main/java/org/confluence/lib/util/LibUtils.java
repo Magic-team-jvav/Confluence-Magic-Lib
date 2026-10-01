@@ -11,6 +11,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.*;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
@@ -330,6 +331,16 @@ public final class LibUtils {
     /// 不能在mixin plugin中使用
     public static boolean isModLoaded(String modid) {
         return LoadingModList.get().getModFileById(modid) != null;
+    }
+
+    public static int listRandom(BooleanStorage4 list, RandomSource random) {
+        for (int i = 0; i < 100; i++) {
+            int listW = random.nextInt(list.size());
+            if (!list.get(listW)) {
+                return listW;
+            }
+        }
+        return 0;
     }
 
     public static boolean isSwitchableEffect(MobEffectInstance instance) {

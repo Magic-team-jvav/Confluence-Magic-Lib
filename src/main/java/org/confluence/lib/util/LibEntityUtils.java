@@ -313,7 +313,7 @@ public final class LibEntityUtils {
 
     /// 更新实体朝向
     public static void updateEntityRotation(Entity entity, Vec3 dir) {
-        float[] angle = VectorUtils.dirToRot(dir, true);
+        float[] angle = LibMathUtils.dirToRot(dir, true);
         entity.setYRot(angle[0]);
         entity.setXRot(angle[1]);
     }

@@ -1,6 +1,7 @@
 package org.confluence.lib.util;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -280,6 +281,63 @@ public final class LibMathUtils {
         return b.position().subtract(a.position()).normalize();
     }
 
+    /// 最简单的追踪机制，计算过程如下：
+    /// 1. 将当前的弹幕方向进行缩放
+    /// 2. 将目标方向（即追踪弹幕想要去的方向）以一定权重加入缩放后的弹幕方向
+    /// 3. 调整最终方向向量长度返回
+    ///
+    /// 优点：计算量少，逻辑简单
+    ///
+    /// 缺点：在allowLowerSpd为false  且  移动方向与想要弹幕追踪到的方向相反时，追踪能力极为有限；
+    ///
+    /// interpolateBasis方法以更多的计算量为代价提供更加平滑和可调整的追踪弹道。
+    ///
+    /// @param currDir            当前的弹幕方向向量
+    /// @param targetDir          弹幕追踪目标方向向量
+    /// @param currDirScaleFactor 当前弹幕方向计算前的缩放比例
+    /// @param homingPower        弹幕追踪时根据目标方向调整的量
+    /// @param maxSpeed           弹幕追踪时最大速度; 取值范围 - [0, inf)
+    /// @param minSpeed           弹幕追踪时最低速度; 取值范围 - [0, maxSpeed]
+    /// @param defaultDir         若更新完毕的弹幕方向为0，但最低速度要求不为0时，返回defaultDir方向（长度会更新为minSpeed）。
+    ///                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 *警告*：此向量不要为0
+    /// @return 最终更新完毕的方向向量
+    public static Vec3 interpolateSimple(
+            Vec3 currDir,
+            Vec3 targetDir,
+            double currDirScaleFactor,
+            double homingPower,
+            double maxSpeed,
+            double minSpeed,
+            Vec3 defaultDir
+    ) {
+        Vec3 result = currDir;
+        // 若当前方向和目标方向的方向向量均不为0时才考虑进行方向调整
+        // 为了方向的准确性，我们将不考虑长度 < 0.001 (即lengthSqr < 1e-9) 的向量
+        if (currDir.lengthSqr() > 1e-9 && targetDir.lengthSqr() > 1e-9) {
+            result = currDir.multiply(currDirScaleFactor, currDirScaleFactor, currDirScaleFactor);
+            // normalize不会造成NaN，此处长度 > 0.001
+            Vec3 targetComponent = targetDir.normalize().multiply(homingPower, homingPower, homingPower);
+            result = result.add(targetComponent);
+        }
+        // 最后，根据最大最小速度的要求更改向量长度
+        double vecLen = result.length();
+        if (vecLen > maxSpeed) {
+            double factor = maxSpeed / vecLen;
+            // 不使用normalize以减少一次计算向量长度带来的sqrt运算
+            result = result.multiply(factor, factor, factor);
+        } else if (vecLen < minSpeed) {
+            // 若结果向量过短，使用defaultDir
+            if (vecLen < 1e-5) {
+                result = defaultDir;
+                vecLen = result.length();
+            }
+            double factor = minSpeed / vecLen;
+            // 不使用normalize以减少一次计算向量长度带来的sqrt运算
+            result = result.multiply(factor, factor, factor);
+        }
+        return result;
+    }
+
     // ------------------------------------------------------------------
     // 追踪弹道基：`interpolateBasis` 家族（1.20 `LibMathUtils:366-479` 逐字搬入）
     // ------------------------------------------------------------------
@@ -401,6 +459,47 @@ public final class LibMathUtils {
         if (sqr == 0.0)
             throw new IllegalArgumentException("Length of toProjectOnto could not be zero");
         return toProjectOnto.scale(toProjectOnto.dot(vector) / sqr);
+    }
+
+    /// 把向量转成角度
+    ///
+    /// @return \[yaw, pitch\]
+    public static float[] dirToRot(Vec3 vec, boolean toDeg) {
+        double x = vec.x;
+        double y = vec.y;
+        double z = vec.z;
+        double h = vec.horizontalDistance();
+        float yaw = (float) Mth.atan2(-x, z);
+        float pitch = (float) Mth.atan2(-y, h);
+        if (toDeg) {
+            return new float[]{yaw * Mth.RAD_TO_DEG, pitch * Mth.RAD_TO_DEG};
+        }
+        return new float[]{yaw, pitch};
+    }
+
+    public static Direction[] directionsInAxis(Direction.Axis axis) {
+        return switch (axis) {
+            case X -> new Direction[]{Direction.EAST, Direction.WEST};
+            case Y -> new Direction[]{Direction.UP, Direction.DOWN};
+            default -> new Direction[]{Direction.SOUTH, Direction.NORTH};
+        };
+    }
+
+    /// 将输入的向量的某个轴乘一个缩放
+    ///
+    /// @param vec3  输入的向量
+    /// @param axis  某个轴
+    /// @param scale 缩放
+    /// @return 新向量
+    public static Vec3 relativeScale(Vec3 vec3, Direction.Axis axis, double scale) {
+        double x = axis == Direction.Axis.X ? scale * vec3.x : vec3.x;
+        double y = axis == Direction.Axis.Y ? scale * vec3.y : vec3.y;
+        double z = axis == Direction.Axis.Z ? scale * vec3.z : vec3.z;
+        return new Vec3(x, y, z);
+    }
+
+    public static BlockPos fromVector3f(Vector3f vector3d) {
+        return new BlockPos(Mth.floor(vector3d.x), Mth.floor(vector3d.y), Mth.floor(vector3d.z));
     }
 
     // ------------------------------------------------------------------
