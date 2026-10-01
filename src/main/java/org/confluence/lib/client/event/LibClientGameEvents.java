@@ -52,7 +52,6 @@ public final class LibClientGameEvents {
         PortEventHandler.addListener(LibClientGameEvents::clientTick$Post);
         PortEventHandler.addListener(LibClientGameEvents::viewport$ComputeCameraAngles);
         PortEventHandler.addListener(LibClientGameEvents::input$InteractionKeyMappingTriggered);
-        PortEventHandler.addListener(DynamicLightDispatcher::update);
     }
 
     private static void clientTick(TickEvent.ClientTickEvent event) {
@@ -127,7 +126,6 @@ public final class LibClientGameEvents {
     }
 
     private static void clientPlayerNetwork$LoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
-        DynamicLightDispatcher.clearWorld();
         GravitationHandler.reset();
         CameraAnimation.clear();
         if (AnimationConstants.SHOULD_APPLY) {

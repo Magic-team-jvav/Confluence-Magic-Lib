@@ -30,6 +30,7 @@
         "naturalspawner.NaturalSpawnerMixin"
     ],
     "client": [
+        "chunk.LevelRendererAccessor",
         "client.AbstractContainerScreenMixin",
         "client.BlockModelShaperMixin",
         "client.ClientEntityMixin",

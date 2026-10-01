@@ -12,6 +12,6 @@ public class EntityRendererMixin {
 
     @ModifyReturnValue(method = "getPackedLightCoords", at = @At("RETURN"))
     private int getPackedLightCoords(int original, Entity entity, float partialTicks) {
-        return DynamicLightDispatcher.getDynamicLight(entity.getLightProbePosition(partialTicks), original);
+        return DynamicLightDispatcher.INSTANCE.getDynamicLight(entity.getLightProbePosition(partialTicks), original);
     }
 }
