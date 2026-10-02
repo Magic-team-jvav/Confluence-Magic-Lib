@@ -46,12 +46,6 @@ public final class LibLanguageProvider extends LanguageProvider {
         add("tooltip.confluence.work_in_progress", "Still Work In Progress!", "仍在开发中！");
         add("alarm.confluence_magic_lib.this_is_free_mod", "Confluence: Otherworld(Java Edition) is a §afree mod§f; please §cdo not distribute it§f. If you paid for it, please cut your losses promptly.", "汇流来世(Java版)是一个§a免费模组§f，§c请勿分发§f；如果你是付费受害者，请及时止损。");
 
-        // WP6c（重力反转整条特性搬到 Lib）：按键与按键分类的 lang 键**归 Lib**。
-        // 1.20 同名文件 `:67/68` 逐字；1.21 侧此前一条 `key.*` 都没有，
-        // 于是 en_us / zh_cn 下按键名与分类名会显示成原始键字符串
-        // （`key.confluence_magic_lib.flip_gravitation` / `key.confluence_magic_lib.gameplay`）。
-        // ⚠️ 这两条**只能在这里**：键的宿主是 Lib 的 `LibKeyBindings`，
-        // TerraCurio 的 `TCLanguageProvider` 里那条已按 1.20 归属**删除**（否则生成的 JSON 重复键）。
         add("key.confluence_magic_lib.gameplay", "Confluence Magic Lib", "汇流魔法库");
         add("key.confluence_magic_lib.flip_gravitation", "Flip Gravitation", "反转重力");
     }

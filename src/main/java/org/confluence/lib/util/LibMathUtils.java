@@ -37,13 +37,8 @@ public final class LibMathUtils {
         return value >= 1.0 || (value > 0.0 && random.nextDouble() < value);
     }
 
-    /// 计算暴击伤害，如果触发暴击则伤害×1.5。
     ///
-    /// 1.20 侧同名方法在 `Confluence-Magic-Lib` 的 `LibMathUtils.java`（紧接着 `checkChance` 之后），
-    /// 逐字搬运。1.21 侧此前缺这个成员（又一个「成员级盲区」）。
     ///
-    /// 消费点：**枪械内联 G4′** 的服务端开火管线 `GunFiringService.java:39`
-    /// （1.20 `common/combat/gun/GunFiringService.java:37` 同一行）。
     public static float criticalDamageTotal(float critical, float damage, RandomSource random) {
         return checkChance(critical, random) ? damage * 1.5F : damage;
     }
@@ -275,8 +270,6 @@ public final class LibMathUtils {
         return value;
     }
 
-    /// 从 A 指向 B 的单位向量（1.20 `LibMathUtils:502` 同名方法；1.21 侧此前缺这一支，
-    /// 由枪械 G3′ 的 `BaseBulletEntity` 回补，见 `notes/WP4-BATCH25-WIP.md`）。
     public static Vec3 getVectorA2B(Entity a, Entity b) {
         return b.position().subtract(a.position()).normalize();
     }
@@ -339,12 +332,8 @@ public final class LibMathUtils {
     }
 
     // ------------------------------------------------------------------
-    // 追踪弹道基：`interpolateBasis` 家族（1.20 `LibMathUtils:366-479` 逐字搬入）
     // ------------------------------------------------------------------
     //
-    // 1.21 侧此前**这四个方法都没有**；消费方是主模组的 `TheDestroyer`（1.20 `:228` 用它算追踪
-    // 转向/加速），随「WP3 客户端族批」的服务端半一起补。四个方法互相依赖：
-    // `interpolateBasis` → `vectorProjection`，`getLerp`/`getThresholdInterpolator` 是喂给它的插值器工厂。
 
     /// 将currDir方向的单位向量记为v1, 我们使用向量投影的方式构造单位向量v2，使得v1与v2为currDir, targetDir平面上的基，且v1垂直于v2.
     ///
@@ -551,9 +540,6 @@ public final class LibMathUtils {
         return result;
     }
 
-    // 1.21 侧此前没有这三个；消费方是本次一并搬入的 `LibGeometryUtils`（`roundPos` 与
-    // `getProjectionOnLineSegment` 家族），而 `LibGeometryUtils` 又是 1.20 worldgen
-    // carver / feature / structure 与 Lib VFX（`ThunderboltVFX`）的共同前置。
 
     /// 方块中心坐标转 `Vector3f`（+0.5）。
     public static Vector3f toVector3f(BlockPos pos) {

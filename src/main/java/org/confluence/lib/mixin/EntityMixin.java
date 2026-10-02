@@ -95,9 +95,6 @@ public abstract class EntityMixin implements ILibEntity {
 
     @Inject(method = "baseTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;isInLava()Z", ordinal = 1))
     private void cacheDimensionHeight(CallbackInfo ci) {
-        // 1.21 API 差异：`EntityDimensions` 在 1.21 是 **record**
-        // （`public record EntityDimensions(float width, float height, ...)`），
-        // 所以 1.20 的 `.height` 字段读取必须写成访问器 `.height()`（原版 `Entity.java:2985/2987` 也是这么用的）。
         this.confluence$dimensionHeight = confluence$isShouldRot ? getDimensions(getPose()).height() : 0.0F;
     }
 

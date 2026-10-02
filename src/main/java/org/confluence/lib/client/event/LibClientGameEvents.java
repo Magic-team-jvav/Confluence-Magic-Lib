@@ -112,16 +112,7 @@ public final class LibClientGameEvents {
         }
     }
 
-    /// 重力反转的「输入」侧驱动（WP6c 第二步：整条特性从 1.21 的 TerraCurio 挪回 Lib，与 1.20 归属一致）。
     ///
-    /// 1.20 原文：`Confluence-Magic-Lib` 的 `lib/client/event/LibClientGameEvents.java:106-120`，逐字。
-    /// 唯一的 API 改写是第 2 行：1.20 写的是 `player.getEffect(LibEffects.GRAVITATION.get())`
-    /// （那时 Forge 的 `getEffect` 收 `MobEffect`，`LibEffects.GRAVITATION` 是 RegistryObject），
-    /// 1.21 的 `LivingEntity#getEffect` 收 **`Holder<MobEffect>`**（源码已核实：
-    /// `LivingEntity.java` 的 `public MobEffectInstance getEffect(Holder<MobEffect> effect)`），
-    /// 而 Lib 的 `LibEffects.GRAVITATION` 是 `DeferredHolder<MobEffect, MobEffect>`（**就是** Holder），
-    /// 所以去掉 `.get()` —— 与 1.21 TerraCurio 的
-    /// `terra_curio/client/event/GameClientEvents.java:61` 同一写法（那份是本条特性此前的宿主）。
     @SubscribeEvent
     public static void movementInputUpdate(MovementInputUpdateEvent event) {
         LocalPlayer player = (LocalPlayer) event.getEntity();
@@ -151,14 +142,7 @@ public final class LibClientGameEvents {
         }
     }
 
-    /// 1.20 原文：`LibClientGameEvents.java:138-144`（方法名 `clientTick$Post`，phase START 分支）。
     ///
-    /// ⚠️ **方法名与 1.20 不同（有意）**：1.21 本文件里已有一个 `clientTick$Post(ClientTickEvent.Pre)`，
-    /// 但它的**方法体其实是 1.20 的 `clientTick`**（`ExpertColorAnimation`/`MasterColorAnimation`/`DPSMeter`），
-    /// 也就是说这个名字在 1.21 侧被用在了另一件事上。为避免重名（Java 不允许两个同签名方法），
-    /// 这里按职责命名为 `clientTick$Gravitation`。
-    /// 语义不变：1.20 的 `clientTick` 与 `clientTick$Post` 是**同一个事件（ClientTickEvent, phase START）
-    /// 上的两个监听器**，二者互相独立（前者刷颜色动画、后者只做 `tryExpire`），先后顺序无语义影响。
     @SubscribeEvent
     public static void clientTick$Gravitation(ClientTickEvent.Pre event) {
         LocalPlayer player = Minecraft.getInstance().player;
@@ -167,19 +151,8 @@ public final class LibClientGameEvents {
         }
     }
 
-    /// 1.20 原文：`LibClientGameEvents.java:146-151`。
     ///
-    /// ⚠️ **本方法刻意只搬了重力那半句**：1.20 的同一个处理器里还有一句
-    /// `CameraAnimation.apply(event)`（第一人称镜头动画，与重力无关），
-    /// 它在本仓库 1.21 侧**至今没有任何调用点**（全仓 grep：`CameraAnimation` 只出现在
-    /// `lib/api/animation/first_person/CameraAnimation.java` 自身）。那是 G0 搬进来后
-    /// 还没接线的东西，**不属于 WP6c 的重力特性**，为避免顺手改动无关行为（镜头动画会突然生效）
-    /// 而没有一并加上 —— 需要时请另行确认后再接。
     ///
-    /// 另一处与 1.21 TerraCurio 旧实现的差异：TerraCurio 写的是**绝对赋值** `setRoll(180.0F)`
-    /// （`GameClientEvents.java:85`），而 1.20 Lib 是**叠加** `setRoll(getRoll() + 180)`。
-    /// 这里按 1.20 写（本步的事实来源）：叠加式在「别的处理器（如镜头动画）已经改过 roll」时
-    /// 才是正确的组合语义，绝对赋值会把它盖掉。
     @SubscribeEvent
     public static void viewport$ComputeCameraAngles(ViewportEvent.ComputeCameraAngles event) {
         if (GravitationHandler.isShouldRot()) {
