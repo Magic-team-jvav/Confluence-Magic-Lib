@@ -590,4 +590,12 @@ public final class LibMathUtils {
     public static double angleBetween(Vec3 v1, Vec3 v2) {
         return Math.acos(v1.dot(v2) / v1.length() / v2.length());
     }
+
+    public static Vec3 rotToDir(float yRot, float xRot) {
+        float cosX = Mth.cos(xRot * Mth.DEG_TO_RAD);
+        float x = -Mth.sin(yRot * Mth.DEG_TO_RAD) * cosX;
+        float y = -Mth.sin(xRot * Mth.DEG_TO_RAD);
+        float z = Mth.cos(yRot * Mth.DEG_TO_RAD) * cosX;
+        return new Vec3(x, y, z);
+    }
 }
