@@ -39,7 +39,7 @@ public final class LibDamageTypes {
         return of(level, key, causing, causing);
     }
 
-    public static DamageSource of(Level level, ResourceKey<DamageType> key, @Nullable Entity causing, @Nullable Entity direct) {
+    public static DamageSource of(Level level, ResourceKey<DamageType> key, @Nullable Entity direct, @Nullable Entity causing) {
         return level.damageSources().source(key, direct, causing);
     }
 
