@@ -16,6 +16,7 @@ import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.confluence.lib.api.animation.first_person.CameraAnimation;
 import org.confluence.lib.api.animation.third_person.AnimationConstants;
@@ -23,7 +24,7 @@ import org.confluence.lib.api.animation.third_person.PlayerAttackingStatePacket;
 import org.confluence.lib.api.animation.third_person.PlayerGeoAnimatable;
 import org.confluence.lib.api.event.OnGatherEffectScreenTooltipsEvent;
 import org.confluence.lib.client.DPSMeter;
-import org.confluence.lib.client.DynamicLightDispatcher;
+import org.confluence.lib.client.DynamicLightRegister;
 import org.confluence.lib.client.LibKeyBindings;
 import org.confluence.lib.client.color.ExpertColorAnimation;
 import org.confluence.lib.client.color.MasterColorAnimation;
@@ -36,6 +37,7 @@ import org.confluence.lib.util.LibClientUtils;
 import org.mesdag.portlib.event.PortEventHandler;
 import org.mesdag.portlib.event.PortEventPriority;
 import org.mesdag.portlib.event.client.PortGatherEffectScreenTooltipsEvent;
+import org.mesdag.portlib.event.client.PortRenderLevelStageEvent;
 
 import java.util.List;
 import java.util.Objects;
@@ -52,6 +54,7 @@ public final class LibClientGameEvents {
         PortEventHandler.addListener(LibClientGameEvents::clientTick$Post);
         PortEventHandler.addListener(LibClientGameEvents::viewport$ComputeCameraAngles);
         PortEventHandler.addListener(LibClientGameEvents::input$InteractionKeyMappingTriggered);
+        PortEventHandler.addListener(DynamicLightRegister::renderEntity);
     }
 
     private static void clientTick(TickEvent.ClientTickEvent event) {
