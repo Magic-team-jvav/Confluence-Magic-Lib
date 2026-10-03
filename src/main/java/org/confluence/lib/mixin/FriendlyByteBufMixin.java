@@ -4,11 +4,13 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.FriendlyByteBuf;
+import org.mesdag.portlib.diff.Diff;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
+@Diff
 @Mixin(FriendlyByteBuf.class)
 public abstract class FriendlyByteBufMixin {
     @Shadow
