@@ -23,6 +23,7 @@ public final class DynamicLightDispatcher {
 
     private final double maxRadius;
     private final double maxRadiusSquared;
+    private final int maxStrength;
     private final double falloff;
     private ObjectOpenHashSet<LightSource> current;
     private ObjectOpenHashSet<LightSource> previous;
@@ -34,7 +35,8 @@ public final class DynamicLightDispatcher {
     private DynamicLightDispatcher(double maxRadius) {
         this.maxRadius = maxRadius;
         this.maxRadiusSquared = maxRadius * maxRadius;
-        this.falloff = 15.0 / maxRadius;
+        this.maxStrength = 240;
+        this.falloff = maxStrength / maxRadius;
         this.current = new ObjectOpenHashSet<>();
         this.previous = new ObjectOpenHashSet<>();
         this.dirtySections = new LongOpenHashSet();
@@ -42,8 +44,20 @@ public final class DynamicLightDispatcher {
         this.snapshot = emptySnapshot;
     }
 
+    public void addLightSource(Vec3 position, int strength) {
+        add(new LightSource(position, Mth.clamp(strength, 0, maxStrength)));
+    }
+
+    public void addLightSource(Vec3 position, float strength) {
+        add(new LightSource(position, Mth.clamp(Math.round(strength * maxStrength), 0, maxStrength)));
+    }
+
     public void addLightSource(LightSource source) {
-        if (source.luminance() > 0 && current.add(source) && !previous.contains(source)) {
+        add(source);
+    }
+
+    private void add(LightSource source) {
+        if (source.strength() > 0 && current.add(source) && !previous.contains(source)) {
             markImpactSections(source);
             changed = true;
         }
@@ -73,9 +87,9 @@ public final class DynamicLightDispatcher {
         }
         int light = originalLight;
         if (!state.isSolidRender(level, blockPos)) {
-            double dynamicLight = getDynamicLightLevel(blockPos.getX() + 0.5, blockPos.getY() + 0.5, blockPos.getZ() + 0.5);
-            if (dynamicLight > LightTexture.block(originalLight)) {
-                light = withDynamicLight(originalLight, dynamicLight);
+            double strength = getDynamicLightLevel(blockPos.getX() + 0.5, blockPos.getY() + 0.5, blockPos.getZ() + 0.5);
+            if (strength > LightTexture.block(originalLight) * 16) { // 原版光照是 0~15 级，换算到同一尺度再比
+                light = withDynamicLight(originalLight, strength);
             }
         }
         return light;
@@ -83,9 +97,9 @@ public final class DynamicLightDispatcher {
 
     public int getDynamicLight(Vec3 eyePos, int originalLight) {
         int light = originalLight;
-        double dynamicLight = getDynamicLightLevel(eyePos.x, eyePos.y, eyePos.z);
-        if (dynamicLight > LightTexture.block(originalLight)) {
-            light = withDynamicLight(originalLight, dynamicLight);
+        double strength = getDynamicLightLevel(eyePos.x, eyePos.y, eyePos.z);
+        if (strength > LightTexture.block(originalLight) * 16) {
+            light = withDynamicLight(originalLight, strength);
         }
         return light;
     }
@@ -117,9 +131,9 @@ public final class DynamicLightDispatcher {
                             double dz = z - pos.z;
                             double distSq = dx * dx + dy * dy + dz * dz;
                             if (distSq <= maxRadiusSquared) { // 超出半径时光值为负，直接跳过
-                                double light = lightSource.luminance() - Math.sqrt(distSq) * falloff;
-                                if (light > result) {
-                                    result = light;
+                                double strength = lightSource.strength() - Math.sqrt(distSq) * falloff;
+                                if (strength > result) {
+                                    result = strength;
                                 }
                             }
                         }
@@ -127,7 +141,7 @@ public final class DynamicLightDispatcher {
                 }
             }
         }
-        return Mth.clamp(result, 0.0, 15.0);
+        return Mth.clamp(result, 0.0, maxStrength);
     }
 
     private Long2ObjectOpenHashMap<LightSource[]> buildSnapshot() {
@@ -147,7 +161,7 @@ public final class DynamicLightDispatcher {
 
     private void markImpactSections(LightSource source) {
         Vec3 position = source.position();
-        double radius = Mth.clamp(source.luminance(), 0, 15) / falloff;
+        double radius = Mth.clamp(source.strength(), 0, maxStrength) / falloff;
         int minX = SectionPos.blockToSectionCoord(position.x() - radius);
         int maxX = SectionPos.blockToSectionCoord(position.x() + radius);
         int minY = SectionPos.blockToSectionCoord(position.y() - radius);
@@ -176,29 +190,29 @@ public final class DynamicLightDispatcher {
         return SectionPos.asLong(SectionPos.blockToSectionCoord(pos.x()), SectionPos.blockToSectionCoord(pos.y()), SectionPos.blockToSectionCoord(pos.z()));
     }
 
-    private static int withDynamicLight(int originalLight, double dynamicLight) {
-        int smooth = (int) (dynamicLight * 16.0) + 8;
+    private static int withDynamicLight(int originalLight, double strength) {
+        int smooth = Mth.clamp((int) strength + 8, 8, 248);
         return (originalLight & 0xfff00000) | smooth;
     }
 
     public static final class LightSource {
 
         private final Vec3 position;
-        private final int luminance;
+        private final int strength;
         private final int hash;
 
-        public LightSource(Vec3 position, int luminance) {
+        public LightSource(Vec3 position, int strength) {
             this.position = position;
-            this.luminance = luminance;
-            this.hash = Long.hashCode(Double.doubleToLongBits(position.x) * 0x9E3779B97F4A7C15L ^ Double.doubleToLongBits(position.y) * 0xC2B2AE3D27D4EB4FL ^ Double.doubleToLongBits(position.z) * 0x165667B19E3779F9L ^ luminance * 0x27D4EB2F165667C5L);
+            this.strength = Mth.clamp(strength, 0, 240);
+            this.hash = Long.hashCode(Double.doubleToLongBits(position.x) * 0x9E3779B97F4A7C15L ^ Double.doubleToLongBits(position.y) * 0xC2B2AE3D27D4EB4FL ^ Double.doubleToLongBits(position.z) * 0x165667B19E3779F9L ^ strength * 0x27D4EB2F165667C5L);
         }
 
         public Vec3 position() {
             return position;
         }
 
-        public int luminance() {
-            return luminance;
+        public int strength() {
+            return strength;
         }
 
         @Override
@@ -212,7 +226,7 @@ public final class DynamicLightDispatcher {
                 return true;
             }
             if (object instanceof LightSource other) {
-                return luminance == other.luminance && position.x == other.position.x && position.y == other.position.y && position.z == other.position.z;
+                return strength == other.strength && position.x == other.position.x && position.y == other.position.y && position.z == other.position.z;
             }
             return false;
         }
