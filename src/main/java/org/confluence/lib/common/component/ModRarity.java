@@ -41,14 +41,7 @@ public class ModRarity implements DataComponentType<ModRarity> {
     public static final ModRarity MASTER = new ModRarity("master", -2, true);
     public static final ModRarity QUEST = new ModRarity("quest", 0xFFAF00);
 
-    public static final HashBiMap<Integer, ModRarity> ID_MAP = Util.make(HashBiMap.create(), map -> {
-        map.put(-13, MASTER);
-        map.put(-12, EXPERT);
-        map.put(-11, QUEST);
-        map.put(-10, COMMON);
-        map.put(-9, UNCOMMON);
-        map.put(-8, RARE);
-        map.put(-7, EPIC);
+    public static final HashBiMap<Integer, ModRarity> TIER = Util.make(HashBiMap.create(), map -> {
         map.put(-1, GRAY);
         map.put(0, WHITE);
         map.put(1, BLUE);
