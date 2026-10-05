@@ -22,13 +22,13 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.LibStartupConfig;
+import org.confluence.lib.api.animation.third_person.AnimationConstants;
+import org.confluence.lib.api.animation.third_person.PlayerAttackingStatePacket;
 import org.confluence.lib.api.event.CustomGroupItemIconEvent;
 import org.confluence.lib.api.event.NameFixRegisterEvent;
 import org.confluence.lib.common.LibAttributes;
 import org.confluence.lib.common.fluid.FluidBuilder;
 import org.confluence.lib.common.item.GroupItem;
-import org.confluence.lib.api.animation.third_person.AnimationConstants;
-import org.confluence.lib.api.animation.third_person.PlayerAttackingStatePacket;
 import org.confluence.lib.network.AttackDamagePacketS2C;
 import org.confluence.lib.network.SetEntityDataPacketS2C;
 import org.confluence.lib.network.c2s.GravitationPacketC2S;
@@ -56,10 +56,6 @@ public final class LibModEvents {
         registrar
                 .playToClient(SetEntityDataPacketS2C.TYPE, SetEntityDataPacketS2C.STREAM_CODEC, SetEntityDataPacketS2C::handle)
                 .playToClient(AttackDamagePacketS2C.TYPE, AttackDamagePacketS2C.STREAM_CODEC, AttackDamagePacketS2C::handle)
-                // WP6c 第二步：重力反转的两个包（1.20 靠 PortLib 的 `IPortPacket` 体系自动登记，
-                // 1.21 必须在 `RegisterPayloadHandlersEvent` 里显式登记，否则
-                // `sendToServer`/`sendToAllPlayers` 发出去的包**无人注册、`work(...)` 永不执行**）。
-                // 1.20 归属：`Confluence-Magic-Lib` 的 `lib/network/{c2s/GravitationPacketC2S,s2c/BroadcastGravitationRotPacketS2C}`。
                 .playToServer(GravitationPacketC2S.TYPE, GravitationPacketC2S.STREAM_CODEC, GravitationPacketC2S::handle)
                 .playToClient(BroadcastGravitationRotPacketS2C.TYPE, BroadcastGravitationRotPacketS2C.STREAM_CODEC, BroadcastGravitationRotPacketS2C::handle)
                 .playToServer(SwitchEffectEnabledPackedC2S.TYPE, SwitchEffectEnabledPackedC2S.STREAM_CODEC, SwitchEffectEnabledPackedC2S::handle)

@@ -22,40 +22,6 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/// `Entity` 上的重力反转注入（WP6c：整条特性从 1.20 的 Lib 搬到 1.21 的 Lib）。
-///
-/// ## ⚠️ 与 1.20 的**唯一**一处非逐字改动：`@Unique` 字段改名
-///
-/// 1.20 这份用的是**历史遗留命名** `terra_curio$isShouldRot` / `terra_curio$dimensionHeight`
-/// （这条特性当年先在 TerraCurio 里写、后来才搬进 Lib，前缀没跟着改）。而 **1.21 的 TerraCurio
-/// `mixin/EntityMixin.java` 里有一模一样的字段名**（实测：`terra_curio$isShouldRot` 在 `:50`、
-/// `terra_curio$dimensionHeight` 在 `:52`）。两个 `@Mixin(Entity.class)` 各自声明同名的 `@Unique`
-/// 字段 → 注入到同一个 `Entity` 上时**字段重复、启动即崩**。
-///
-/// 所以本类把它们改名为 **`confluence$isShouldRot` / `confluence$dimensionHeight`**，
-/// 与 `ILibEntity` 的方法前缀一致。`@Unique` 私有字段不对外可见（只被本类与 `ILibEntity`
-/// 的方法实现访问），改名**零外部影响**；第二步做原子切换（删掉 TerraCurio 那份）时也不需要再改回来。
-///
-/// ## 本类只搬「重力」相关成员
-///
-/// 1.20 那份 Lib `EntityMixin` 本身就是重力专用（没有 cthulhu 冲刺 / `TCUtils.applyLavaImmune` /
-/// `isPlayer` —— 那些留在 TerraCurio 的 `IEntity`/`EntityMixin` 里），所以是整份逐字搬。
-///
-/// ## 注入点（每个都在 1.21 源码里逐个核实过）
-///
-/// | 注入 | 1.21 目标（实测） |
-/// |---|---|
-/// | `cacheDimensionHeight` | `Entity#baseTick` 的 `isInLava()` INVOKE **ordinal = 1** —— 1.21 `baseTick` 里 `isInLava()` 正好出现两次（`:467` 的火焰判定、`:480` 的 `lavaHurt`），ordinal 1 命中后者 |
-/// | `getOnPosAbove` | `Entity#getOnPosLegacy()`（`Entity.java` 中存在，public） |
-/// | `getBoundingBox` | `Entity#checkSupportingBlock(boolean, Vec3)` 里的 `Entity#getBoundingBox()` INVOKE |
-/// | `updateFallDistance` | `Entity#checkFallDamage(double y, boolean onGround, BlockState state, BlockPos pos)` @TAIL，两个 `@Local(argsOnly = true)` 分别取 y / onGround |
-/// | `modifyParticlePosY` / `modifyParticleSpeedY` | `Entity#spawnSprintParticle()` 里的 `Level#addParticle(ParticleOptions, DDDDDD)`，实参序为 `(粒子, x, y, z, dx, dy, dz)` → index 2 = y、index 5 = dy |
-/// | `flip` | `Entity#move(MoverType, Vec3)` 中 `verticalCollisionBelow` 的 PUTFIELD（1.21 该字段只被写一次） |
-///
-/// ⚠️ **本类已落地但尚未接线，接线见 WP6c 第二步。**
-/// 本类注入的读取点全是 `confluence$isShouldRot()`，而写入它的唯一入口是
-/// `GravitationPacketC2S`（**尚未注册**）→ 接线前该值恒为 `false`，**所有注入都是 no-op**，
-/// 行为与接线前**零变化**（TerraCurio 那份仍在独立工作，用的是它自己的 `terra_curio$` 字段）。
 @Mixin(Entity.class)
 public abstract class EntityMixin implements ILibEntity {
     @Shadow

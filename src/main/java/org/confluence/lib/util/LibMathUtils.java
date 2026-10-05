@@ -491,10 +491,6 @@ public final class LibMathUtils {
         return new BlockPos(Mth.floor(vector3d.x), Mth.floor(vector3d.y), Mth.floor(vector3d.z));
     }
 
-    // ------------------------------------------------------------------
-    // `LibGeometryUtils` 依赖的 3 个方法（1.20 `LibMathUtils` 同名方法逐字搬入）
-    // ------------------------------------------------------------------
-    //
     /// 若要自定义默认返回的向量，请在length后传入一个默认向量
     ///
     /// @param start  开始位置的位置向量
