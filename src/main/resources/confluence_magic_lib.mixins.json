@@ -44,7 +44,8 @@
         "client.LivingEntityRendererMixin",
         "client.LocalPlayerAccessor",
         "client.LocalPlayerMixin",
-        "client.MissingTextureAtlasSpriteMixin"
+        "client.MissingTextureAtlasSpriteMixin",
+        "client.MouseHandlerMixin"
     ],
     "injectors": {
         "defaultRequire": 1
