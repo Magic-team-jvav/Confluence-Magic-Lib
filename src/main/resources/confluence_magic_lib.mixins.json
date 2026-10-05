@@ -11,6 +11,7 @@
         "DamageSourceMixin",
         "EntityMixin",
         "FoodDataMixin",
+        "HoneyBottleItemMixin",
         "LivingEntityMixin",
         "MobEffectInstanceMixin",
         "PlayerMixin",
