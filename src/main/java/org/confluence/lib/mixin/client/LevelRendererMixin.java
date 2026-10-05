@@ -1,5 +1,6 @@
 package org.confluence.lib.mixin.client;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.GameRenderer;
@@ -15,14 +16,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = LevelRenderer.class, priority = 899)
 public class LevelRendererMixin {
 
-    @Inject(method = "getLightColor(Lnet/minecraft/world/level/BlockAndTintGetter;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)I", at = @At("RETURN"), cancellable = true)
-    private static void enhanceLightColor(BlockAndTintGetter level, BlockState state, BlockPos pos, CallbackInfoReturnable<Integer> cir) {
-        cir.setReturnValue(DynamicLightDispatcher.INSTANCE.getDynamicLight(level, state, pos, cir.getReturnValue()));
+    @ModifyReturnValue(method = "getLightColor(Lnet/minecraft/world/level/BlockAndTintGetter;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)I", at = @At("RETURN"))
+    private static int enhanceLightColor(int original, BlockAndTintGetter level, BlockState state, BlockPos pos) {
+        return DynamicLightDispatcher.INSTANCE.getDynamicLight(level, state, pos, original);
     }
 
     @Inject(method = "renderLevel", at = @At(value = "TAIL"))
