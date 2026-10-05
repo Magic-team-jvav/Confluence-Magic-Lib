@@ -1,5 +1,6 @@
 package org.confluence.lib.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -20,7 +21,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin implements ILibEntity {
@@ -64,11 +64,12 @@ public abstract class EntityMixin implements ILibEntity {
         this.confluence$dimensionHeight = confluence$isShouldRot ? getDimensions(getPose()).height() : 0.0F;
     }
 
-    @Inject(method = "getOnPosLegacy", at = @At("RETURN"), cancellable = true)
-    private void getOnPosAbove(CallbackInfoReturnable<BlockPos> cir) {
+    @ModifyReturnValue(method = "getOnPosLegacy", at = @At("RETURN"))
+    private BlockPos getOnPosAbove(BlockPos original) {
         if (confluence$isShouldRot) {
-            cir.setReturnValue(getOnPos(-(confluence$dimensionHeight + 0.2F)));
+            return getOnPos(-(confluence$dimensionHeight + 0.2F));
         }
+        return original;
     }
 
     @WrapOperation(method = "checkSupportingBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getBoundingBox()Lnet/minecraft/world/phys/AABB;"))
