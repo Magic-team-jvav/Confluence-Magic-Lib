@@ -1,11 +1,10 @@
 package org.confluence.lib.common.recipe;
 
 import PortLib.extensions.com.mojang.serialization.DataResult.PortDataResultExtension;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.MapLike;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -16,17 +15,16 @@ import org.mesdag.portlib.network.codec.PortStreamCodec;
 import org.mesdag.portlib.wrapper.world.item.crafting.PortRecipe;
 
 public abstract class SimpleRecipeSerializer<R extends PortRecipe<?>> implements RecipeSerializer<R> {
-    private MapCodec<R> codec;
+    private Codec<R> codec;
     private PortStreamCodec<PortRegistryFriendlyByteBuf, R> streamCodec;
 
     @ApiStatus.NonExtendable
     @Override
     public R fromJson(ResourceLocation recipeId, JsonObject serializedRecipe) {
         if (codec == null) {
-            codec = getCodec();
+            codec = getCodec().codec();
         }
-        MapLike<JsonElement> mapLike = PortDataResultExtension.getOrThrow(JsonOps.INSTANCE.getMap(serializedRecipe));
-        R r = PortDataResultExtension.getOrThrow(codec.decode(JsonOps.INSTANCE, mapLike));
+        R r = PortDataResultExtension.getOrThrow(codec.parse(JsonOps.INSTANCE, serializedRecipe));
         r.setId(recipeId);
         return r;
     }
