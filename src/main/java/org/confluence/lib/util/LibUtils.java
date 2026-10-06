@@ -8,7 +8,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.QuartPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ServerChunkCache;
@@ -16,11 +15,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
@@ -303,18 +299,6 @@ public final class LibUtils {
     /// 不能在mixin plugin中使用
     public static boolean isModLoaded(String modid) {
         return PortEnvironment.isModLoaded(modid);
-    }
-
-    public static DamageSource damageSource(Level level, ResourceKey<DamageType> key, @Nullable Entity causing, @Nullable Entity direct) {
-        return level.damageSources().source(key, direct, causing);
-    }
-
-    public static DamageSource damageSource(Level level, ResourceKey<DamageType> key, @Nullable Entity entity) {
-        return level.damageSources().source(key, entity, entity);
-    }
-
-    public static DamageSource damageSource(Level level, ResourceKey<DamageType> key) {
-        return level.damageSources().source(key, null, null);
     }
 
     public static int listRandom(BooleanStorage4 list, RandomSource random) {
