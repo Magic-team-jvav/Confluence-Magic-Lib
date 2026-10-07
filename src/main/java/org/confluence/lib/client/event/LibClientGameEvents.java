@@ -29,6 +29,7 @@ import org.confluence.lib.api.animation.third_person.PlayerGeoAnimatable;
 import org.confluence.lib.api.event.OnGatherEffectScreenTooltipsEvent;
 import org.confluence.lib.client.DPSMeter;
 import org.confluence.lib.client.DynamicLightDispatcher;
+import org.confluence.lib.client.DynamicLightRegister;
 import org.confluence.lib.client.LibKeyBindings;
 import org.confluence.lib.client.color.ExpertColorAnimation;
 import org.confluence.lib.client.color.MasterColorAnimation;
@@ -156,6 +157,6 @@ public final class LibClientGameEvents {
 
     @SubscribeEvent
     public static void renderLevelStage$DynamicLight(RenderLevelStageEvent event) {
-        DynamicLightDispatcher.update(event);
+        DynamicLightRegister.renderEntity(event);
     }
 }

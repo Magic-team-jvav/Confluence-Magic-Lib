@@ -13,6 +13,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.phys.Vec3;
 import org.confluence.lib.common.LibAttributes;
+import org.confluence.lib.common.LibEffects;
 import org.confluence.lib.mixed.ILibEntity;
 import org.confluence.lib.mixed.ILibLivingEntity;
 import org.confluence.lib.mixed.ILibMobEffectInstance;
@@ -38,6 +39,12 @@ public abstract class LivingEntityMixin implements ILibLivingEntity {
             return posY + self.confluence$getDimensionHeight() - 0.15;
         }
         return posY;
+    }
+
+    /// 混乱效果反转移动输入，由效果所在的基础库统一处理。
+    @ModifyVariable(method = "travel", at = @At("HEAD"), argsOnly = true)
+    private Vec3 confused(Vec3 vec3) {
+        return confluence$self().hasEffect(LibEffects.CONFUSED) ? vec3.reverse() : vec3;
     }
 
     @ModifyVariable(method = "travel", at = @At("HEAD"), argsOnly = true)
