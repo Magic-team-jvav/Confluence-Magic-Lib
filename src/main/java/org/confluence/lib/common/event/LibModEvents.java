@@ -86,6 +86,7 @@ public final class LibModEvents {
         LibAttributes.registerAttribute(ConfluenceMagicLib.SUMMON_KNOCKBACK, event::add);
         LibAttributes.registerAttribute(ConfluenceMagicLib.WHIP_RANGE, event::add);
         LibAttributes.registerAttribute(ConfluenceMagicLib.MARK_DAMAGE, event::add);
+        LibAttributes.registerAttribute(ConfluenceMagicLib.VOID_EROSION_DELTA, event::add);
     }
 
     private static void buildCreativeModeTabContents(PortBuildCreativeModeTabContentsEvent event) {
