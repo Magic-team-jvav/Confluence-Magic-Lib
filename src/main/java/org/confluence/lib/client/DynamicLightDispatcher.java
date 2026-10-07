@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
@@ -12,7 +13,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.confluence.lib.mixin.chunk.LevelRendererAccessor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +63,7 @@ public final class DynamicLightDispatcher {
         }
     }
 
-    public void update(LevelRendererAccessor levelRenderer) {
+    public void update(LevelRenderer levelRenderer) {
         for (LightSource light : previous) {
             if (!current.contains(light)) {
                 markImpactSections(light);
@@ -177,10 +177,10 @@ public final class DynamicLightDispatcher {
         }
     }
 
-    private void flushDirtySections(LevelRendererAccessor levelRenderer) {
+    private void flushDirtySections(LevelRenderer levelRenderer) {
         for (LongIterator it = dirtySections.iterator(); it.hasNext(); ) {
             long section = it.nextLong();
-            levelRenderer.callSetSectionDirty(SectionPos.x(section), SectionPos.y(section), SectionPos.z(section), false);
+            levelRenderer.setSectionDirty(SectionPos.x(section), SectionPos.y(section), SectionPos.z(section));
         }
         dirtySections.clear();
     }
