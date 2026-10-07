@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
@@ -17,7 +18,6 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import org.confluence.lib.mixin.chunk.LevelRendererAccessor;
 
 import java.util.*;
 import java.util.function.IntSupplier;
@@ -152,7 +152,7 @@ public final class DynamicLightDispatcher {
     /// 保留旧渲染事件入口，正常调用链由渲染器帧末挂载更新。
     public static void update(RenderLevelStageEvent event) {
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL) {
-            INSTANCE.update((LevelRendererAccessor) event.getLevelRenderer());
+            INSTANCE.update(event.getLevelRenderer());
         }
     }
 
@@ -207,7 +207,7 @@ public final class DynamicLightDispatcher {
 
     private record RegisteredSource(Supplier<Vec3> position, IntSupplier luminance) {}
 
-    public void update(LevelRendererAccessor levelRenderer) {
+    public void update(LevelRenderer levelRenderer) {
         collectLegacySources();
         for (LightSource light : previous) {
             if (!current.contains(light)) {
@@ -322,10 +322,10 @@ public final class DynamicLightDispatcher {
         }
     }
 
-    private void flushDirtySections(LevelRendererAccessor levelRenderer) {
+    private void flushDirtySections(LevelRenderer levelRenderer) {
         for (LongIterator it = dirtySections.iterator(); it.hasNext(); ) {
             long section = it.nextLong();
-            levelRenderer.callSetSectionDirty(SectionPos.x(section), SectionPos.y(section), SectionPos.z(section), false);
+            levelRenderer.setSectionDirty(SectionPos.x(section), SectionPos.y(section), SectionPos.z(section));
         }
         dirtySections.clear();
     }
