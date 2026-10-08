@@ -19,7 +19,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import org.confluence.lib.util.LibStreamCodecUtils;
-import org.jetbrains.annotations.ApiStatus;
 import org.joml.Vector2i;
 import org.mesdag.portlib.diff.Diff;
 import org.mesdag.portlib.network.PortRegistryFriendlyByteBuf;
@@ -56,25 +55,22 @@ public abstract class AbstractAmountRecipe<I extends PortRecipeInput> implements
     }
 
     @Diff
-    @ApiStatus.NonExtendable
     @Override
-    public void setId(ResourceLocation id) {
+    public final void setId(ResourceLocation id) {
         this.id = id;
     }
 
     @Diff
-    @ApiStatus.NonExtendable
     @Override
-    public ResourceLocation getId() {
+    public final ResourceLocation getId() {
         return id;
     }
 
     @Override
-    public ItemStack getResultItem(RegistryAccess registryAccess) {
+    public final ItemStack getResultItem(RegistryAccess registryAccess) {
         return getResult();
     }
 
-    @Diff
     public ItemStack getResult() {
         return result;
     }
@@ -115,7 +111,7 @@ public abstract class AbstractAmountRecipe<I extends PortRecipeInput> implements
     }
 
     @Override
-    public ItemStack assemble(I container, RegistryAccess registryAccess) {
+    public final ItemStack assemble(I container, RegistryAccess registryAccess) {
         return getResult().copy();
     }
 
