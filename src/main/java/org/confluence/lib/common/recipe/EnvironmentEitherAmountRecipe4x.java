@@ -42,34 +42,34 @@ public abstract class EnvironmentEitherAmountRecipe4x extends EitherAmountRecipe
 
     public static <R extends EnvironmentEitherAmountRecipe4x> MapCodec<R> environmentShapedSerializerMapCodec(Function3<ItemStack, ShapedRecipePattern, EnvironmentLevelAccess.Matcher, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
+                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(R::getResult),
                 ShapedRecipePattern.MAP_CODEC.forGetter(recipe -> recipe.either.left().orElseThrow()),
-                EnvironmentLevelAccess.Matcher.MAP_CODEC.forGetter(EnvironmentEitherAmountRecipe4x::getEnvironment)
+                EnvironmentLevelAccess.Matcher.MAP_CODEC.forGetter(R::getEnvironment)
         ).apply(instance, factory));
     }
 
     public static <R extends EnvironmentEitherAmountRecipe4x> StreamCodec<RegistryFriendlyByteBuf, R> environmentShapedSerializerSteamCodec(Function3<ItemStack, ShapedRecipePattern, EnvironmentLevelAccess.Matcher, R> factory) {
         return StreamCodec.composite(
-                ItemStack.STREAM_CODEC, r -> r.result,
+                ItemStack.STREAM_CODEC, R::getResult,
                 ShapedRecipePattern.STREAM_CODEC, r -> r.either.left().orElseThrow(),
-                EnvironmentLevelAccess.Matcher.STREAM_CODEC, EnvironmentEitherAmountRecipe4x::getEnvironment,
+                EnvironmentLevelAccess.Matcher.STREAM_CODEC, R::getEnvironment,
                 factory
         );
     }
 
     public static <R extends EnvironmentEitherAmountRecipe4x> MapCodec<R> environmentEitherSerializerMapCodec(Function3<ItemStack, Either<ShapedRecipePattern, NonNullList<Ingredient>>, EnvironmentLevelAccess.Matcher, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
+                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(R::getResult),
                 Codec.mapEither(ShapedRecipePattern.MAP_CODEC, INGREDIENTS_CODEC).forGetter(recipe -> recipe.either),
-                EnvironmentLevelAccess.Matcher.MAP_CODEC.forGetter(EnvironmentEitherAmountRecipe4x::getEnvironment)
+                EnvironmentLevelAccess.Matcher.MAP_CODEC.forGetter(R::getEnvironment)
         ).apply(instance, factory));
     }
 
     public static <R extends EnvironmentEitherAmountRecipe4x> StreamCodec<RegistryFriendlyByteBuf, R> environmentEitherSerializerStreamCodec(Function3<ItemStack, Either<ShapedRecipePattern, NonNullList<Ingredient>>, EnvironmentLevelAccess.Matcher, R> factory) {
         return StreamCodec.composite(
-                ItemStack.STREAM_CODEC, r -> r.result,
+                ItemStack.STREAM_CODEC, R::getResult,
                 EITHER_CODEC, r -> r.either,
-                EnvironmentLevelAccess.Matcher.STREAM_CODEC, EnvironmentEitherAmountRecipe4x::getEnvironment,
+                EnvironmentLevelAccess.Matcher.STREAM_CODEC, R::getEnvironment,
                 factory
         );
     }

@@ -76,14 +76,14 @@ public abstract class EitherAmountRecipe4x<I extends MenuRecipeInput> extends Ab
 
     public static <R extends EitherAmountRecipe4x<?>> MapCodec<R> shapedSerializerMapCodec(BiFunction<ItemStack, ShapedRecipePattern, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
+                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(R::getResult),
                 ShapedRecipePattern.MAP_CODEC.forGetter(recipe -> recipe.either.left().orElseThrow())
         ).apply(instance, factory));
     }
 
     public static <R extends EitherAmountRecipe4x<?>> StreamCodec<RegistryFriendlyByteBuf, R> shapedSerializerSteamCodec(BiFunction<ItemStack, ShapedRecipePattern, R> factory) {
         return StreamCodec.composite(
-                ItemStack.STREAM_CODEC, r -> r.result,
+                ItemStack.STREAM_CODEC, R::getResult,
                 ShapedRecipePattern.STREAM_CODEC, r -> r.either.left().orElseThrow(),
                 factory
         );
@@ -91,14 +91,14 @@ public abstract class EitherAmountRecipe4x<I extends MenuRecipeInput> extends Ab
 
     public static <R extends EitherAmountRecipe4x<?>> MapCodec<R> eitherSerializerMapCodec(BiFunction<ItemStack, Either<ShapedRecipePattern, NonNullList<Ingredient>>, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
+                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(R::getResult),
                 Codec.mapEither(ShapedRecipePattern.MAP_CODEC, INGREDIENTS_CODEC).forGetter(recipe -> recipe.either)
         ).apply(instance, factory));
     }
 
     public static <R extends EitherAmountRecipe4x<?>> StreamCodec<RegistryFriendlyByteBuf, R> eitherSerializerStreamCodec(BiFunction<ItemStack, Either<ShapedRecipePattern, NonNullList<Ingredient>>, R> factory) {
         return StreamCodec.composite(
-                ItemStack.STREAM_CODEC, r -> r.result,
+                ItemStack.STREAM_CODEC, R::getResult,
                 EITHER_CODEC, r -> r.either,
                 factory
         );

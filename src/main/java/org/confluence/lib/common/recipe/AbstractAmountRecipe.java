@@ -40,8 +40,8 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
         }
     }, ingredients -> DataResult.success(ingredients, Lifecycle.stable()));
     private static final Object2ObjectFunction<Ingredient, Tuple<Integer, IntArraySet>> FUNCTION = I -> new Tuple<>(((Ingredient) I).getCustomIngredient() instanceof AmountIngredient ai ? ai.amount() : 1, new IntArraySet());
-    public final ItemStack result;
-    public final NonNullList<Ingredient> ingredients;
+    protected final ItemStack result;
+    protected final NonNullList<Ingredient> ingredients;
 
     protected AbstractAmountRecipe(ItemStack result, NonNullList<Ingredient> ingredients) {
         if (ingredients.size() > maxIngredientSize()) {
@@ -52,13 +52,17 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
     }
 
     @Override
-    public ItemStack getResultItem(HolderLookup.@Nullable Provider registries) {
+    public final ItemStack getResultItem(HolderLookup.@Nullable Provider registries) {
+        return getResult();
+    }
+
+    public ItemStack getResult() {
         return result;
     }
 
     @Override
     public boolean matches(T input, Level pLevel) {
-        return matches(input.size(), input::getItem, ingredients);
+        return matches(input.size(), input::getItem, getIngredients());
     }
 
     public static boolean matches(int size, Int2ObjectFunction<ItemStack> getItemStackCallback, NonNullList<Ingredient> ingredients) {
@@ -93,12 +97,12 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
     }
 
     @Override
-    public ItemStack assemble(T input, HolderLookup.@Nullable Provider registries) {
-        return getResultItem(registries).copy();
+    public final ItemStack assemble(T input, HolderLookup.@Nullable Provider registries) {
+        return getResult().copy();
     }
 
     public ItemStack assembleAndExtract(T input, HolderLookup.Provider registries) {
-        consumeShapeless(input, ingredients);
+        consumeShapeless(input, getIngredients());
         return assemble(input, registries);
     }
 
@@ -224,15 +228,15 @@ public abstract class AbstractAmountRecipe<T extends RecipeInput> implements Rec
 
     public static <R extends AbstractAmountRecipe<?>> MapCodec<R> shapelessSerializerMapCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
-                INGREDIENTS_CODEC.forGetter(recipe -> recipe.ingredients)
+                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(AbstractAmountRecipe::getResult),
+                INGREDIENTS_CODEC.forGetter(AbstractAmountRecipe::getIngredients)
         ).apply(instance, factory));
     }
 
     public static <R extends AbstractAmountRecipe<?>> StreamCodec<RegistryFriendlyByteBuf, R> shapelessSerializerSteamCodec(BiFunction<ItemStack, NonNullList<Ingredient>, R> factory) {
         return StreamCodec.composite(
-                ItemStack.STREAM_CODEC, r -> r.result,
-                LibStreamCodecUtils.INGREDIENTS, r -> r.getIngredients(),
+                ItemStack.STREAM_CODEC, AbstractAmountRecipe::getResult,
+                LibStreamCodecUtils.INGREDIENTS, AbstractAmountRecipe::getIngredients,
                 factory
         );
     }

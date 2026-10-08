@@ -30,17 +30,17 @@ public abstract class EnvironmentAmountRecipe extends AbstractAmountRecipe<Envir
 
     public static <R extends EnvironmentAmountRecipe> MapCodec<R> environmentShapelessSerializerMapCodec(Function3<ItemStack, NonNullList<Ingredient>, EnvironmentLevelAccess.Matcher, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
-                INGREDIENTS_CODEC.forGetter(recipe -> recipe.ingredients),
-                EnvironmentLevelAccess.Matcher.MAP_CODEC.forGetter(EnvironmentAmountRecipe::getEnvironment)
+                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(R::getResult),
+                INGREDIENTS_CODEC.forGetter(R::getIngredients),
+                EnvironmentLevelAccess.Matcher.MAP_CODEC.forGetter(R::getEnvironment)
         ).apply(instance, factory));
     }
 
     public static <R extends EnvironmentAmountRecipe> StreamCodec<RegistryFriendlyByteBuf, R> environmentShapelessSerializerSteamCodec(Function3<ItemStack, NonNullList<Ingredient>, EnvironmentLevelAccess.Matcher, R> factory) {
         return StreamCodec.composite(
-                ItemStack.STREAM_CODEC, r -> r.result,
-                LibStreamCodecUtils.INGREDIENTS, AbstractAmountRecipe::getIngredients,
-                EnvironmentLevelAccess.Matcher.STREAM_CODEC, EnvironmentAmountRecipe::getEnvironment,
+                ItemStack.STREAM_CODEC, R::getResult,
+                LibStreamCodecUtils.INGREDIENTS, R::getIngredients,
+                EnvironmentLevelAccess.Matcher.STREAM_CODEC, R::getEnvironment,
                 factory
         );
     }
