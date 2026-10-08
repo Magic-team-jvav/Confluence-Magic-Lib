@@ -75,14 +75,14 @@ public abstract class EitherAmountRecipe4x<I extends MenuRecipeInput> extends Ab
 
     public static <R extends EitherAmountRecipe4x<?>> MapCodec<R> shapedSerializerMapCodec(BiFunction<ItemStack, PortShapedRecipePattern, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(AbstractAmountRecipe::getResult),
+                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(R::getResult),
                 PortShapedRecipePattern.MAP_CODEC.forGetter(recipe -> recipe.either.left().orElseThrow())
         ).apply(instance, factory));
     }
 
     public static <R extends EitherAmountRecipe4x<?>> PortStreamCodec<PortRegistryFriendlyByteBuf, R> shapedSerializerSteamCodec(BiFunction<ItemStack, PortShapedRecipePattern, R> factory) {
         return PortStreamCodec.composite(
-                ItemStack.STREAM_CODEC, AbstractAmountRecipe::getResult,
+                ItemStack.STREAM_CODEC, R::getResult,
                 PortShapedRecipePattern.STREAM_CODEC, r -> r.either.left().orElseThrow(),
                 factory
         );
@@ -90,14 +90,14 @@ public abstract class EitherAmountRecipe4x<I extends MenuRecipeInput> extends Ab
 
     public static <R extends EitherAmountRecipe4x<?>> MapCodec<R> eitherSerializerMapCodec(BiFunction<ItemStack, Either<PortShapedRecipePattern, NonNullList<Ingredient>>, R> factory) {
         return RecordCodecBuilder.mapCodec(instance -> instance.group(
-                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(AbstractAmountRecipe::getResult),
+                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(R::getResult),
                 Codec.mapEither(PortShapedRecipePattern.MAP_CODEC, INGREDIENTS_CODEC).forGetter(recipe -> recipe.either)
         ).apply(instance, factory));
     }
 
     public static <R extends EitherAmountRecipe4x<?>> PortStreamCodec<PortRegistryFriendlyByteBuf, R> eitherSerializerStreamCodec(BiFunction<ItemStack, Either<PortShapedRecipePattern, NonNullList<Ingredient>>, R> factory) {
         return PortStreamCodec.composite(
-                ItemStack.STREAM_CODEC, AbstractAmountRecipe::getResult,
+                ItemStack.STREAM_CODEC, R::getResult,
                 EITHER_CODEC, r -> r.either,
                 factory
         );

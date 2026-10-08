@@ -77,7 +77,7 @@ public abstract class AbstractAmountRecipe<I extends PortRecipeInput> implements
 
     @Override
     public boolean matches(I input, Level pLevel) {
-        return matches(input.size(), input::getItem, ingredients);
+        return matches(input.size(), input::getItem, getIngredients());
     }
 
     public static boolean matches(int size, Int2ObjectFunction<ItemStack> getItemStackCallback, NonNullList<Ingredient> ingredients) {
@@ -116,7 +116,7 @@ public abstract class AbstractAmountRecipe<I extends PortRecipeInput> implements
     }
 
     public ItemStack assembleAndExtract(I input, RegistryAccess registryAccess) {
-        consumeShapeless(input, ingredients);
+        consumeShapeless(input, getIngredients());
         return assemble(input, registryAccess);
     }
 
