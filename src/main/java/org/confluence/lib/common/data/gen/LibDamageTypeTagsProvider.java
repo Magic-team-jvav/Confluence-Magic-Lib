@@ -30,6 +30,6 @@ public final class LibDamageTypeTagsProvider extends DamageTypeTagsProvider {
         tag(PortTags.DamageTypes.IS_MAGIC).add(LibDamageTypes.MAGICAL_PROJECTILE);
         tag(DamageTypeTags.IS_PROJECTILE).add(LibDamageTypes.GUN_BULLET, LibDamageTypes.MAGICAL_PROJECTILE);
         tag(DamageTypeTags.BYPASSES_ARMOR).add(LibDamageTypes.DUNGEON_GUARDIAN);
-        tag(PortTags.DamageTypes.IS_PLAYER_ATTACK).add(LibDamageTypes.SUMMON);
+        tag(PortTags.DamageTypes.IS_PLAYER_ATTACK).add(LibDamageTypes.SUMMONER);
     }
 }
