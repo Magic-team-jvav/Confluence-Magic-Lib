@@ -2,13 +2,12 @@ package org.confluence.lib.client.light;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.confluence.lib.client.DynamicLightDispatcher;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiConsumer;
 
 public final class DynamicLightEffects {
@@ -19,11 +18,12 @@ public final class DynamicLightEffects {
     public static void renderBeam(Vec3 start, Vec3 end, int brightness) {
         double distance = start.distanceTo(end);
         if (brightness <= 0 || !Double.isFinite(distance)) return;
-        int segments = Mth.clamp((int) Math.ceil(distance / 4.0), 1, 15);
+        long segments = Math.max(1L, (long) Math.ceil(distance / 4.0));
         int strength = Mth.clamp(brightness, 1, 15) * 17;
-        for (int index = 0; index <= segments; index++) {
+        for (long index = 0; index < segments; index++) {
             DynamicLightDispatcher.INSTANCE.addLightSource(start.lerp(end, index / (double) segments), strength);
         }
+        DynamicLightDispatcher.INSTANCE.addLightSource(end, strength);
     }
 
     public static void flash(Vec3 position, int brightness, int duration) {
@@ -39,8 +39,7 @@ public final class DynamicLightEffects {
         INSTANCE.reset();
     }
 
-    private static final int MAX_SOURCES = 64;
-    private final Map<BlockPos, Pulse> sources = new LinkedHashMap<>();
+    private final List<Pulse> sources = new ArrayList<>();
     private ClientLevel currentLevel;
 
     private void add(ClientLevel level, Vec3 position, int brightness, int duration) {
@@ -49,32 +48,16 @@ public final class DynamicLightEffects {
                 || !Double.isFinite(position.x) || !Double.isFinite(position.y) || !Double.isFinite(position.z))
             return;
         long now = level.getGameTime();
-        sources.values().removeIf(pulse -> now < pulse.started() || now >= pulse.expires());
-        BlockPos key = BlockPos.containing(position);
-        Pulse previous = sources.get(key);
-        int strength = Mth.clamp(brightness, 1, 15);
-        long expires = now + Math.min(duration, 20);
-        // 同一格的特效聚合成一个光源，避免散弹和密集粒子成倍增加开销。
-        if (previous != null) {
-            strength = Math.max(strength, previous.brightnessAt(now, 0.0F));
-            expires = Math.max(expires, previous.expires());
-        } else if (sources.size() >= MAX_SOURCES) {
-            sources.remove(sources.keySet().iterator().next());
-        }
-        sources.put(key, new Pulse(position, strength, now, expires));
+        sources.add(new Pulse(position, Mth.clamp(brightness, 1, 15), now, now + (long) duration));
     }
 
     private void render(ClientLevel level, float partialTick, BiConsumer<Vec3, Integer> consumer) {
         useLevel(level);
         if (level == null) return;
         long now = level.getGameTime();
-        var iterator = sources.values().iterator();
-        while (iterator.hasNext()) {
-            Pulse pulse = iterator.next();
-            if (now < pulse.started() || now >= pulse.expires()) {
-                iterator.remove();
-                continue;
-            }
+        // 批量移除结束的闪光，避免 ArrayList 逐个删除产生反复搬移。
+        sources.removeIf(pulse -> now < pulse.started() || now >= pulse.expires());
+        for (Pulse pulse : sources) {
             int brightness = pulse.brightnessAt(now, partialTick);
             if (brightness > 0) consumer.accept(pulse.position(), brightness);
         }
