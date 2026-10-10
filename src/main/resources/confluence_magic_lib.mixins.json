@@ -38,6 +38,7 @@
         "client.ClientPlayerMixin",
         "client.CreativeModeInventoryScreenMixin",
         "client.EntityRendererMixin",
+        "client.GameRendererMixin",
         "client.GuiGraphicsMixin",
         "client.GuiMixin",
         "client.KeyMappingAccessor",
@@ -46,7 +47,9 @@
         "client.LocalPlayerAccessor",
         "client.LocalPlayerMixin",
         "client.MissingTextureAtlasSpriteMixin",
-        "client.MouseHandlerMixin"
+        "client.MouseHandlerMixin",
+        "client.ProgramMixin",
+        "client.ShaderInstanceMixin"
     ],
     "injectors": {
         "defaultRequire": 1

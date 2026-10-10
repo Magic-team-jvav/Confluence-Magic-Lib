@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -17,7 +18,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import org.confluence.lib.client.light.DynamicLightEffects;
+import org.confluence.lib.client.light.DynamicLightGpu;
+import org.joml.Matrix4f;
 
 import java.util.*;
 import java.util.function.IntSupplier;
@@ -26,18 +29,25 @@ import java.util.function.ToIntFunction;
 
 public final class DynamicLightDispatcher {
 
+    public static final int MAX_STRENGTH = 0xFF;
+
     public static final DynamicLightDispatcher INSTANCE = new DynamicLightDispatcher(7.75);
 
     private final double maxRadius;
     private final double maxRadiusSquared;
-    private final int maxStrength;
     private final double falloff;
     private ObjectOpenHashSet<LightSource> current;
     private ObjectOpenHashSet<LightSource> previous;
+    private final List<LightSource> collectedSources = new ArrayList<>();
     private final LongOpenHashSet dirtySections;
     private final Long2ObjectOpenHashMap<LightSource[]> emptySnapshot;
     private volatile Long2ObjectOpenHashMap<LightSource[]> snapshot;
+    private static final Comparator<LightSource> BY_STRENGTH = Comparator.comparingInt(LightSource::strength).reversed();
+    private final Long2ObjectOpenHashMap<SnapshotGroup> snapshotGroups = new Long2ObjectOpenHashMap<>();
+    private final List<SnapshotGroup> groupPool = new ArrayList<>();
     private boolean changed;
+    private ClientLevel frameLevel;
+    private boolean lastGpu;
 
     /// 旧版公开登记入口的兼容提交表，光照计算仍由同一个实例完成。
     private final Map<Long, LightSource> legacyFrameSources = new HashMap<>();
@@ -48,21 +58,20 @@ public final class DynamicLightDispatcher {
     private DynamicLightDispatcher(double maxRadius) {
         this.maxRadius = maxRadius;
         this.maxRadiusSquared = maxRadius * maxRadius;
-        this.maxStrength = 240;
-        this.falloff = maxStrength / maxRadius;
-        this.current = new ObjectOpenHashSet<>();
-        this.previous = new ObjectOpenHashSet<>();
+        this.falloff = MAX_STRENGTH / maxRadius;
+        this.current = new ObjectOpenHashSet<>(16, 0.5F);
+        this.previous = new ObjectOpenHashSet<>(16, 0.5F);
         this.dirtySections = new LongOpenHashSet();
         this.emptySnapshot = new Long2ObjectOpenHashMap<>();
         this.snapshot = emptySnapshot;
     }
 
     public void addLightSource(Vec3 position, int strength) {
-        add(new LightSource(position, Mth.clamp(strength, 0, maxStrength)));
+        if (strength > 0) add(new LightSource(position, strength));
     }
 
     public void addLightSource(Vec3 position, float strength) {
-        add(new LightSource(position, Mth.clamp(Math.round(strength * maxStrength), 0, maxStrength)));
+        addLightSource(position, Math.round(strength * MAX_STRENGTH));
     }
 
     public void addLightSource(LightSource source) {
@@ -70,17 +79,26 @@ public final class DynamicLightDispatcher {
     }
 
     private void add(LightSource source) {
-        if (source.strength() > 0 && current.add(source) && !previous.contains(source)) {
-            markImpactSections(source);
+        if (source == null || source.strength() <= 0
+                || !Double.isFinite(source.position().x) || !Double.isFinite(source.position().y)
+                || !Double.isFinite(source.position().z) || !current.add(source)) return;
+        boolean gpu = DynamicLightGpu.terrainGpu();
+        if (changed) {
+            collectedSources.add(source);
+            if (!gpu && !previous.contains(source)) markImpactSections(source);
+        } else if (!previous.contains(source)) {
+            // 第一次变化时补齐此前采集的光源；完全静止的帧不维护额外列表。
+            collectedSources.addAll(current);
             changed = true;
+            if (!gpu) markImpactSections(source);
         }
     }
 
-    /// 兼容原有整数光级入口，0～15 光级换算为原生 0～240 强度。
+    /// 兼容原有整数光级入口，0～15 光级换算为原生 0～255 强度。
     public static void addLightSources(Vec3 position, int luminance) {
         int light = Mth.clamp(luminance, 0, 15);
         if (light > 0) {
-            INSTANCE.addLightSource(position, light * 16);
+            INSTANCE.addLightSource(position, light * 17);
         }
     }
 
@@ -102,7 +120,7 @@ public final class DynamicLightDispatcher {
     public static void addLightSource(long sourceId, Vec3 position, int luminance) {
         int light = Mth.clamp(luminance, 0, 15);
         if (light > 0) {
-            INSTANCE.legacyFrameSources.put(sourceId, new LightSource(position, light * 16));
+            INSTANCE.legacyFrameSources.put(sourceId, new LightSource(position, light * 17));
         }
     }
 
@@ -138,22 +156,26 @@ public final class DynamicLightDispatcher {
     }
 
     /// 保留显式退出世界清理入口，类型提供器不受影响。
+    public static void setLevel(ClientLevel level) {
+        clearWorld();
+        INSTANCE.frameLevel = level;
+    }
+
     public static void clearWorld() {
         INSTANCE.current.clear();
+        INSTANCE.collectedSources.clear();
         INSTANCE.previous.clear();
         INSTANCE.dirtySections.clear();
         INSTANCE.snapshot = INSTANCE.emptySnapshot;
+        INSTANCE.snapshotGroups.clear();
+        INSTANCE.groupPool.clear();
         INSTANCE.changed = false;
         INSTANCE.legacyFrameSources.clear();
         INSTANCE.legacyRegisteredSources.clear();
         INSTANCE.legacyLevel = null;
-    }
-
-    /// 保留旧渲染事件入口，正常调用链由渲染器帧末挂载更新。
-    public static void update(RenderLevelStageEvent event) {
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL) {
-            INSTANCE.update(event.getLevelRenderer());
-        }
+        INSTANCE.frameLevel = null;
+        DynamicLightGpu.clearWorld();
+        DynamicLightEffects.clearWorld();
     }
 
     /// 保留原有静态采样入口。
@@ -193,7 +215,7 @@ public final class DynamicLightDispatcher {
                     if (handler != null) {
                         int light = Mth.clamp(handler.applyAsInt(entity), 0, 15);
                         if (light > 0) {
-                            addLightSource(entity.position(), light * 16);
+                            addLightSource(entity.position(), light * 17);
                         }
                     }
                 }
@@ -207,23 +229,55 @@ public final class DynamicLightDispatcher {
 
     private record RegisteredSource(Supplier<Vec3> position, IntSupplier luminance) {}
 
+    public void beginFrame(LevelRenderer renderer, Camera camera, Matrix4f view, float partialTick) {
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level != frameLevel) {
+            clearWorld();
+            frameLevel = level;
+        }
+        DynamicLightGpu.prepare();
+        DynamicLightRegister.collect(partialTick);
+        update(renderer);
+        DynamicLightGpu.begin(snapshot, camera.getPosition(), view);
+        if (lastGpu && !DynamicLightGpu.terrainGpu()) {
+            previous.forEach(this::markImpactSections);
+            flushDirtySections(renderer);
+            lastGpu = false;
+        }
+    }
+
     public void update(LevelRenderer levelRenderer) {
         collectLegacySources();
-        for (LightSource light : previous) {
-            if (!current.contains(light)) {
-                markImpactSections(light);
-                changed = true;
+        boolean gpu = DynamicLightGpu.terrainGpu();
+        if (gpu) {
+            // 新增已检测过；无新增且数量相同意味着集合未变，不必再反向查找删除项。
+            changed |= current.size() != previous.size();
+        } else {
+            for (LightSource light : previous) {
+                if (!current.contains(light)) {
+                    markImpactSections(light);
+                    changed = true;
+                }
             }
         }
+        if (gpu != lastGpu) {
+            // 后端切换时清除旧网格内烘焙的动态光，仅切换这一帧需要刷新。
+            previous.forEach(this::markImpactSections);
+            current.forEach(this::markImpactSections);
+            lastGpu = gpu;
+        }
+        // 只有删除、没有新增的帧也要收集剩余光源。
+        if (changed && collectedSources.isEmpty()) collectedSources.addAll(current);
         ObjectOpenHashSet<LightSource> swap = previous;
         previous = current;
         current = swap;
         current.clear();
-        flushDirtySections(levelRenderer);
         if (changed) {
             snapshot = buildSnapshot();
             changed = false;
         }
+        collectedSources.clear();
+        flushDirtySections(levelRenderer);
     }
 
     private int sampleDynamicLight(BlockAndTintGetter level, BlockState state, BlockPos blockPos, int originalLight) {
@@ -233,7 +287,7 @@ public final class DynamicLightDispatcher {
         int light = originalLight;
         if (!state.isSolidRender(level, blockPos)) {
             double strength = getDynamicLightLevel(blockPos.getX() + 0.5, blockPos.getY() + 0.5, blockPos.getZ() + 0.5);
-            if (strength > LightTexture.block(originalLight) * 16) { // 原版光照是 0~15 级，换算到同一尺度再比
+            if (strength > LightTexture.block(originalLight) * 17) { // 原版光照是 0~15 级，换算到同一尺度再比
                 light = withDynamicLight(originalLight, strength);
             }
         }
@@ -243,7 +297,7 @@ public final class DynamicLightDispatcher {
     private int sampleDynamicLight(Vec3 eyePos, int originalLight) {
         int light = originalLight;
         double strength = getDynamicLightLevel(eyePos.x, eyePos.y, eyePos.z);
-        if (strength > LightTexture.block(originalLight) * 16) {
+        if (strength > LightTexture.block(originalLight) * 17) {
             light = withDynamicLight(originalLight, strength);
         }
         return light;
@@ -286,27 +340,57 @@ public final class DynamicLightDispatcher {
                 }
             }
         }
-        return Mth.clamp(result, 0.0, maxStrength);
+        return Mth.clamp(result, 0.0, MAX_STRENGTH);
     }
 
     private Long2ObjectOpenHashMap<LightSource[]> buildSnapshot() {
         if (previous.isEmpty()) {
             return emptySnapshot;
         }
-        Long2ObjectOpenHashMap<List<LightSource>> groups = new Long2ObjectOpenHashMap<>();
-        for (LightSource light : previous) {
-            groups.computeIfAbsent(sectionOf(light), s -> new ArrayList<>()).add(light);
+        snapshotGroups.clear();
+        int used = 0;
+        long lastSection = 0;
+        SnapshotGroup lastGroup = null;
+        // 按采集顺序顺序读取，避免扫描哈希表；相邻同组光源复用查找结果。
+        for (LightSource light : collectedSources) {
+            long section = sectionOf(light);
+            SnapshotGroup group = lastGroup != null && section == lastSection ? lastGroup : snapshotGroups.get(section);
+            if (group == null) {
+                if (used == groupPool.size()) groupPool.add(new SnapshotGroup());
+                group = groupPool.get(used++);
+                snapshotGroups.put(section, group);
+            }
+            group.add(light);
+            lastSection = section;
+            lastGroup = group;
         }
-        Long2ObjectOpenHashMap<LightSource[]> next = new Long2ObjectOpenHashMap<>(groups.size() * 2);
-        for (Long2ObjectMap.Entry<List<LightSource>> group : groups.long2ObjectEntrySet()) {
-            next.put(group.getLongKey(), group.getValue().toArray(new LightSource[0]));
+        Long2ObjectOpenHashMap<LightSource[]> next = new Long2ObjectOpenHashMap<>(snapshotGroups.size());
+        for (var iterator = snapshotGroups.long2ObjectEntrySet().fastIterator(); iterator.hasNext(); ) {
+            Long2ObjectMap.Entry<SnapshotGroup> entry = iterator.next();
+            SnapshotGroup group = entry.getValue();
+            // 等强度光源不排序；只复用构建缓冲，发布后的快照与数组保持不可变。
+            if (group.mixedStrength) group.lights.sort(BY_STRENGTH);
+            next.put(entry.getLongKey(), group.lights.toArray(new LightSource[group.lights.size()]));
+            group.lights.clear();
+            group.mixedStrength = false;
         }
         return next;
     }
 
+    private static final class SnapshotGroup {
+        private final List<LightSource> lights = new ArrayList<>();
+        private boolean mixedStrength;
+
+        private void add(LightSource light) {
+            if (!lights.isEmpty() && lights.get(0).strength() != light.strength())
+                mixedStrength = true;
+            lights.add(light);
+        }
+    }
+
     private void markImpactSections(LightSource source) {
         Vec3 position = source.position();
-        double radius = Mth.clamp(source.strength(), 0, maxStrength) / falloff;
+        double radius = Mth.clamp(source.strength(), 0, MAX_STRENGTH) / falloff + 1.0;
         int minX = SectionPos.blockToSectionCoord(position.x() - radius);
         int maxX = SectionPos.blockToSectionCoord(position.x() + radius);
         int minY = SectionPos.blockToSectionCoord(position.y() - radius);
@@ -336,7 +420,9 @@ public final class DynamicLightDispatcher {
     }
 
     private static int withDynamicLight(int originalLight, double strength) {
-        int smooth = Mth.clamp((int) strength + 8, 8, 248);
+        // 内部强度为 0～255，输出时才转换到原版 lightmap 的 0～240 坐标。
+        int smooth = Mth.clamp((int) (strength * (16.0 / 17.0)) + 8, 8, 248);
+        smooth = Math.max(originalLight & 0xFF, smooth);
         return (originalLight & 0xfff00000) | smooth;
     }
 
@@ -348,8 +434,9 @@ public final class DynamicLightDispatcher {
 
         public LightSource(Vec3 position, int strength) {
             this.position = position;
-            this.strength = Mth.clamp(strength, 0, 240);
-            this.hash = Long.hashCode(Double.doubleToLongBits(position.x) * 0x9E3779B97F4A7C15L ^ Double.doubleToLongBits(position.y) * 0xC2B2AE3D27D4EB4FL ^ Double.doubleToLongBits(position.z) * 0x165667B19E3779F9L ^ strength * 0x27D4EB2F165667C5L);
+            this.strength = Mth.clamp(strength, 0, MAX_STRENGTH);
+            // 哈希使用裁剪后的亮度，并将 -0.0 归一为 +0.0，与 equals 保持一致。
+            this.hash = Long.hashCode(Double.doubleToLongBits(position.x + 0.0) * 0x9E3779B97F4A7C15L ^ Double.doubleToLongBits(position.y + 0.0) * 0xC2B2AE3D27D4EB4FL ^ Double.doubleToLongBits(position.z + 0.0) * 0x165667B19E3779F9L ^ this.strength * 0x27D4EB2F165667C5L);
         }
 
         public Vec3 position() {
