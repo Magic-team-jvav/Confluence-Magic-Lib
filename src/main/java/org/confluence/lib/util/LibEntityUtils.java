@@ -9,6 +9,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
@@ -17,11 +18,14 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.monster.piglin.Piglin;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -32,6 +36,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 public final class LibEntityUtils {
@@ -322,5 +330,285 @@ public final class LibEntityUtils {
     // confluence mixin here
     public static @Nullable Object getTeam(Player player) {
         return player.getTeam();
+    }
+
+    /// 提供阵营和瞄准主体的部件协议，不改变部件自己的伤害接收及命中去重身份。
+    public interface HitTarget {
+        Entity encounterOwner();
+        boolean acceptsDirectHit();
+    }
+
+    /// 即使所有者离线，也可通过 UUID 判断同属玩家的召唤实体。
+    public interface OwnedTarget {
+        UUID targetingOwnerId();
+    }
+
+    /// 模组专属的附加限制；通用生命、归属、队伍及中立生物判断始终由库层负责。
+    public interface TargetingExtension {
+        default boolean allowsAttack(@Nullable Entity attacker, Entity target) { return true; }
+        default boolean allowsPvP(Player attacker, Player target) { return true; }
+    }
+
+    private static volatile TargetingExtension targetingExtension = new TargetingExtension() {};
+
+    /// 在公共初始化阶段安装扩展，两项规则作为一个对象同时更新。
+    public static void setTargetingExtension(TargetingExtension extension) {
+        targetingExtension = Objects.requireNonNull(extension, "extension");
+    }
+
+    /// 固有敌怪阵营；中立生物对具体玩家的敌意由索敌配置额外判断。
+    public static boolean isEnemyFaction(@Nullable Entity entity) {
+        for (int depth = 0; entity != null && depth < 16; depth++) {
+            if (entity instanceof OwnedTarget) return false;
+            Entity owner = entity instanceof HitTarget part ? part.encounterOwner() : getOwner(entity);
+            if (owner == null || owner == entity)
+                return entity instanceof Enemy || entity.getType().getCategory() == MobCategory.MONSTER;
+            entity = owner;
+        }
+        return false;
+    }
+
+    /// 武器定义或实体基类持有的不可变索敌配置。不保存射手或目标，可安全地由所有实例共享。
+    /// 未配置时关闭自动索敌；搜索范围、优先级、重选时机和运动由武器自行决定。
+    public record WeaponTargeting(TargetPolicy policy, boolean requiresDirectHit) {
+        public static final WeaponTargeting DISABLED = new WeaponTargeting();
+
+        public WeaponTargeting {
+            Objects.requireNonNull(policy, "policy");
+        }
+
+        public WeaponTargeting() {
+            this(TargetPolicy.NONE);
+        }
+
+        public WeaponTargeting(TargetPolicy policy) {
+            this(policy, true);
+        }
+
+        /// 获取新目标：关系、类型、生命状态，以及配置要求的初次射弹命中资格。
+        public boolean canAcquire(@Nullable Entity attacker, @Nullable Entity candidate) {
+            return requiresDirectHit
+                    ? LibEntityUtils.canAcquire(attacker, candidate, policy)
+                    : LibEntityUtils.canKeep(attacker, candidate, policy);
+        }
+
+        /// 保持已有锁定：复查关系、类型和生命状态，不套用初次搜索范围及穿透记录。
+        public boolean canKeep(@Nullable Entity attacker, @Nullable Entity candidate) {
+            return LibEntityUtils.canKeep(attacker, candidate, policy);
+        }
+
+        public Predicate<Entity> filter(@Nullable Entity attacker, Predicate<Entity> extra) {
+            return candidate -> canAcquire(attacker, candidate) && extra.test(candidate);
+        }
+
+        public @Nullable LivingEntity angleTarget(Vec3 start, Vec3 end, Level level,
+                @Nullable Entity searchEntity, @Nullable Entity attacker, double range, double angle,
+                Predicate<Entity> extra) {
+            return LibEntityUtils.angleTarget(start, end, level, searchEntity, attacker, range, angle, this, extra);
+        }
+
+        public @Nullable EntityHitResult viewTarget(Player player, double reach) {
+            return LibEntityUtils.viewTarget(player, reach, this);
+        }
+    }
+
+    public enum TargetPolicy {
+        /// 不参与自动索敌，不影响直接命中。
+        NONE,
+        /// 只校验可攻击关系；召唤物另保留愤怒、威胁和反击记录。
+        ATTACKABLE,
+        /// Enemy 接口筛选，同时允许正在敌视射手玩家的中立生物。
+        ENEMY_ONLY,
+        /// 完整敌对阵营判定，同时允许正在敌视射手玩家的中立生物。
+        ENEMY_FACTION
+    }
+
+    /// 只解析受击部位的主体，不将召唤物替换成主人作为瞄准位置。
+    public static Entity encounterOwner(Entity target) {
+        if (target instanceof HitTarget part) return part.encounterOwner();
+        Entity impacted = tryFindBeImpacted(target);
+        return impacted == null ? target : impacted;
+    }
+
+    /// 解析攻击者、宠物和召唤物的阵营归属；有限遍历防止异常所有权环。
+    private static @Nullable Entity affiliation(@Nullable Entity entity) {
+        for (int depth = 0; entity != null && depth < 16; depth++) {
+            Entity next;
+            if (entity instanceof OwnedTarget summon) {
+                next = entity.level().getPlayerByUUID(summon.targetingOwnerId());
+            } else {
+                next = entity instanceof HitTarget part ? part.encounterOwner() : getOwner(entity);
+            }
+            if (next == null || next == entity) return entity;
+            entity = next;
+        }
+        return entity;
+    }
+
+    /// 与碰撞、穿透和搜索距离无关的关系校验；命中和索敌共用此入口。
+    public static boolean allowsAttack(@Nullable Entity attacker, Entity rawTarget) {
+        Entity target = encounterOwner(rawTarget);
+        Entity source = affiliation(attacker);
+        Entity targetSide = affiliation(target);
+        if (target == attacker || attacker != null && attacker.isAlliedTo(target)
+                || source != null && (source == targetSide || source.isAlliedTo(target)
+                || targetSide != null && source.isAlliedTo(targetSide))) return false;
+        if (source instanceof OwnedTarget sourceSummon && targetSide instanceof OwnedTarget targetSummon
+                && sourceSummon.targetingOwnerId().equals(targetSummon.targetingOwnerId())) return false;
+        if (source != null && target instanceof OwnedTarget summon
+                && source.getUUID().equals(summon.targetingOwnerId())) return false;
+        if (!targetingExtension.allowsAttack(attacker, target)) return false;
+        if (source instanceof Player attackingPlayer && targetSide instanceof Player targetPlayer) {
+            return attackingPlayer.canHarmPlayer(targetPlayer)
+                    && targetingExtension.allowsPvP(attackingPlayer, targetPlayer);
+        }
+        return true;
+    }
+
+    /// 保留锁定时只复查生命、关系和类型，不重新施加初始搜索范围或碰撞次数限制。
+    private static boolean canKeep(@Nullable Entity attacker, @Nullable Entity candidate, TargetPolicy policy) {
+        if (policy == TargetPolicy.NONE || candidate == null || candidate.isRemoved() || !candidate.isAlive()
+                || attacker != null && attacker.level() != candidate.level()) return false;
+        Entity target = encounterOwner(candidate);
+        if (target instanceof Player player && (player.isCreative() || player.isSpectator())) return false;
+        return target.isAlive() && !target.isRemoved() && allowsAttack(attacker, candidate)
+                && switch (policy) {
+                    case NONE -> false;
+                    case ATTACKABLE -> true;
+                    case ENEMY_ONLY, ENEMY_FACTION -> isEnemyTarget(attacker, candidate, target, policy);
+                };
+    }
+
+    private static boolean isEnemyTarget(@Nullable Entity attacker, Entity candidate, Entity target, TargetPolicy policy) {
+        Entity source = affiliation(attacker);
+        if (source instanceof Player player && target instanceof LivingEntity living) {
+            // 愤怒只针对该射手；对其他玩家或生物生气不算敌视当前玩家。
+            boolean hostile = isHostileToPlayer(player, living);
+            // 普通猪灵使用 Brain 而非 NeutralMob；不能按记忆模块判断中立，否则会误判猪灵蛮兵等敌怪。
+            if (target instanceof NeutralMob || target instanceof Piglin)
+                return hostile;
+            if (hostile) return true;
+        }
+        return policy == TargetPolicy.ENEMY_ONLY ? target instanceof Enemy : isEnemyFaction(candidate);
+    }
+
+    /// 同时兼容普通 Mob、持久愤怒和使用 Brain 的生物；不依赖玩家是否曾经受伤。
+    private static boolean isHostileToPlayer(Player player, LivingEntity target) {
+        if (target instanceof Targeting targeting && targeting.getTarget() == player) return true;
+        if (target instanceof NeutralMob neutralMob && neutralMob.isAngryAt(player)) return true;
+        Optional<UUID> angryAt = target.getBrain().getMemoryInternal(MemoryModuleType.ANGRY_AT);
+        if (angryAt != null && angryAt.filter(player.getUUID()::equals).isPresent()) return true;
+        Optional<LivingEntity> attackTarget = target.getBrain().getMemoryInternal(MemoryModuleType.ATTACK_TARGET);
+        return attackTarget != null && attackTarget.orElse(null) == player;
+    }
+
+    private static boolean canAcquire(@Nullable Entity attacker, @Nullable Entity candidate, TargetPolicy policy) {
+        return canKeep(attacker, candidate, policy) && isHittable(attacker, candidate);
+    }
+
+    /// 命中资格不要求目标为生命实体，也不包含武器自己的穿透和冷却状态。
+    public static boolean canHit(@Nullable Entity attacker, Entity candidate) {
+        return isHittable(attacker, candidate) && allowsAttack(attacker, candidate);
+    }
+
+    private static boolean isHittable(@Nullable Entity attacker, Entity candidate) {
+        if (!acceptsDirectHit(candidate)) return false;
+        Entity target = encounterOwner(candidate);
+        if (candidate instanceof HitTarget) {
+            if (target.isRemoved() || !target.isAttackable()
+                    || attacker != null && attacker.isPassengerOfSameVehicle(target)) return false;
+        } else if (!canHitEntity(candidate, attacker)) {
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean acceptsDirectHit(Entity candidate) {
+        if (candidate.isRemoved()) return false;
+        if (candidate instanceof HitTarget part) return part.acceptsDirectHit();
+        return canHitEntity(candidate, null);
+    }
+
+    /// 保留遍历顺序及调用方比较器；同分时返回最先遇到的目标。
+    public static <T extends Entity> @Nullable T nearest(Iterable<T> candidates, Predicate<T> filter, Comparator<? super T> order) {
+        T best = null;
+        for (T candidate : candidates) {
+            if (filter.test(candidate) && (best == null || order.compare(candidate, best) < 0)) best = candidate;
+        }
+        return best;
+    }
+
+    /// 沿用库内的直线命中优先、角度筛选和距离排序。searchEntity 决定原来的搜索中心。
+    private static @Nullable LivingEntity angleTarget(Vec3 start, Vec3 end, Level level,
+            @Nullable Entity searchEntity, @Nullable Entity attacker, double range, double angle,
+            WeaponTargeting targeting, Predicate<Entity> extra) {
+        return getAABBAngleTarget(start, end, level, searchEntity, range, angle, targeting.filter(attacker, extra));
+    }
+
+    /// 玩家视线锁定，保留方块遮挡、射线最近命中和原有包围盒扩张。
+    private static @Nullable EntityHitResult viewTarget(Player player, double reach, WeaponTargeting targeting) {
+        double squared = reach * reach;
+        Vec3 from = player.getEyePosition(1.0F);
+        HitResult blockHit = player.pick(reach, 1.0F, false);
+        double blockDistance = blockHit.getLocation().distanceToSqr(from);
+        if (blockHit.getType() != HitResult.Type.MISS) {
+            squared = blockDistance;
+            reach = Math.sqrt(blockDistance);
+        }
+        Vec3 view = player.getViewVector(1.0F);
+        Vec3 to = from.add(view.x * reach, view.y * reach, view.z * reach);
+        AABB box = player.getBoundingBox().expandTowards(view.scale(reach)).inflate(1.0, 1.0, 1.0);
+        EntityHitResult hit = ProjectileUtil.getEntityHitResult(player, from, to, box,
+                targeting.filter(player, entity -> !entity.isSpectator() && entity.isPickable()), squared);
+        return hit != null && hit.getLocation().distanceToSqr(from) < blockDistance ? hit : null;
+    }
+
+    /// 从弹幕位置到目标眼睛的方块视线检测；无碰撞目标沿用悠悠球原来的穿墙例外。
+    public static boolean hasProjectileLineOfSight(Entity source, LivingEntity target) {
+        return target.noPhysics || source.level().clip(new ClipContext(source.position(), target.getEyePosition(),
+                ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, source)).getType() == HitResult.Type.MISS;
+    }
+
+    public static double horizontalVerticalDistance(Vec3 origin, Entity target) {
+        Vec3 offset = target.getBoundingBox().getCenter().subtract(origin);
+        return Math.sqrt(offset.x * offset.x + offset.z * offset.z) + Math.abs(offset.y);
+    }
+
+    public static double manhattanDistance(Vec3 origin, Entity target) {
+        Vec3 offset = target.getBoundingBox().getCenter().subtract(origin);
+        return Math.abs(offset.x) + Math.abs(offset.y) + Math.abs(offset.z);
+    }
+
+    /// 以飞行方向为轴的前方矩形，计入目标半宽和半高，保留近乎竖直飞行时的备用侧轴。
+    public static boolean insideForwardRectangle(Vec3 origin, Vec3 direction, Entity target,
+            double forwardRange, double halfWidth, double halfHeight) {
+        Vec3 offset = target.getBoundingBox().getCenter().subtract(origin);
+        double forward = offset.dot(direction);
+        double targetWidth = target.getBbWidth() * 0.5D;
+        double targetHeight = target.getBbHeight() * 0.5D;
+        if (forward < -targetWidth || forward > forwardRange + targetWidth) return false;
+        Vec3 side = direction.cross(new Vec3(0.0D, 1.0D, 0.0D));
+        if (side.lengthSqr() <= 1.0E-10D) side = direction.cross(new Vec3(1.0D, 0.0D, 0.0D));
+        side = side.normalize();
+        Vec3 vertical = side.cross(direction).normalize();
+        return Math.abs(offset.dot(side)) <= halfWidth + targetWidth
+                && Math.abs(offset.dot(vertical)) <= halfHeight + targetHeight;
+    }
+
+    /// 召唤物保留原有中立怪愤怒判断、攻击主人判断和反击记录；记录与缓存由调用方持有。
+    public static boolean isSummonThreat(Player owner, LivingEntity target, Predicate<LivingEntity> hurtHistory) {
+        if (target instanceof Enemy) enemy: {
+            if (target instanceof NeutralMob neutralMob) {
+                if (neutralMob.isAngryAt(owner)) return true;
+                break enemy;
+            }
+            Optional<UUID> angryAt = target.getBrain().getMemoryInternal(MemoryModuleType.ANGRY_AT);
+            if (angryAt != null) {
+                if (angryAt.isPresent() && angryAt.get().equals(owner.getUUID())) return true;
+                break enemy;
+            }
+            return true;
+        }
+        return isHostileToPlayer(owner, target) || hurtHistory.test(target);
     }
 }
