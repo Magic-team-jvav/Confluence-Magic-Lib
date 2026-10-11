@@ -50,8 +50,8 @@ public final class DynamicLightGpu {
             supported = GL.getCapabilities().OpenGL31
                     && GL11.glGetInteger(GL20.GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS) > 0
                     && GL11.glGetInteger(GL20.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS) > TEXTURE_UNIT
-                    && !LibUtils.isModLoaded("sodium") && !LibUtils.isModLoaded("embeddium")
-                    && !LibUtils.isModLoaded("iris") && !LibUtils.isModLoaded("oculus");
+                    && !LibUtils.isModLoaded("embeddium")
+                    && !LibUtils.isModLoaded("oculus");
             if (supported)
                 maxTexels = Math.min(GL11.glGetInteger(GL31.GL_MAX_TEXTURE_BUFFER_SIZE), 1 << 23);
             ConfluenceMagicLib.LOGGER.info("Dynamic light backend: {}", supported ? "GPU spatial grid" : "CPU compatibility");
