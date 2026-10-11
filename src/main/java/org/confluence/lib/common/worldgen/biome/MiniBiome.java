@@ -2,6 +2,7 @@ package org.confluence.lib.common.worldgen.biome;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -104,7 +105,7 @@ public final class MiniBiome {
 
     /// 窗口内所有计数器的求和（把窗口覆盖到的每个 section 的 {@link BlockCounts} 相加）。
     ///
-    /// 未加载的区块会被跳过（用 `hasChunk` 判断，不会强制加载）。需要自己缓存的消费方
+    /// 未加载完成的服务端区块会被跳过，不创建加载请求或等待加载完成。需要自己缓存的消费方
     /// 可以直接用这个：拿到的数组按 {@link BlockCounters} 的注册顺序索引。
     public static int[] windowCounts(LevelAccessor level, BlockPos pos) {
         return windowCounts(level, pos, WINDOW_RADIUS, WINDOW_HALF_HEIGHT);
@@ -134,8 +135,14 @@ public final class MiniBiome {
         if (maxY >= level.getMaxBuildHeight()) maxY = level.getMaxBuildHeight() - 1;
         for (int chunkX = minX >> 4; chunkX <= maxX >> 4; chunkX++)
             for (int chunkZ = minZ >> 4; chunkZ <= maxZ >> 4; chunkZ++) {
-                if (!level.hasChunk(chunkX, chunkZ)) continue;
-                ChunkAccess chunk = level.getChunk(chunkX, chunkZ);
+                ChunkAccess chunk;
+                if (level instanceof ServerLevel serverLevel) {
+                    chunk = serverLevel.getChunkSource().getChunkNow(chunkX, chunkZ);
+                    if (chunk == null) continue;
+                } else {
+                    if (!level.hasChunk(chunkX, chunkZ)) continue;
+                    chunk = level.getChunk(chunkX, chunkZ);
+                }
                 for (int sy = minY >> 4; sy <= maxY >> 4; sy++) {
                     LevelChunkSection section = chunk.getSection(level.getSectionIndexFromSectionY(sy));
                     BlockCounts counts = ILevelChunkSection.of(section).confluence$getBlockCounts();
