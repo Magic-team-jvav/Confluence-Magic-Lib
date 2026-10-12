@@ -194,6 +194,16 @@ public final class LibStructureUtils {
         return null;
     }
 
+    /// 从 startY 往下摸，找到该列结构里最上面那一格空气（也就是洞顶那一格）；找不到返回 null
+    public static BlockPos findTopAir(Object2IntMap<BlockPos> blockMap, int x, int z, int startY, int maxSteps) {
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, startY, z);
+        for (int i = 0; i < maxSteps; i++) {
+            if (blockMap.containsKey(pos) && blockMap.getInt(pos) == 0) return pos.immutable();
+            pos.move(Direction.DOWN);
+        }
+        return null;
+    }
+
     /// 在洞穴地面上插一根石笋（最多 2 格）：贴地那格用 base，上面那格用 tip_merge；只有 1 格时用 tip_single。
     /// base/tipMerge/tipSingle 是这三种方块状态在结构材质表里的下标；真的插上了返回 true
     public static boolean putStalagmite(Object2IntMap<BlockPos> blockMap, BlockPos center, int maxSteps, int base, int tipMerge, int tipSingle) {
