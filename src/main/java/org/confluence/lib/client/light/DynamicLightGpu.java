@@ -49,6 +49,7 @@ public final class DynamicLightGpu {
         if (supported == null) {
             supported = GL.getCapabilities().OpenGL31
                     && GL11.glGetInteger(GL20.GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS) > 0
+                    && GL11.glGetInteger(GL20.GL_MAX_TEXTURE_IMAGE_UNITS) > TEXTURE_UNIT
                     && GL11.glGetInteger(GL20.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS) > TEXTURE_UNIT
                     && !LibUtils.isModLoaded("embeddium")
                     && !LibUtils.isModLoaded("oculus");
@@ -147,6 +148,7 @@ public final class DynamicLightGpu {
         private final int data;
         private final int maskLocation;
         private final int matrix;
+        private final int cameraOffset;
         private int previousTexture;
         private boolean bound;
         private boolean samplerInitialized;
@@ -157,6 +159,7 @@ public final class DynamicLightGpu {
             data = GL20.glGetUniformLocation(shader.getId(), "CmlLightData");
             maskLocation = GL20.glGetUniformLocation(shader.getId(), "CmlLightMask");
             matrix = GL20.glGetUniformLocation(shader.getId(), "CmlWorldFromView");
+            cameraOffset = GL20.glGetUniformLocation(shader.getId(), "CmlCameraOffset");
         }
 
         public void apply() {
@@ -175,6 +178,8 @@ public final class DynamicLightGpu {
             if (!enabled || mask < 0) return;
             if (appliedMatrixVersion != matrixVersion) {
                 GL20.glUniformMatrix4fv(matrix, false, matrixData);
+                GL20.glUniform3f(cameraOffset, (float) (matrixCamera.x - uploadedAnchorX * 16.0),
+                        (float) (matrixCamera.y - uploadedAnchorY * 16.0), (float) (matrixCamera.z - uploadedAnchorZ * 16.0));
                 appliedMatrixVersion = matrixVersion;
             }
             int active = GlStateManager._getActiveTexture();

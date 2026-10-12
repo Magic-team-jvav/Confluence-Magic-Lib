@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 @Mixin(Program.class)
 public abstract class ProgramMixin {
     @ModifyArg(method = "compileShaderInternal", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/preprocessor/GlslPreprocessor;process(Ljava/lang/String;)Ljava/util/List;"))
-    private static String dynamicLight(String source, @Local(argsOnly = true) Program.Type type) {
-        return type == Program.Type.VERTEX && DynamicLightGpu.prepare() ? DynamicLightShader.patch(source) : source;
+    private static String dynamicLight(String source, @Local(argsOnly = true) Program.Type type, @Local(argsOnly = true, ordinal = 0) String name) {
+        return DynamicLightGpu.prepare() ? DynamicLightShader.patch(source, type == Program.Type.VERTEX, name) : source;
     }
 }

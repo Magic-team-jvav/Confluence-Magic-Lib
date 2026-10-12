@@ -1,18 +1,21 @@
 package org.confluence.lib.client.light;
 
-import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.phys.Vec3;
 import org.confluence.lib.client.DynamicLightDispatcher.LightSource;
 
 import java.nio.FloatBuffer;
+import java.util.Comparator;
 
-// GPU 空间哈希表：每个桶两个 RGBA texel，随后存放按 section 分组的光源。
+// 按受光 section 分组：像素只需查询一个桶，跨界光源由 CPU 放入所有受影响的组。
 public final class DynamicLightGrid {
-    private final Long2LongOpenHashMap groups = new Long2LongOpenHashMap();
+    private static final Comparator<LightSource> BY_STRENGTH = Comparator.comparingInt(LightSource::strength).reversed();
+    private final Long2ObjectOpenHashMap<ObjectArrayList<LightSource>> groups = new Long2ObjectOpenHashMap<>();
+    private final ObjectArrayList<ObjectArrayList<LightSource>> groupPool = new ObjectArrayList<>();
     private final ObjectArrayList<LightSource> visible = new ObjectArrayList<>();
     private Long2ObjectMap<LightSource[]> collectedSources;
     private Vec3 collectedCamera;
@@ -28,63 +31,59 @@ public final class DynamicLightGrid {
     }
 
     public void collect(Long2ObjectMap<LightSource[]> sources, Vec3 camera, double distance) {
+        for (ObjectArrayList<LightSource> group : groups.values()) group.clear();
         groups.clear();
         visible.clear();
         size = 0;
         double radius = distance + 7.75;
-        double limit = radius * radius;
         double farthestIncluded = 0.0;
         double nearestExcluded = Double.POSITIVE_INFINITY;
+        // 可见区块按水平范围加载；球形距离会漏掉角落及同列高处的光源。
         for (var iterator = Long2ObjectMaps.fastIterator(sources); iterator.hasNext(); ) {
             var entry = iterator.next();
-            int start = visible.size();
-            LightSource[] lights = entry.getValue();
-            boolean fullyVisible = false;
-            // 小组直接测距更便宜；较大组才用 section 边界批量判定。
-            if (lights.length > 8) {
-                long section = entry.getLongKey();
-                double dx = Math.abs(SectionPos.x(section) * 16.0 + 8.0 - camera.x);
-                double dy = Math.abs(SectionPos.y(section) * 16.0 + 8.0 - camera.y);
-                double dz = Math.abs(SectionPos.z(section) * 16.0 + 8.0 - camera.z);
-                double farX = dx + 8.0, farY = dy + 8.0, farZ = dz + 8.0;
-                double farSquared = farX * farX + farY * farY + farZ * farZ;
-                fullyVisible = farSquared <= limit - 1.0E-7;
-                if (fullyVisible) farthestIncluded = Math.max(farthestIncluded, farSquared);
-                if (!fullyVisible) {
-                    double nearX = Math.max(dx - 8.0, 0.0), nearY = Math.max(dy - 8.0, 0.0), nearZ = Math.max(dz - 8.0, 0.0);
-                    double nearSquared = nearX * nearX + nearY * nearY + nearZ * nearZ;
-                    if (nearSquared > limit + 1.0E-7) {
-                        nearestExcluded = Math.min(nearestExcluded, nearSquared);
-                        continue;
-                    }
+            for (LightSource source : entry.getValue()) {
+                Vec3 position = source.position();
+                double separation = Math.max(Math.abs(position.x - camera.x), Math.abs(position.z - camera.z));
+                if (separation <= radius) {
+                    visible.add(source);
+                    farthestIncluded = Math.max(farthestIncluded, separation);
+                } else {
+                    nearestExcluded = Math.min(nearestExcluded, separation);
                 }
             }
-            // 整个 section 在视距内时直接复制引用；边界组仍逐个测距。
-            if (fullyVisible) {
-                visible.addElements(start, lights);
-            } else {
-                for (LightSource source : lights) {
-                    double squared = source.position().distanceToSqr(camera);
-                    if (squared <= limit) {
-                        visible.add(source);
-                        farthestIncluded = Math.max(farthestIncluded, squared);
-                    } else {
-                        nearestExcluded = Math.min(nearestExcluded, squared);
+        }
+        // 全局排一次序，分配后的每个组自然保持亮度降序。
+        visible.sort(BY_STRENGTH);
+        for (LightSource source : visible) {
+            Vec3 p = source.position();
+            double reach = source.strength() * (7.75 / 255.0) + 1.0E-4;
+            int minX = SectionPos.blockToSectionCoord(p.x - reach), maxX = SectionPos.blockToSectionCoord(p.x + reach);
+            int minY = SectionPos.blockToSectionCoord(p.y - reach), maxY = SectionPos.blockToSectionCoord(p.y + reach);
+            int minZ = SectionPos.blockToSectionCoord(p.z - reach), maxZ = SectionPos.blockToSectionCoord(p.z + reach);
+            for (int x = minX; x <= maxX; x++)
+                for (int y = minY; y <= maxY; y++)
+                    for (int z = minZ; z <= maxZ; z++) {
+                        double dx = Math.max(Math.max(x * 16.0 - p.x, p.x - (x * 16.0 + 16.0)), 0.0);
+                        double dy = Math.max(Math.max(y * 16.0 - p.y, p.y - (y * 16.0 + 16.0)), 0.0);
+                        double dz = Math.max(Math.max(z * 16.0 - p.z, p.z - (z * 16.0 + 16.0)), 0.0);
+                        if (dx * dx + dy * dy + dz * dz > reach * reach) continue;
+                        long key = SectionPos.asLong(x, y, z);
+                        ObjectArrayList<LightSource> group = groups.get(key);
+                        if (group == null) {
+                            int index = groups.size();
+                            if (index == groupPool.size()) groupPool.add(new ObjectArrayList<>());
+                            group = groupPool.get(index);
+                            groups.put(key, group);
+                        }
+                        group.add(source);
+                        size++;
                     }
-                }
-            }
-            int count = visible.size() - start;
-            if (count == 0) continue;
-            // 只保存引用和范围，复用快照的分组与排序结果。
-            groups.put(entry.getLongKey(), ((long) start << 32) | count);
         }
         collectedSources = sources;
         collectedCamera = camera;
         collectedDistance = distance;
-        // 向内留浮点误差余量；边界处不复用，仍按原条件逐个判断。
-        double margin = Math.max(0.0, Math.min(radius - Math.sqrt(farthestIncluded), Math.sqrt(nearestExcluded) - radius) - 1.0E-6);
+        double margin = Math.max(0.0, Math.min(radius - farthestIncluded, nearestExcluded - radius) - 1.0E-6);
         reuseRadiusSquared = margin * margin;
-        size = visible.size();
         buckets = 1;
         while (buckets < groups.size() * 2) buckets <<= 1;
     }
@@ -99,17 +98,14 @@ public final class DynamicLightGrid {
         for (int i = 0; i < buckets * 8; i++) data.put(i, 0.0F);
         int offset = buckets * 2;
         double originX = anchorX * 16.0, originY = anchorY * 16.0, originZ = anchorZ * 16.0;
-        for (var iterator = groups.long2LongEntrySet().fastIterator(); iterator.hasNext(); ) {
+        for (var iterator = groups.long2ObjectEntrySet().fastIterator(); iterator.hasNext(); ) {
             var entry = iterator.next();
             long key = entry.getLongKey();
             int x = SectionPos.x(key) - anchorX, y = SectionPos.y(key) - anchorY, z = SectionPos.z(key) - anchorZ;
             int slot = hash(x, y, z) & (buckets - 1);
             while (data.get(slot * 8 + 4) != 0.0F) slot = (slot + 1) & (buckets - 1);
             int start = offset;
-            long range = entry.getLongValue();
-            int first = (int) (range >>> 32), count = (int) range;
-            for (int i = first; i < first + count; i++) {
-                LightSource source = visible.get(i);
+            for (LightSource source : entry.getValue()) {
                 Vec3 p = source.position();
                 data.put(offset * 4, (float) (p.x - originX));
                 data.put(offset * 4 + 1, (float) (p.y - originY));
@@ -129,6 +125,7 @@ public final class DynamicLightGrid {
         collectedCamera = null;
         reuseRadiusSquared = 0.0;
         groups.clear();
+        groupPool.clear();
         visible.clear();
         size = 0;
         buckets = 1;
