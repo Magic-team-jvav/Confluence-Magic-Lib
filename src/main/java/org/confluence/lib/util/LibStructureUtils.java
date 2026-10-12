@@ -3,6 +3,7 @@ package org.confluence.lib.util;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -163,6 +164,65 @@ public final class LibStructureUtils {
                 }
             }
         }
+    }
+
+    /// 从洞穴中心往下摸，找到「实心面 + 上方是洞内挖出来的空气」的那一格（用来在洞穴地面上插石笋）；找不到返回 null
+    public static BlockPos findCaveFloor(Object2IntMap<BlockPos> blockMap, BlockPos center, int maxSteps) {
+        BlockPos.MutableBlockPos pos = center.mutable();
+        for (int i = 0; i < maxSteps; i++) {
+            pos.move(Direction.DOWN);
+            if (!blockMap.containsKey(pos)) return null; // 出了结构开挖范围
+            if (blockMap.getInt(pos) != 0) {
+                BlockPos air = pos.immutable().above();
+                return blockMap.containsKey(air) && blockMap.getInt(air) == 0 ? air : null;
+            }
+        }
+        return null;
+    }
+
+    /// 从洞穴中心往上摸，找到「实心顶 + 下方是洞内挖出来的空气」的那一格（用来在天花板上挂钟乳石）；找不到返回 null
+    public static BlockPos findCaveCeiling(Object2IntMap<BlockPos> blockMap, BlockPos center, int maxSteps) {
+        BlockPos.MutableBlockPos pos = center.mutable();
+        for (int i = 0; i < maxSteps; i++) {
+            pos.move(Direction.UP);
+            if (!blockMap.containsKey(pos)) return null; // 出了结构开挖范围
+            if (blockMap.getInt(pos) != 0) {
+                BlockPos air = pos.immutable().below();
+                return blockMap.containsKey(air) && blockMap.getInt(air) == 0 ? air : null;
+            }
+        }
+        return null;
+    }
+
+    /// 在洞穴地面上插一根石笋（最多 2 格）：贴地那格用 base，上面那格用 tip_merge；只有 1 格时用 tip_single。
+    /// base/tipMerge/tipSingle 是这三种方块状态在结构材质表里的下标；真的插上了返回 true
+    public static boolean putStalagmite(Object2IntMap<BlockPos> blockMap, BlockPos center, int maxSteps, int base, int tipMerge, int tipSingle) {
+        BlockPos floorAir = findCaveFloor(blockMap, center, maxSteps);
+        if (floorAir == null) return false;
+        if (blockMap.getInt(floorAir.below()) >= base) return false; // 支撑面本身已经是石笋，就不再往上叠
+        BlockPos above = floorAir.above();
+        if (blockMap.containsKey(above) && blockMap.getInt(above) == 0) {
+            blockMap.put(floorAir, base);
+            blockMap.put(above, tipMerge);
+        } else {
+            blockMap.put(floorAir, tipSingle);
+        }
+        return true;
+    }
+
+    /// 在洞穴天花板下挂一根钟乳石（最多 2 格）：贴天花板那格用 base，下面那格用 tip_merge；只有 1 格时用 tip_single
+    public static boolean putStalactite(Object2IntMap<BlockPos> blockMap, BlockPos center, int maxSteps, int base, int tipMerge, int tipSingle) {
+        BlockPos ceilingAir = findCaveCeiling(blockMap, center, maxSteps);
+        if (ceilingAir == null) return false;
+        if (blockMap.getInt(ceilingAir.above()) >= base) return false; // 天花板本身已经是钟乳石，就不再往下挂
+        BlockPos below = ceilingAir.below();
+        if (blockMap.containsKey(below) && blockMap.getInt(below) == 0) {
+            blockMap.put(ceilingAir, base);
+            blockMap.put(below, tipMerge);
+        } else {
+            blockMap.put(ceilingAir, tipSingle);
+        }
+        return true;
     }
 
     /// 立方体填充
