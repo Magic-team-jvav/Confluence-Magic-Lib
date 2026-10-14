@@ -20,9 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.ToIntFunction;
+import java.util.function.*;
 
 @SuppressWarnings("unchecked")
 public class DynamicLightRegister {
@@ -43,6 +41,8 @@ public class DynamicLightRegister {
     private static final List<ToIntFunction<ItemStack>> fallbacks = new ArrayList<>();
 
     private static final List<FloatConsumer> collectors = new ArrayList<>();
+    private static final List<BiPredicate<ItemStack, LivingEntity>> itemSuppressors = new ArrayList<>();
+    private static final List<Predicate<Entity>> entitySuppressors = new ArrayList<>();
 
     // 在 FMLClientSetupEvent 中注册
 
@@ -97,6 +97,15 @@ public class DynamicLightRegister {
         return group;
     }
 
+    // 由外部光照接管时跳过对应来源，默认仍使用本库照明。
+    public static void suppressItemLightWhen(BiPredicate<ItemStack, LivingEntity> predicate) {
+        itemSuppressors.add(predicate);
+    }
+
+    public static void suppressEntityLightWhen(Predicate<Entity> predicate) {
+        entitySuppressors.add(predicate);
+    }
+
     public static void collect(float partialTick) {
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null) return;
@@ -121,17 +130,25 @@ public class DynamicLightRegister {
     }
 
     private static void collectEntity(Entity entity, float partialTick) {
-        int brightness = collectProvider(entityProviders.get(entity.getType()), entity, partialTick);
+        boolean suppressed = false;
+        for (Predicate<Entity> predicate : entitySuppressors) {
+            if (predicate.test(entity)) {
+                suppressed = true;
+                break;
+            }
+        }
+        int brightness = collectProvider(entityProviders.get(entity.getType()), entity, partialTick, suppressed);
         for (DynamicLightProvider<Entity> provider : providersFor(entity.getClass())) {
-            brightness = Math.max(brightness, collectProvider(provider, entity, partialTick));
+            brightness = Math.max(brightness, collectProvider(provider, entity, partialTick, suppressed));
         }
         // 所有中心光源先取最大亮度，仅插值并创建一次光源；自定义位置的 provider 直接采集。
         if (brightness > 0) DynamicLightDispatcher.INSTANCE.addLightSource(
                 DynamicLightProvider.EntityLight.source(entity, partialTick, brightness));
     }
 
-    private static int collectProvider(DynamicLightProvider<Entity> provider, Entity entity, float partialTick) {
+    private static int collectProvider(DynamicLightProvider<Entity> provider, Entity entity, float partialTick, boolean suppressed) {
         if (provider instanceof DynamicLightProvider.EntityLight<?> centered) {
+            if (suppressed) return 0;
             return ((DynamicLightProvider.EntityLight<Entity>) centered).brightness(entity);
         }
         if (provider != null)
@@ -151,6 +168,7 @@ public class DynamicLightRegister {
 
     private static int itemLuminance(ItemStack stack, @Nullable LivingEntity holder, boolean projectile) {
         if (stack.isEmpty()) return 0;
+        for (var predicate : itemSuppressors) if (predicate.test(stack, holder)) return 0;
         for (ItemRule rule : overrides) {
             if (rule.type().isInstance(stack.getItem()))
                 return rule.provider().luminance(stack, holder, projectile);
@@ -187,6 +205,7 @@ public class DynamicLightRegister {
         private final Function<T, K> type;
         private final Map<K, DynamicLightProvider<T>> providers = new HashMap<>();
         private final Consumer<T> consumer = this::accept;
+        private Predicate<T> suppressed = instance -> false;
         private float partialTick;
 
         private SourceGroup(SourceCollection<T> collection, Function<T, K> type) {
@@ -198,12 +217,17 @@ public class DynamicLightRegister {
             providers.put(key, provider);
         }
 
+        public void suppressWhen(Predicate<T> predicate) {
+            suppressed = predicate;
+        }
+
         private void collect(float partialTick) {
             this.partialTick = partialTick;
             collection.forEach(partialTick, consumer);
         }
 
         private void accept(T instance) {
+            if (suppressed.test(instance)) return;
             DynamicLightProvider<T> provider = providers.get(type.apply(instance));
             if (provider != null)
                 DynamicLightDispatcher.INSTANCE.addLightSource(provider.getLuminance(instance, partialTick));
