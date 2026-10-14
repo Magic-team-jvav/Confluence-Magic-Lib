@@ -3,10 +3,12 @@ package org.confluence.lib.network.c2s;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import org.confluence.lib.ConfluenceMagicLib;
+import org.confluence.lib.common.LibEffects;
 import org.confluence.lib.common.effect.GravitationEffect;
 import org.confluence.lib.mixed.ILibEntity;
 import org.confluence.lib.network.s2c.BroadcastGravitationRotPacketS2C;
@@ -29,6 +31,8 @@ public record GravitationPacketC2S(boolean enable) implements IPortPacket.C2S {
 
     @Override
     public void work(ServerPlayer player) {
+        MobEffectInstance effect = player.getEffect(LibEffects.GRAVITATION.get());
+        if (!enable && effect != null && effect.getAmplifier() >= 2) return;
         player.resetFallDistance();
         AttributeMap attributeMap = player.getAttributes();
         if (enable) {

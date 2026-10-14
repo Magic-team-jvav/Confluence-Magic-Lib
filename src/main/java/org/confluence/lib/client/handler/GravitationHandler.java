@@ -1,12 +1,14 @@
 package org.confluence.lib.client.handler;
 
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.confluence.lib.client.LibKeyBindings;
+import org.confluence.lib.common.LibEffects;
 import org.confluence.lib.mixed.ILibEntity;
 import org.confluence.lib.mixin.client.LocalPlayerAccessor;
 import org.confluence.lib.network.c2s.GravitationPacketC2S;
@@ -35,7 +37,7 @@ public final class GravitationHandler {
     }
 
     public static void force(LocalPlayer player) {
-        if (isForceCancel() || player.getAbilities().flying) return;
+        if (!isBossForced(player) && (isForceCancel() || player.getAbilities().flying)) return;
 
         if (!shouldRot) {
             shouldRot = true;
@@ -57,9 +59,14 @@ public final class GravitationHandler {
     }
 
     public static void tryExpire(LocalPlayer player) {
-        if (player.getY() > player.level().getMaxBuildHeight()) {
+        if (!isBossForced(player) && player.getY() > player.level().getMaxBuildHeight()) {
             expire();
         }
+    }
+
+    private static boolean isBossForced(LocalPlayer player) {
+        MobEffectInstance effect = player.getEffect(LibEffects.GRAVITATION.get());
+        return effect != null && effect.getAmplifier() >= 2;
     }
 
     public static void reset() {
