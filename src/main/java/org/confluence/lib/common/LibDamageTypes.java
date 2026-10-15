@@ -21,6 +21,7 @@ public final class LibDamageTypes {
     public static final ResourceKey<DamageType> GUN_BULLET = register("gun_bullet");
     public static final ResourceKey<DamageType> HELLFIRE = register("hellfire");
     public static final ResourceKey<DamageType> MAGICAL_PROJECTILE = register("magical_projectile");
+    public static final ResourceKey<DamageType> SOUL = register("soul");
     public static final ResourceKey<DamageType> SPEAR_PROJECTILE = register("spear_projectile");
     public static final ResourceKey<DamageType> STAR_CLOAK = register("star_cloak");
     public static final ResourceKey<DamageType> SUMMON = register("summon");
@@ -54,6 +55,7 @@ public final class LibDamageTypes {
         damageType(context, GUN_BULLET, "gun_bullet", DamageScaling.NEVER, 0.1F);
         damageType(context, HELLFIRE, "hellfire_damage_type", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1F);
         damageType(context, MAGICAL_PROJECTILE, "magical_projectile", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1F);
+        damageType(context, SOUL, SOUL.location().getPath(), DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1F);
         damageType(context, SPEAR_PROJECTILE, "spear_projectile", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1F);
         damageType(context, STAR_CLOAK, "star_cloak", DamageScaling.ALWAYS, 5);
         damageType(context, SUMMON, "summon_damage_type", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1F);

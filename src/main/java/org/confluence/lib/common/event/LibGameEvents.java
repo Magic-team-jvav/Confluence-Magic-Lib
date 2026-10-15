@@ -250,8 +250,12 @@ public final class LibGameEvents {
         if (damageSource.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return;
         @Nullable Entity attacker = damageSource.getEntity();
 
-        amount = LibAttributes.applyMagicDamage(attacker, damageSource, amount);
-        amount = LibAttributes.applyRangedDamage(attacker, damageSource, amount);
+        if (damageSource.is(LibDamageTypes.SOUL)) {
+            amount = LibAttributes.applySoulDamage(attacker, damageSource, amount);
+        } else {
+            amount = LibAttributes.applyMagicDamage(attacker, damageSource, amount);
+            amount = LibAttributes.applyRangedDamage(attacker, damageSource, amount);
+        }
         amount = ILibDamageSource.processCritical(attacker, amount, victim, damageSource);
         amount = LibEffects.applyPaladinsShield(victim, damageSource, amount);
 

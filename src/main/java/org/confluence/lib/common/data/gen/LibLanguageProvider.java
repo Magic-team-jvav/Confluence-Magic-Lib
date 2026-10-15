@@ -18,6 +18,7 @@ public final class LibLanguageProvider extends LanguageProvider {
         add("attribute.name.generic.critical_chance", "Critical Chance", "暴击率");
         add("attribute.name.generic.dodge_chance", "Dodge Chance", "闪避率");
         add("attribute.name.generic.magic_damage", "Magic Damage", "魔法伤害");
+        add("attribute.name.generic.soul_damage", "Soul Damage", "灵魂伤害");
         add("attribute.name.generic.ranged_damage", "Ranged Damage", "远程伤害");
         add("attribute.name.generic.ranged_velocity", "Ranged Velocity", "远程速度");
         add("attribute.name.player.aggro", "Aggro", "仇恨");
@@ -32,6 +33,9 @@ public final class LibLanguageProvider extends LanguageProvider {
         add("attribute.name.player.mob_spawn_speed_multiplier", "Mob Spawn Speed Multiplier", "生物生成速度系数");
         add("death.attack.star_cloak", "%1$s was squashed by a falling star", "%1%s 被坠星压扁了");
         add("death.attack.gun_bullet", "%1%s was shot by %2$s", "%1$s 被 %2$s 枪击");
+        add("death.attack.soul", "%1$s was killed by soul damage", "%1$s 被灵魂伤害杀死了");
+        add("death.attack.soul.player", "%1$s was killed by %2$s's soul damage", "%1$s 被 %2$s 的灵魂伤害杀死了");
+        add("death.attack.soul.item", "%1$s was killed by %2$s using %3$s", "%1$s 被 %2$s 使用 %3$s 杀死了");
         add("jei.tooltip.environment.biome", "Requires any biome:", "需要任意生物群系：");
         add("jei.tooltip.environment.block", "Requires any block nearby:", "需要任意方块在附近：");
         add("jei.tooltip.environment.block.inflate", "Search range: %s", "搜索范围：%s");
