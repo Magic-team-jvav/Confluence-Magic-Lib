@@ -41,7 +41,10 @@ import org.confluence.lib.common.component.NbtComponent;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -72,8 +75,9 @@ public final class LibUtils {
     private static Predicate<Level> forTheWorthy = level -> false;
 
     /// 由本体提供特殊种子判断，Lib 单独使用时维持普通世界规则。
-    public static void setForTheWorthy(Predicate<Level> predicate) {
-        forTheWorthy = Objects.requireNonNull(predicate);
+    @ApiStatus.Internal
+    public static void setForTheWorthyPredicate(Predicate<Level> predicate) {
+        forTheWorthy = predicate;
     }
 
     /// 汇流难度档位：和平 0、经典 1、专家 2、大师 3；特殊种子可扩展到传奇 4。
@@ -84,21 +88,11 @@ public final class LibUtils {
     }
 
     /// 为专家?在处理if...else if时应先使用:
-    ///
-    /// @see LibUtils#isMaster(Level, BlockPos)
-    public static boolean isAtLeastExpert(Level level, BlockPos pos) {
-        return isAtLeastExpert(level);
-    }
-
     public static boolean isAtLeastExpert(Level level) {
         return getDifficultyId(level) >= Difficulty.NORMAL.getId();
     }
 
     /// 为大师?在处理if...else if时应先使用此方法
-    public static boolean isMaster(Level level, BlockPos pos) {
-        return isMaster(level);
-    }
-
     public static boolean isMaster(Level level) {
         return getDifficultyId(level) >= Difficulty.HARD.getId();
     }
@@ -108,8 +102,8 @@ public final class LibUtils {
     /// @param classic 经典难度的值
     /// @param expert  专家难度的值
     /// @return 选择到的值
-    public static <T> T switchByDifficulty(Level level, BlockPos pos, T classic, T expert) {
-        return switchByDifficulty(level, pos, classic, expert, expert, expert);
+    public static <T> T switchByDifficulty(Level level, T classic, T expert) {
+        return switchByDifficulty(level, classic, expert, expert, expert);
     }
 
     /// 根据游戏难度选择值
@@ -118,8 +112,8 @@ public final class LibUtils {
     /// @param expert  专家难度的值
     /// @param master  大师难度的值
     /// @return 选择到的值
-    public static <T> T switchByDifficulty(Level level, BlockPos pos, T classic, T expert, T master) {
-        return switchByDifficulty(level, pos, classic, expert, master, master);
+    public static <T> T switchByDifficulty(Level level, T classic, T expert, T master) {
+        return switchByDifficulty(level, classic, expert, master, master);
     }
 
     /// 根据游戏难度选择值
@@ -129,7 +123,7 @@ public final class LibUtils {
     /// @param master    大师难度的值
     /// @param legendary 传奇难度的值
     /// @return 选择到的值
-    public static <T> T switchByDifficulty(Level level, BlockPos pos, T classic, T expert, T master, T legendary) {
+    public static <T> T switchByDifficulty(Level level, T classic, T expert, T master, T legendary) {
         int difficulty = getDifficultyId(level);
         if (difficulty >= 4) return legendary;
         if (difficulty >= Difficulty.HARD.getId()) return master;

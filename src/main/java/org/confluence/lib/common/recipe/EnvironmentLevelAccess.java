@@ -29,6 +29,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import org.confluence.lib.util.predicate.Predicate3;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,6 +42,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class EnvironmentLevelAccess implements ContainerLevelAccess {
+    private static Predicate3<Player, Level, BlockPos> graveyard;
+
     protected @Nullable Player player;
     protected @Nullable Level level;
     protected @Nullable BlockPos pos;
@@ -48,6 +51,15 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
     public EnvironmentLevelAccess(@Nullable Level level, @Nullable BlockPos pos) {
         this.level = level;
         this.pos = pos;
+    }
+
+    @ApiStatus.Internal
+    public static void setGraveyardPredicate(Predicate3<Player, Level, BlockPos> predicate) {
+        graveyard = predicate;
+    }
+
+    public static boolean isGraveyard(Player player, Level level, BlockPos pos) {
+        return graveyard != null && graveyard.test(player, level, pos);
     }
 
     public void initializeIfNeeded(Player player) {
@@ -176,10 +188,6 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
             result = 31 * result + Objects.hashCode(block);
             result = 31 * result + Boolean.hashCode(graveyard);
             return result;
-        }
-
-        private static boolean isGraveyard(Player player, Level level, BlockPos pos) {
-            return true; // confluence mixin here
         }
 
         public List<Component> toDescriptions() {
