@@ -152,17 +152,6 @@ public final class LibAttributes {
     }
 
     @ApiStatus.Internal
-    public static float applySoulDamage(@Nullable Entity attacker, DamageSource damageSource, float amount) {
-        if (attacker instanceof LivingEntity living && damageSource.is(LibDamageTypes.SOUL)) {
-            AttributeInstance instance = living.getAttribute(ConfluenceMagicLib.SOUL_DAMAGE);
-            if (instance != null) {
-                return amount * (float) instance.getValue();
-            }
-        }
-        return amount;
-    }
-
-    @ApiStatus.Internal
     public static float applyArmorPenetration(LivingEntity victim, DamageSource damageSource, float armorValue) {
         if (damageSource.getEntity() instanceof LivingEntity attacker) {
             if (!hasCustomAttribute(ConfluenceMagicLib.ARMOR_PENETRATION)) {
@@ -240,11 +229,6 @@ public final class LibAttributes {
     /// 魔法伤害
     public static Holder<Attribute> getMagicDamage() {
         return getCustomAttribute(ConfluenceMagicLib.MAGIC_DAMAGE);
-    }
-
-    /// 灵魂伤害
-    public static Holder<Attribute> getSoulDamage() {
-        return ConfluenceMagicLib.SOUL_DAMAGE;
     }
 
     /// 召唤伤害
