@@ -41,12 +41,10 @@ import org.confluence.lib.common.component.NbtComponent;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public final class LibUtils {
@@ -71,24 +69,38 @@ public final class LibUtils {
         return a == b ? (BlockEntityTicker<A>) ticker : null;
     }
 
+    private static Predicate<Level> forTheWorthy = level -> false;
+
+    /// 由本体提供特殊种子判断，Lib 单独使用时维持普通世界规则。
+    public static void setForTheWorthy(Predicate<Level> predicate) {
+        forTheWorthy = Objects.requireNonNull(predicate);
+    }
+
+    /// 汇流难度档位：和平 0、经典 1、专家 2、大师 3；特殊种子可扩展到传奇 4。
+    /// 不读取区域难度，世界时间、区块停留时间和月相不参与分档。
+    public static int getDifficultyId(Level level) {
+        int difficulty = level.getDifficulty().getId();
+        return difficulty != 0 && forTheWorthy.test(level) ? difficulty + 1 : difficulty;
+    }
+
     /// 为专家?在处理if...else if时应先使用:
     ///
     /// @see LibUtils#isMaster(Level, BlockPos)
     public static boolean isAtLeastExpert(Level level, BlockPos pos) {
-        return level.getCurrentDifficultyAt(pos).getEffectiveDifficulty() >= 1.5F;
+        return isAtLeastExpert(level);
     }
 
     public static boolean isAtLeastExpert(Level level) {
-        return level.getDifficulty().getId() > Difficulty.EASY.getId();
+        return getDifficultyId(level) >= Difficulty.NORMAL.getId();
     }
 
     /// 为大师?在处理if...else if时应先使用此方法
     public static boolean isMaster(Level level, BlockPos pos) {
-        return level.getCurrentDifficultyAt(pos).getEffectiveDifficulty() >= 2.25F;
+        return isMaster(level);
     }
 
     public static boolean isMaster(Level level) {
-        return level.getDifficulty().getId() > Difficulty.NORMAL.getId();
+        return getDifficultyId(level) >= Difficulty.HARD.getId();
     }
 
     /// 根据游戏难度选择值
@@ -118,11 +130,11 @@ public final class LibUtils {
     /// @param legendary 传奇难度的值
     /// @return 选择到的值
     public static <T> T switchByDifficulty(Level level, BlockPos pos, T classic, T expert, T master, T legendary) {
-        float difficulty = level.getCurrentDifficultyAt(pos).getEffectiveDifficulty();
-        if (difficulty >= 3) return legendary;
-        if (difficulty >= 2.25F) return master;
-        if (difficulty >= 1.5F) return expert;
-        return classic; // 0.75F
+        int difficulty = getDifficultyId(level);
+        if (difficulty >= 4) return legendary;
+        if (difficulty >= Difficulty.HARD.getId()) return master;
+        if (difficulty >= Difficulty.NORMAL.getId()) return expert;
+        return classic;
     }
 
     public static int getSlotIndex(@Nullable EquipmentSlot slot) {
