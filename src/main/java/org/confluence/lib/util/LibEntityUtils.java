@@ -317,11 +317,45 @@ public final class LibEntityUtils {
         return new Vec3(-d1 * d2 - d0 * d3, 0, -d0 * d2 + d1 * d3);
     }
 
-    /// 更新实体朝向
-    public static void updateEntityRotation(Entity entity, Vec3 dir) {
-        float[] angle = LibMathUtils.dirToRot(dir, true);
-        entity.setYRot(angle[0]);
-        entity.setXRot(angle[1]);
+    /// 更新实体朝向，同时同步生物的身体和头部朝向
+    ///
+    /// @param entity    实体
+    /// @param direction 目标方向，零向量不更新朝向
+    public static void updateEntityRotation(Entity entity, Vec3 direction) {
+        turnEntityTowards(entity, direction, 180.0F, 180.0F);
+    }
+
+    /// 以指定最大转角更新实体朝向，同时同步生物的身体和头部朝向
+    ///
+    /// @param entity             实体
+    /// @param direction          目标方向，零向量不更新朝向，垂直方向保留水平朝向
+    /// @param maximumYawChange   最大水平转角，单位为度，0表示不改变
+    /// @param maximumPitchChange 最大俯仰转角，单位为度，0表示不改变
+    public static void turnEntityTowards(Entity entity, Vec3 direction, float maximumYawChange, float maximumPitchChange) {
+        if (direction.lengthSqr() < 1.0E-14D) return;
+        double horizontal = direction.horizontalDistance();
+        float yaw = entity.getYRot();
+        if (horizontal > 1.0E-7D && maximumYawChange > 0.0F) {
+            float targetYaw = (float) (Mth.atan2(-direction.x, direction.z) * Mth.RAD_TO_DEG);
+            yaw = Mth.approachDegrees(yaw, targetYaw, maximumYawChange);
+        }
+        if (maximumPitchChange > 0.0F) {
+            float targetPitch = (float) (Mth.atan2(-direction.y, horizontal) * Mth.RAD_TO_DEG);
+            entity.setXRot(Mth.approach(entity.getXRot(), targetPitch, maximumPitchChange));
+        }
+        setEntityYaw(entity, yaw);
+    }
+
+    /// 设置实体水平朝向，同时同步生物的身体和头部朝向
+    ///
+    /// @param entity 实体
+    /// @param yaw    水平朝向，单位为度
+    public static void setEntityYaw(Entity entity, float yaw) {
+        entity.setYRot(yaw);
+        if (entity instanceof LivingEntity living) {
+            living.setYBodyRot(yaw);
+            living.setYHeadRot(yaw);
+        }
     }
 
     private static Function<Player, @Nullable Object> teamGetter = Player::getTeam;
