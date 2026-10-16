@@ -72,6 +72,10 @@ public final class ConfluenceMagicLib {
     public static final DeferredHolder<Attribute, PercentageAttribute> DODGE_CHANCE = registerAttribute("generic.dodge_chance", 0.0, 0.0, 1.0, PercentageAttribute::new, a -> a.setSyncable(true)); // ADD_VALUE
     /// 魔法伤害，请优先使用[org.confluence.lib.common.LibAttributes#getMagicDamage]
     public static final DeferredHolder<Attribute, RangedAttribute> MAGIC_DAMAGE = registerAttribute("generic.magic_damage", 1.0, 0.0, 10.0, RangedAttribute::new, a -> a.setSyncable(true)); // MULTIPLY_TOTAL
+    /// 灵魂伤害，请优先使用[LibAttributes#getSoulDamage()]
+    public static final DeferredHolder<Attribute, RangedAttribute> SOUL_DAMAGE = registerAttribute("generic.soul_damage", 1.0, 0.0, 10.0, RangedAttribute::new, a -> a.setSyncable(true)); // MULTIPLY_TOTAL
+    /// 额外灵魂加成
+    public static final DeferredHolder<Attribute, RangedAttribute> ADDITIONAL_SOUL = registerAttribute("generic.additional_soul", 0.0, 0.0, Integer.MAX_VALUE, RangedAttribute::new, a -> a.setSyncable(true)); // ADD_VALUE
     /// 护甲穿透，请优先使用[org.confluence.lib.common.LibAttributes#getArmorPenetration]
     public static final DeferredHolder<Attribute, RangedAttribute> ARMOR_PENETRATION = registerAttribute("generic.armor_penetration", 0.0, 0.0, 10000, RangedAttribute::new, a -> a.setSyncable(true)); // ADD_VALUE
     /// 生物生成速度系数

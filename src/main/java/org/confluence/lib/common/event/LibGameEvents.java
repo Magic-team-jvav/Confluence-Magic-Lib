@@ -19,6 +19,7 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.damagesource.DamageContainer;
 import net.neoforged.neoforge.event.ItemStackedOnOtherEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
 import net.neoforged.neoforge.event.entity.EntityInvulnerabilityCheckEvent;
@@ -43,6 +44,7 @@ import org.confluence.lib.api.event.SwitchItemFunctionEvent;
 import org.confluence.lib.common.LibAttributes;
 import org.confluence.lib.common.LibDamageTypes;
 import org.confluence.lib.common.LibEffects;
+import org.confluence.lib.common.LibTags;
 import org.confluence.lib.common.data.saved.IGlobalData;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
 import org.confluence.lib.common.worldgen.biome.DynamicBiomeUtils;
@@ -262,7 +264,8 @@ public final class LibGameEvents {
     public static void entityInvulnerabilityCheck(EntityInvulnerabilityCheckEvent event) {
         if (event.isInvulnerable()) return;
         DamageSource damageSource = event.getSource();
-        if (damageSource.is(DamageTypes.FELL_OUT_OF_WORLD) || damageSource.is(DamageTypes.GENERIC_KILL)) {
+        if (damageSource.is(DamageTypes.FELL_OUT_OF_WORLD) || damageSource.is(DamageTypes.GENERIC_KILL)
+                || damageSource.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             return;
         }
         if (event.getEntity() instanceof LivingEntity victim && LibAttributes.applyDodge(victim)) {
@@ -325,6 +328,12 @@ public final class LibGameEvents {
 
     @SubscribeEvent
     public static void livingIncomingDamage(LivingIncomingDamageEvent event) {
+        if (event.getSource().is(LibTags.DamageTypes.SOUL_OVERDRAFT)) {
+            event.addReductionModifier(DamageContainer.Reduction.ABSORPTION, (container, reduction) -> 0.0F);
+            event.setInvulnerabilityTicks(event.getEntity().invulnerableTime);
+            return;
+        }
+
         if (ConfluenceMagicLib.IS_CONFLUENCE_LOAD) return;
         if (event.getSource().is(LibDamageTypes.GUN_BULLET)) {
             event.setInvulnerabilityTicks(0);

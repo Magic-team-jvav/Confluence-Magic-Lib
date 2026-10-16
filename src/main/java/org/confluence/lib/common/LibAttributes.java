@@ -235,4 +235,8 @@ public final class LibAttributes {
     public static Holder<Attribute> getSummonDamage() {
         return ConfluenceMagicLib.SUMMON_DAMAGE;
     }
+
+    public static Holder<Attribute> getSoulDamage(){
+        return ConfluenceMagicLib.SOUL_DAMAGE;
+    }
 }

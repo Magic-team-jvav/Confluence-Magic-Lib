@@ -27,9 +27,17 @@ public final class LibDamageTypeTagsProvider extends DamageTypeTagsProvider {
                 DamageTypes.PLAYER_ATTACK,
                 DamageTypes.STING,
                 LibDamageTypes.SWORD_PROJECTILE);
+        tag(LibTags.DamageTypes.SOUL_OVERDRAFT).add(LibDamageTypes.SOUL_OVERDRAFT);
         tag(Tags.DamageTypes.IS_MAGIC).add(LibDamageTypes.MAGICAL_PROJECTILE);
         tag(DamageTypeTags.IS_PROJECTILE).add(LibDamageTypes.GUN_BULLET, LibDamageTypes.MAGICAL_PROJECTILE);
-        tag(DamageTypeTags.BYPASSES_ARMOR).add(LibDamageTypes.DUNGEON_GUARDIAN);
+        tag(DamageTypeTags.BYPASSES_ARMOR).add(LibDamageTypes.DUNGEON_GUARDIAN).addTag(LibTags.DamageTypes.SOUL_OVERDRAFT);
+        tag(DamageTypeTags.BYPASSES_SHIELD).addTag(LibTags.DamageTypes.SOUL_OVERDRAFT);
+        tag(DamageTypeTags.BYPASSES_INVULNERABILITY).addTag(LibTags.DamageTypes.SOUL_OVERDRAFT);
+        tag(DamageTypeTags.BYPASSES_COOLDOWN).addTag(LibTags.DamageTypes.SOUL_OVERDRAFT);
+        tag(DamageTypeTags.BYPASSES_EFFECTS).addTag(LibTags.DamageTypes.SOUL_OVERDRAFT);
+        tag(DamageTypeTags.BYPASSES_RESISTANCE).addTag(LibTags.DamageTypes.SOUL_OVERDRAFT);
+        tag(DamageTypeTags.BYPASSES_ENCHANTMENTS).addTag(LibTags.DamageTypes.SOUL_OVERDRAFT);
+        tag(DamageTypeTags.NO_KNOCKBACK).addTag(LibTags.DamageTypes.SOUL_OVERDRAFT);
         tag(DamageTypeTags.IS_PLAYER_ATTACK).add(LibDamageTypes.SUMMON);
     }
 }

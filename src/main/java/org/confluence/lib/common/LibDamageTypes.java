@@ -25,6 +25,8 @@ public final class LibDamageTypes {
     public static final ResourceKey<DamageType> STAR_CLOAK = register("star_cloak");
     public static final ResourceKey<DamageType> SUMMON = register("summon");
     public static final ResourceKey<DamageType> SUMMONER = register("summoner");
+    public static final ResourceKey<DamageType> SOUL = register("soul");
+    public static final ResourceKey<DamageType> SOUL_OVERDRAFT = register("soul_overdraft");
     public static final ResourceKey<DamageType> SWORD_PROJECTILE = register("sword_projectile");
 
     private static ResourceKey<DamageType> register(String id) {
@@ -43,6 +45,16 @@ public final class LibDamageTypes {
         return level.damageSources().source(key, direct, causing);
     }
 
+    /// 创建保留实际命中实体与施法者归属的灵魂伤害源。
+    public static DamageSource soul(Level level, @Nullable Entity direct, @Nullable Entity owner) {
+        return of(level, SOUL, direct, owner);
+    }
+
+    /// 灵魂透支由伤害标签与 NeoForge 事件处理，不指定攻击者。
+    public static DamageSource soulOverdraft(Level level) {
+        return of(level, SOUL_OVERDRAFT);
+    }
+
     public static void bootstrap(BootstrapContext<DamageType> context) {
         damageType(context, ACID_VENOM, "acid_venom", DamageScaling.ALWAYS, 10);
         damageType(context, BOULDER, "boulder", DamageScaling.ALWAYS, 5);
@@ -58,6 +70,8 @@ public final class LibDamageTypes {
         damageType(context, STAR_CLOAK, "star_cloak", DamageScaling.ALWAYS, 5);
         damageType(context, SUMMON, "summon_damage_type", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1F);
         damageType(context, SUMMONER, "summoner_damage_type", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1F);
+        damageType(context, SOUL, "soul", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1F);
+        damageType(context, SOUL_OVERDRAFT, "soul_overdraft", DamageScaling.NEVER, 0.0F);
         damageType(context, SWORD_PROJECTILE, "sword_projectile", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1F);
     }
 
