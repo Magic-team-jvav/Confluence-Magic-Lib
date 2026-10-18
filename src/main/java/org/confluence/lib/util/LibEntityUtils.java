@@ -1,6 +1,5 @@
 package org.confluence.lib.util;
 
-import PortLib.extensions.java.util.List.PortListExtension;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
@@ -42,8 +41,11 @@ import java.util.function.Predicate;
 public final class LibEntityUtils {
     public static boolean canHitEntity(@Nullable Entity target, @Nullable Entity owner) {
         if (target == null || target.isRemoved()) return false;
+        boolean part = target instanceof PartEntity<?> || target instanceof HitTarget;
+        if (part && (!target.canBeHitByProjectile()
+                || target instanceof HitTarget hitTarget && !hitTarget.acceptsDirectHit())) return false;
         target = getOwner(target);
-        if (owner == target || !target.isAttackable() || !target.canBeHitByProjectile() || target instanceof ArmorStand) {
+        if (owner == target || !target.isAttackable() || (!part && !target.canBeHitByProjectile()) || target instanceof ArmorStand) {
             return false;
         }
         return owner == null || (!owner.isPassengerOfSameVehicle(target));
@@ -61,105 +63,58 @@ public final class LibEntityUtils {
     /// @param maxAngle 最大角度
     /// @return 若直接命中，返回命中的目标；否则返回最近有效的目标
     public static @Nullable LivingEntity getAABBAngleTarget(Vec3 ori, Vec3 end, Level level, @Nullable Entity owner, double range, double maxAngle, Predicate<Entity> filter) {
-        // 扩大包围盒
-        AABB aabb;
-        if (owner == null) {
-            aabb = new AABB(ori, end).inflate(range);
-        } else {
-            aabb = owner.getBoundingBox().inflate(range);
-        }
-        Vec3 direction = end.subtract(ori);
-        List<HitResult> hits = new ArrayList<>();
-        List<HitResult> subHits = new ArrayList<>();
-        List<? extends Entity> entities = level.getEntities(owner, aabb, entity1 -> entity1.isPickable() && entity1.isAlive() && filter.test(entity1));
-        for (var e : entities) {
-            // 获取视线交点
-            Vec3 vec3 = e.getBoundingBox().clip(ori, end).orElse(null);
-            // 优先指向的目标
-            if (vec3 != null) {
-                //System.multiOut.println("point directly");
-                EntityHitResult entityHitResult = new EntityHitResult(e, vec3);
-                hits.add(entityHitResult);
-            } else if (hits.isEmpty() && LibMathUtils.angleBetween(e.position().subtract(ori), direction) < Math.toRadians(maxAngle)) {
-                // 自瞄其他夹角小于一定度数的目标
-                EntityHitResult entityHitResult = new EntityHitResult(e, e.position());
-                subHits.add(entityHitResult);
-            }
-        }
-
-        if (!hits.isEmpty()) {
-            // 射线命中的目标 按距离排序
-            hits.sort((o1, o2) -> {
-                double v1 = o1.getLocation().distanceToSqr(ori);
-                double v2 = o2.getLocation().distanceToSqr(ori);
-                if (v1 == v2) return 0;
-                return v1 < v2 ? -1 : 1;
-            });
-            for (HitResult hitResult : hits) {
-                // 这里改了一下，使用这个方法的武器可能会出问题。原本是只锁定怪物，如果武器出现了攻击到不该攻击的目标的话，在filter里面排除一下
-                if (hitResult instanceof EntityHitResult entityHitResult && (entityHitResult.getEntity() instanceof LivingEntity living)) {
-                    return living;
-                }
-            }
-        } else if (!subHits.isEmpty()) {
-            // 未命中的目标 按角度排序
-            subHits.sort((o1, o2) -> {
-                double v1 = LibMathUtils.angleBetween(o1.getLocation().subtract(ori), direction);
-                double v2 = LibMathUtils.angleBetween(o2.getLocation().subtract(ori), direction);
-                if (v1 == v2) return 0;
-                return v1 < v2 ? -1 : 1;
-            });
-            HitResult hitResult = PortListExtension.getFirst(subHits);
-            if (hitResult instanceof EntityHitResult entityHitResult &&
-                    entityHitResult.getEntity() instanceof LivingEntity livingEntity) {
-                return livingEntity;
-            }
-        }
-        return null;
+        return livingTarget(getAABBAngleHitTarget(ori, end, level, owner, range, maxAngle, filter));
     }
 
-    /// 获取包围盒内锥形射线内的所有目标
-    ///
-    /// @param ori      起始点
-    /// @param end      终止点
-    /// @param range    若owner为null，则为包围盒范围，否则无效
-    /// @param maxAngle 最大角度
-    /// @return 若直接命中，返回命中的目标；否则返回最近有效的目标
-    public static List<LivingEntity> getAABBAngleTargets(Vec3 ori, Vec3 end, Level level, @Nullable Entity owner, double range, double maxAngle, Predicate<Entity> filter) {
-        // 扩大包围盒
-        AABB aabb;
-        if (owner != null) {
-            aabb = owner.getBoundingBox().inflate(range);
-        } else {
-            aabb = new AABB(ori, end).inflate(range);
-        }
-        Vec3 direction = end.subtract(ori);
-        List<HitResult> hits = new ArrayList<>();
-        List<? extends Entity> entities = level.getEntities(owner, aabb, entity1 -> entity1.isPickable() && entity1.isAlive() && filter.test(entity1));
-        for (var e : entities) {
-            // 获取视线交点
-            Vec3 vec3 = e.getBoundingBox().clip(ori, end).orElse(null);
-            // 优先指向的目标
-            if (vec3 != null) {
-                EntityHitResult entityHitResult = new EntityHitResult(e, vec3);
-                hits.add(entityHitResult);
-            } else if (hits.isEmpty() && LibMathUtils.angleBetween(e.position().subtract(ori), direction) < Math.toRadians(maxAngle)) {
-                // 自瞄其他夹角小于一定度数的目标
-                EntityHitResult entityHitResult = new EntityHitResult(e, e.position());
-                hits.add(entityHitResult);
-            }
-        }
+    /// 与生命实体接口共用优先级，但保留实际受击部位供追踪武器瞄准。
+    public static @Nullable Entity getAABBAngleHitTarget(Vec3 ori, Vec3 end, Level level, @Nullable Entity owner,
+            double range, double maxAngle, Predicate<Entity> filter) {
+        List<EntityHitResult> hits = angleHits(ori, end, level, owner, range, maxAngle, filter);
+        return hits.isEmpty() ? null : hits.get(0).getEntity();
+    }
 
-        if (!hits.isEmpty()) {
-            List<LivingEntity> livingEntities = new ArrayList<>();
-            for (HitResult hitResult : hits) {
-                if (hitResult instanceof EntityHitResult entityHitResult && (entityHitResult.getEntity() instanceof LivingEntity living)) {
-                    livingEntities.add(living);
+    public static List<LivingEntity> getAABBAngleTargets(Vec3 ori, Vec3 end, Level level, @Nullable Entity owner,
+            double range, double maxAngle, Predicate<Entity> filter) {
+        Set<LivingEntity> targets = new LinkedHashSet<>();
+        for (EntityHitResult hit : angleHits(ori, end, level, owner, range, maxAngle, filter)) {
+            LivingEntity target = livingTarget(hit.getEntity());
+            if (target != null) targets.add(target);
+        }
+        return new ArrayList<>(targets);
+    }
+
+    private static @Nullable LivingEntity livingTarget(@Nullable Entity hit) {
+        if (hit == null) return null;
+        if (hit instanceof LivingEntity living) return living;
+        Entity owner = encounterOwner(hit);
+        return owner instanceof LivingEntity living ? living : null;
+    }
+
+    private static List<EntityHitResult> angleHits(Vec3 ori, Vec3 end, Level level, @Nullable Entity owner,
+            double range, double maxAngle, Predicate<Entity> filter) {
+        AABB bounds = owner == null ? new AABB(ori, end).inflate(range) : owner.getBoundingBox().inflate(range);
+        Vec3 direction = end.subtract(ori);
+        List<EntityHitResult> direct = new ArrayList<>();
+        List<EntityHitResult> angled = new ArrayList<>();
+        for (Entity candidate : level.getEntities(owner, bounds,
+                entity -> entity.isPickable() && entity.isAlive() && livingTarget(entity) != null && filter.test(entity))) {
+            AABB box = candidate.getBoundingBox();
+            Vec3 hit = box.contains(ori) ? ori : box.clip(ori, end).orElse(null);
+            if (hit != null) {
+                direct.add(new EntityHitResult(candidate, hit));
+            } else {
+                Vec3 center = box.getCenter();
+                if (LibMathUtils.angleBetween(center.subtract(ori), direction) < Math.toRadians(maxAngle)) {
+                    angled.add(new EntityHitResult(candidate, center));
                 }
             }
-            return livingEntities;
         }
-        return List.of();
+        if (!direct.isEmpty()) {
+            direct.sort(Comparator.comparingDouble(hit -> hit.getLocation().distanceToSqr(ori)));
+            return direct;
+        }
+        angled.sort(Comparator.comparingDouble(hit -> LibMathUtils.angleBetween(hit.getLocation().subtract(ori), direction)));
+        return angled;
     }
 
     /// 给予实体B一个击退动量，方向为A→B
@@ -444,6 +399,19 @@ public final class LibEntityUtils {
             return LibEntityUtils.angleTarget(start, end, level, searchEntity, attacker, range, angle, this, extra);
         }
 
+        /// 返回实际受击部位，调用者可以直接追踪部位中心，而不是主体的寻路包围盒。
+        public @Nullable Entity angleHitTarget(Vec3 start, Vec3 end, Level level,
+                @Nullable Entity searchEntity, @Nullable Entity attacker, double range, double angle,
+                Predicate<Entity> extra) {
+            return getAABBAngleHitTarget(start, end, level, searchEntity, range, angle, filter(attacker, extra));
+        }
+
+        public List<Entity> hitTargets(Level level, @Nullable Entity searchEntity, @Nullable Entity attacker,
+                AABB bounds, Predicate<Entity> extra) {
+            return level.getEntities(searchEntity, bounds,
+                    candidate -> encounterOwner(candidate) instanceof LivingEntity && canAcquire(attacker, candidate) && extra.test(candidate));
+        }
+
         public @Nullable EntityHitResult viewTarget(Player player, double reach) {
             return LibEntityUtils.viewTarget(player, reach, this);
         }
@@ -506,6 +474,7 @@ public final class LibEntityUtils {
     private static boolean canKeep(@Nullable Entity attacker, @Nullable Entity candidate, TargetPolicy policy) {
         if (policy == TargetPolicy.NONE || candidate == null || candidate.isRemoved() || !candidate.isAlive()
                 || attacker != null && attacker.level() != candidate.level()) return false;
+        if (candidate instanceof HitTarget part && !part.acceptsDirectHit()) return false;
         Entity target = encounterOwner(candidate);
         if (target instanceof Player player && (player.isCreative() || player.isSpectator())) return false;
         return target.isAlive() && !target.isRemoved() && allowsAttack(attacker, candidate)
@@ -600,15 +569,26 @@ public final class LibEntityUtils {
         return hit != null && hit.getLocation().distanceToSqr(from) < blockDistance ? hit : null;
     }
 
-    /// 从弹幕位置到目标眼睛的方块视线检测；无碰撞目标沿用悠悠球原来的穿墙例外。
-    public static boolean hasProjectileLineOfSight(Entity source, LivingEntity target) {
-        return target.noPhysics || source.level().clip(new ClipContext(source.position(), target.getEyePosition(),
+    /// 从弹幕位置到受击部位中心的方块视线检测；无碰撞目标沿用悠悠球原来的穿墙例外。
+    public static boolean hasProjectileLineOfSight(Entity source, Entity target) {
+        return target.noPhysics || source.level().clip(new ClipContext(source.position(), target.getBoundingBox().getCenter(),
                 ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, source)).getType() == HitResult.Type.MISS;
     }
 
     public static double horizontalVerticalDistance(Vec3 origin, Entity target) {
         Vec3 offset = target.getBoundingBox().getCenter().subtract(origin);
         return Math.sqrt(offset.x * offset.x + offset.z * offset.z) + Math.abs(offset.y);
+    }
+
+    /// Forge 部件不在普通实体 ID 索引内，客户端的追踪同步也必须查询部件集合。
+    public static @Nullable Entity getEntityOrPart(Level level, int id) {
+        if (id < 0) return null;
+        Entity entity = level.getEntity(id);
+        if (entity != null) return entity;
+        for (PartEntity<?> part : level.getPartEntities()) {
+            if (part.getId() == id && !part.getParent().isRemoved()) return part;
+        }
+        return null;
     }
 
     public static double manhattanDistance(Vec3 origin, Entity target) {
@@ -621,8 +601,9 @@ public final class LibEntityUtils {
             double forwardRange, double halfWidth, double halfHeight) {
         Vec3 offset = target.getBoundingBox().getCenter().subtract(origin);
         double forward = offset.dot(direction);
-        double targetWidth = target.getBbWidth() * 0.5D;
-        double targetHeight = target.getBbHeight() * 0.5D;
+        AABB bounds = target.getBoundingBox();
+        double targetWidth = Math.max(bounds.getXsize(), bounds.getZsize()) * 0.5D;
+        double targetHeight = bounds.getYsize() * 0.5D;
         if (forward < -targetWidth || forward > forwardRange + targetWidth) return false;
         Vec3 side = direction.cross(new Vec3(0.0D, 1.0D, 0.0D));
         if (side.lengthSqr() <= 1.0E-10D) side = direction.cross(new Vec3(1.0D, 0.0D, 0.0D));
