@@ -55,6 +55,9 @@ import org.mesdag.portlib.event.entity.living.PortLivingDamageEvent;
 import org.mesdag.portlib.event.other.PortItemStackedOnOtherEvent;
 import org.mesdag.portlib.event.tick.PortEntityTickEvent;
 import org.mesdag.portlib.network.PortPacketDistributor;
+import org.mesdag.portlib.event.entity.living.PortLivingIncomingDamageEvent;
+import org.mesdag.portlib.wrapper.common.damagesource.PortDamageContainer;
+import org.confluence.lib.common.LibTags;
 
 public final class LibGameEvents {
     public static void init() {
@@ -82,6 +85,7 @@ public final class LibGameEvents {
         PortEventHandler.addListener(PortEventPriority.LOWEST, LibGameEvents::livingDamage$Post);
         PortEventHandler.addListener(PortEventPriority.LOWEST, LibGameEvents::livingDamage$Pre);
         PortEventHandler.addListener(LibGameEvents::entityInvulnerabilityCheck);
+        PortEventHandler.addListener(LibGameEvents::livingSoulOverdraft);
         PortEventHandler.addListener(LibGameEvents::entityJoinLevel);
         PortEventHandler.addListener(LibGameEvents::livingChangeTarget);
         PortEventHandler.addListener(LibGameEvents::playerTick);
@@ -254,9 +258,17 @@ public final class LibGameEvents {
     private static void entityInvulnerabilityCheck(PortEntityInvulnerabilityCheckEvent event) {
         if (event.isInvulnerable()) return;
         DamageSource source = event.getSource();
-        if (source.is(DamageTypes.FELL_OUT_OF_WORLD) || source.is(DamageTypes.GENERIC_KILL)) return;
+        if (source.is(DamageTypes.FELL_OUT_OF_WORLD) || source.is(DamageTypes.GENERIC_KILL)
+                || source.is(LibTags.DamageTypes.SOUL_OVERDRAFT)) return;
         if (event.getEntity() instanceof LivingEntity victim && LibAttributes.applyDodge(victim)) {
             event.setInvulnerable(true);
+        }
+    }
+
+    private static void livingSoulOverdraft(PortLivingIncomingDamageEvent event) {
+        if (event.getSource().is(LibTags.DamageTypes.SOUL_OVERDRAFT)) {
+            event.addReductionModifier(PortDamageContainer.PortReduction.ABSORPTION, (container, reduction) -> 0.0F);
+            event.setInvulnerabilityTicks(event.getEntity().invulnerableTime);
         }
     }
 

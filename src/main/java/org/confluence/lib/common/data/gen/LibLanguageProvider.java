@@ -21,6 +21,8 @@ public final class LibLanguageProvider extends LanguageProvider {
         add("attribute.name.generic.critical_chance", "Critical Chance", "暴击率");
         add("attribute.name.generic.dodge_chance", "Dodge Chance", "闪避率");
         add("attribute.name.generic.magic_damage", "Magic Damage", "魔法伤害");
+        add("attribute.name.generic.soul_damage", "Soul Damage", "灵魂伤害");
+        add("attribute.name.generic.additional_soul", "Additional Soul Capacity", "额外灵魂容量");
         add("attribute.name.generic.ranged_damage", "Ranged Damage", "远程伤害");
         add("attribute.name.generic.ranged_velocity", "Ranged Velocity", "远程速度");
         add("attribute.name.player.aggro", "Aggro", "仇恨");
@@ -33,6 +35,11 @@ public final class LibLanguageProvider extends LanguageProvider {
         add("attribute.name.player.whip_range", "Whip Range", "鞭范围");
         add("attribute.name.player.mob_spawn_count_multiplier", "Mob Spawn Count Multiplier", "生物生成数量系数");
         add("attribute.name.player.mob_spawn_speed_multiplier", "Mob Spawn Speed Multiplier", "生物生成速度系数");
+        add("death.attack.soul", "%1$s was consumed by soul damage", "%1$s 被灵魂伤害吞噬了");
+        add("death.attack.soul.player", "%1$s was consumed by %2$s's soul damage", "%1$s 的灵魂被 %2$s 吞噬了");
+        add("death.attack.soul.item", "%1$s was consumed by %2$s using %3$s", "%1$s 被 %2$s 用 %3$s 夺走了灵魂");
+        add("death.attack.soul_overdraft", "%1$s fails to realize they have become the pact itself.", "%1$s没有意识到自己成为了契约");
+        add("death.attack.soul_overdraft.player", "%1$s fails to realize they have become the pact itself.", "%1$s没有意识到自己成为了契约");
         add("death.attack.star_cloak", "%1$s was squashed by a falling star", "%1%s 被坠星压扁了");
         add("death.attack.gun_bullet", "%1%s was shot by %2$s", "%1$s 被 %2$s 枪击");
         add("jei.tooltip.environment.biome", "Requires any biome:", "需要任意生物群系：");
