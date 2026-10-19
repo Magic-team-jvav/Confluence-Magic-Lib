@@ -30,6 +30,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.entity.PartEntity;
+import org.confluence.lib.common.entity.PartHitTarget;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
@@ -41,11 +42,12 @@ import java.util.function.Predicate;
 public final class LibEntityUtils {
     public static boolean canHitEntity(@Nullable Entity target, @Nullable Entity owner) {
         if (target == null || target.isRemoved()) return false;
-        boolean part = target instanceof PartEntity<?> || target instanceof HitTarget;
+        boolean part = target instanceof PartEntity<?> || target instanceof PartHitTarget;
         if (part && (!target.canBeHitByProjectile()
-                || target instanceof HitTarget hitTarget && !hitTarget.acceptsDirectHit())) return false;
-        target = getOwner(target);
-        if (owner == target || !target.isAttackable() || (!part && !target.canBeHitByProjectile()) || target instanceof ArmorStand) {
+                || target instanceof PartHitTarget hitTarget && !hitTarget.acceptsDirectHit())) return false;
+        target = part ? encounterOwner(target) : getOwner(target);
+        if (owner == target || !target.isAlive() || target.isRemoved() || !target.isAttackable()
+                || (!part && !target.canBeHitByProjectile()) || target instanceof ArmorStand) {
             return false;
         }
         return owner == null || (!owner.isPassengerOfSameVehicle(target));
@@ -324,12 +326,6 @@ public final class LibEntityUtils {
         return teamGetter.apply(player);
     }
 
-    /// 提供阵营和瞄准主体的部件协议，不改变部件自己的伤害接收及命中去重身份。
-    public interface HitTarget {
-        Entity encounterOwner();
-        boolean acceptsDirectHit();
-    }
-
     /// 即使所有者离线，也可通过 UUID 判断同属玩家的召唤实体。
     public interface OwnedTarget {
         UUID targetingOwnerId();
@@ -352,7 +348,7 @@ public final class LibEntityUtils {
     public static boolean isEnemyFaction(@Nullable Entity entity) {
         for (int depth = 0; entity != null && depth < 16; depth++) {
             if (entity instanceof OwnedTarget) return false;
-            Entity owner = entity instanceof HitTarget part ? part.encounterOwner() : getOwner(entity);
+            Entity owner = entity instanceof PartHitTarget part ? part.encounterOwner() : getOwner(entity);
             if (owner == null || owner == entity)
                 return entity instanceof Enemy || entity.getType().getCategory() == MobCategory.MONSTER;
             entity = owner;
@@ -430,7 +426,7 @@ public final class LibEntityUtils {
 
     /// 只解析受击部位的主体，不将召唤物替换成主人作为瞄准位置。
     public static Entity encounterOwner(Entity target) {
-        if (target instanceof HitTarget part) return part.encounterOwner();
+        if (target instanceof PartHitTarget part) return part.encounterOwner();
         Entity impacted = tryFindBeImpacted(target);
         return impacted == null ? target : impacted;
     }
@@ -442,7 +438,7 @@ public final class LibEntityUtils {
             if (entity instanceof OwnedTarget summon) {
                 next = entity.level().getPlayerByUUID(summon.targetingOwnerId());
             } else {
-                next = entity instanceof HitTarget part ? part.encounterOwner() : getOwner(entity);
+                next = entity instanceof PartHitTarget part ? part.encounterOwner() : getOwner(entity);
             }
             if (next == null || next == entity) return entity;
             entity = next;
@@ -474,7 +470,7 @@ public final class LibEntityUtils {
     private static boolean canKeep(@Nullable Entity attacker, @Nullable Entity candidate, TargetPolicy policy) {
         if (policy == TargetPolicy.NONE || candidate == null || candidate.isRemoved() || !candidate.isAlive()
                 || attacker != null && attacker.level() != candidate.level()) return false;
-        if (candidate instanceof HitTarget part && !part.acceptsDirectHit()) return false;
+        if (candidate instanceof PartHitTarget part && !part.acceptsDirectHit()) return false;
         Entity target = encounterOwner(candidate);
         if (target instanceof Player player && (player.isCreative() || player.isSpectator())) return false;
         return target.isAlive() && !target.isRemoved() && allowsAttack(attacker, candidate)
@@ -520,7 +516,7 @@ public final class LibEntityUtils {
     private static boolean isHittable(@Nullable Entity attacker, Entity candidate) {
         if (!acceptsDirectHit(candidate)) return false;
         Entity target = encounterOwner(candidate);
-        if (candidate instanceof HitTarget) {
+        if (candidate instanceof PartHitTarget) {
             if (target.isRemoved() || !target.isAttackable()
                     || attacker != null && attacker.isPassengerOfSameVehicle(target)) return false;
         } else if (!canHitEntity(candidate, attacker)) {
@@ -531,7 +527,7 @@ public final class LibEntityUtils {
 
     public static boolean acceptsDirectHit(Entity candidate) {
         if (candidate.isRemoved()) return false;
-        if (candidate instanceof HitTarget part) return part.acceptsDirectHit();
+        if (candidate instanceof PartHitTarget part) return part.acceptsDirectHit();
         return canHitEntity(candidate, null);
     }
 

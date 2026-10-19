@@ -25,6 +25,7 @@ import net.minecraftforge.event.entity.living.*;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.event.level.ChunkWatchEvent;
+import net.minecraftforge.event.level.ExplosionEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
@@ -34,6 +35,7 @@ import org.confluence.lib.api.event.PlayerNaturalHealEvent;
 import org.confluence.lib.api.event.SwitchItemFunctionEvent;
 import org.confluence.lib.common.LibAttributes;
 import org.confluence.lib.common.LibEffects;
+import org.confluence.lib.common.LibTags;
 import org.confluence.lib.common.data.saved.IGlobalData;
 import org.confluence.lib.common.item.IFunctionCouldEnable;
 import org.confluence.lib.common.worldgen.biome.DynamicBiomeUtils;
@@ -46,20 +48,30 @@ import org.confluence.lib.network.s2c.SetEntityDataPacketS2C;
 import org.confluence.lib.util.DelayTaskHolder;
 import org.confluence.lib.util.LibUtils;
 import org.confluence.lib.util.NaturalSpawnerUtils;
+import org.confluence.lib.util.ProjectileHitRules;
 import org.jetbrains.annotations.Nullable;
 import org.mesdag.portlib.event.PortEventHandler;
 import org.mesdag.portlib.event.PortEventPriority;
 import org.mesdag.portlib.event.entity.PortEntityInvulnerabilityCheckEvent;
 import org.mesdag.portlib.event.entity.living.PortEffectParticleModificationEvent;
 import org.mesdag.portlib.event.entity.living.PortLivingDamageEvent;
+import org.mesdag.portlib.event.entity.living.PortLivingIncomingDamageEvent;
 import org.mesdag.portlib.event.other.PortItemStackedOnOtherEvent;
 import org.mesdag.portlib.event.tick.PortEntityTickEvent;
 import org.mesdag.portlib.network.PortPacketDistributor;
-import org.mesdag.portlib.event.entity.living.PortLivingIncomingDamageEvent;
 import org.mesdag.portlib.wrapper.common.damagesource.PortDamageContainer;
-import org.confluence.lib.common.LibTags;
 
 public final class LibGameEvents {
+    /// 原版爆炸也按部位协议去重，避免寻路本体绕过部位倍率或多个部件重复结算。
+    private static void explosionDetonate(ExplosionEvent.Detonate event) {
+        var affected = event.getAffectedEntities();
+        var valid = affected.stream().filter(entity -> !entity.ignoreExplosion()
+                && ProjectileHitRules.acceptsAreaDamage(entity)).toList();
+        var targets = ProjectileHitRules.deduplicateTargets(valid, event.getExplosion().getPosition());
+        affected.clear();
+        affected.addAll(targets);
+    }
+
     public static void init() {
         PortEventHandler.addListener(LibGameEvents::entityAttributeModification);
         PortEventHandler.addListener(LibGameEvents::spawnClusterSize);
@@ -87,6 +99,7 @@ public final class LibGameEvents {
         PortEventHandler.addListener(LibGameEvents::entityInvulnerabilityCheck);
         PortEventHandler.addListener(LibGameEvents::livingSoulOverdraft);
         PortEventHandler.addListener(LibGameEvents::entityJoinLevel);
+        PortEventHandler.addListener(PortEventPriority.LOWEST, LibGameEvents::explosionDetonate);
         PortEventHandler.addListener(LibGameEvents::livingChangeTarget);
         PortEventHandler.addListener(LibGameEvents::playerTick);
         PortEventHandler.addListener(LibGameEvents::effectParticleModification);
