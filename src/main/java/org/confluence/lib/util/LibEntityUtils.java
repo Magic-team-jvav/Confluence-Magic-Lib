@@ -30,6 +30,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.entity.PartEntity;
+
 import org.confluence.lib.common.entity.PartHitTarget;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
@@ -46,7 +47,8 @@ public final class LibEntityUtils {
         if (part && (!target.canBeHitByProjectile()
                 || target instanceof PartHitTarget hitTarget && !hitTarget.acceptsDirectHit())) return false;
         target = part ? encounterOwner(target) : getOwner(target);
-        if (owner == target || !target.isAlive() || target.isRemoved() || !target.isAttackable()
+        if (part && (!target.isAlive() || target.isRemoved())) return false;
+        if (owner == target || !target.isAttackable()
                 || (!part && !target.canBeHitByProjectile()) || target instanceof ArmorStand) {
             return false;
         }
@@ -65,7 +67,7 @@ public final class LibEntityUtils {
     /// @param maxAngle 最大角度
     /// @return 若直接命中，返回命中的目标；否则返回最近有效的目标
     public static @Nullable LivingEntity getAABBAngleTarget(Vec3 ori, Vec3 end, Level level, @Nullable Entity owner, double range, double maxAngle, Predicate<Entity> filter) {
-        return livingTarget(getAABBAngleHitTarget(ori, end, level, owner, range, maxAngle, filter));
+        return effectTarget(getAABBAngleHitTarget(ori, end, level, owner, range, maxAngle, filter));
     }
 
     /// 与生命实体接口共用优先级，但保留实际受击部位供追踪武器瞄准。
@@ -79,13 +81,14 @@ public final class LibEntityUtils {
             double range, double maxAngle, Predicate<Entity> filter) {
         Set<LivingEntity> targets = new LinkedHashSet<>();
         for (EntityHitResult hit : angleHits(ori, end, level, owner, range, maxAngle, filter)) {
-            LivingEntity target = livingTarget(hit.getEntity());
+            LivingEntity target = effectTarget(hit.getEntity());
             if (target != null) targets.add(target);
         }
         return new ArrayList<>(targets);
     }
 
-    private static @Nullable LivingEntity livingTarget(@Nullable Entity hit) {
+    /// 生命实体自身承受减益；普通部件将减益交给所属生命实体。
+    public static @Nullable LivingEntity effectTarget(@Nullable Entity hit) {
         if (hit == null) return null;
         if (hit instanceof LivingEntity living) return living;
         Entity owner = encounterOwner(hit);
@@ -99,7 +102,7 @@ public final class LibEntityUtils {
         List<EntityHitResult> direct = new ArrayList<>();
         List<EntityHitResult> angled = new ArrayList<>();
         for (Entity candidate : level.getEntities(owner, bounds,
-                entity -> entity.isPickable() && entity.isAlive() && livingTarget(entity) != null && filter.test(entity))) {
+                entity -> entity.isPickable() && entity.isAlive() && effectTarget(entity) != null && filter.test(entity))) {
             AABB box = candidate.getBoundingBox();
             Vec3 hit = box.contains(ori) ? ori : box.clip(ori, end).orElse(null);
             if (hit != null) {
@@ -220,11 +223,11 @@ public final class LibEntityUtils {
 
     public static void setItemAndDropChance(Mob mob, DifficultyInstance difficulty, EquipmentSlot slot, Item item, float chance) {
         ItemStack itemStack = item.getDefaultInstance();
-        // todo
-//        float enchantChance = (slot.getType() == EquipmentSlot.Type.HAND ? 0.25F : 0.5F) * difficulty.getSpecialMultiplier();
-//        if (mob.getRandom1211().nextFloat() < enchantChance) {
-//            EnchantmentHelper.enchantItemFromProvider(itemStack, mob.registryAccess(), VanillaEnchantmentProviders.MOB_SPAWN_EQUIPMENT, difficulty, mob.getRandom1211());
-//        }
+        /// todo
+        ///        float enchantChance = (slot.getType() == EquipmentSlot.Type.HAND ? 0.25F : 0.5F) * difficulty.getSpecialMultiplier();
+        ///        if (mob.getRandom1211().nextFloat() < enchantChance) {
+        ///            EnchantmentHelper.enchantItemFromProvider(itemStack, mob.registryAccess(), VanillaEnchantmentProviders.MOB_SPAWN_EQUIPMENT, difficulty, mob.getRandom1211());
+        ///        }
         mob.setItemSlot(slot, itemStack);
         mob.setDropChance(slot, chance);
     }
@@ -484,9 +487,9 @@ public final class LibEntityUtils {
     private static boolean isEnemyTarget(@Nullable Entity attacker, Entity candidate, Entity target, TargetPolicy policy) {
         Entity source = affiliation(attacker);
         if (source instanceof Player player && target instanceof LivingEntity living) {
-            // 愤怒只针对该射手；对其他玩家或生物生气不算敌视当前玩家。
+            /// 愤怒只针对该射手；对其他玩家或生物生气不算敌视当前玩家。
             boolean hostile = isHostileToPlayer(player, living);
-            // 普通猪灵使用 Brain 而非 NeutralMob；不能按记忆模块判断中立，否则会误判猪灵蛮兵等敌怪。
+            /// 普通猪灵使用 Brain 而非 NeutralMob；不能按记忆模块判断中立，否则会误判猪灵蛮兵等敌怪。
             if (target instanceof NeutralMob || target instanceof Piglin)
                 return hostile;
             if (hostile) return true;
@@ -576,7 +579,7 @@ public final class LibEntityUtils {
         return Math.sqrt(offset.x * offset.x + offset.z * offset.z) + Math.abs(offset.y);
     }
 
-    /// Forge 部件不在普通实体 ID 索引内，客户端的追踪同步也必须查询部件集合。
+    /// 普通实体索引未命中时，再查询当前世界的部件集合，供客户端追踪同步解析部件 ID。
     public static @Nullable Entity getEntityOrPart(Level level, int id) {
         if (id < 0) return null;
         Entity entity = level.getEntity(id);
@@ -625,4 +628,67 @@ public final class LibEntityUtils {
         }
         return isHostileToPlayer(owner, target) || hurtHistory.test(target);
     }
+
+    /// 生物弹幕沿用发射者的攻击限制，但以实际部位执行碰撞和伤害。
+    public static boolean canMobHit(@Nullable Entity owner, Entity rawTarget) {
+        LivingEntity target = logicalLivingTarget(rawTarget);
+        return owner instanceof Mob mob && target != null && mob.canAttack(target) && canHit(owner, rawTarget);
+    }
+
+    /// 范围攻击包含普通实体及 PartEntity；同一去重身份只取距范围中心最近的有效部位。
+    public static List<Entity> areaTargets(Level level, @Nullable Entity exclude, AABB bounds, Predicate<Entity> filter) {
+        return deduplicateTargets(level.getEntities(exclude, bounds, entity -> acceptsAreaDamage(entity) && filter.test(entity)), bounds.getCenter());
+    }
+
+    /// 范围伤害保留物品等非射线目标；多部件实体只结算仍有效的受击部位。
+    private static boolean acceptsAreaDamage(Entity target) {
+        if (target.isRemoved() || !target.isAlive()) return false;
+        return !(target instanceof PartHitTarget || target instanceof PartEntity<?> || target.isMultipartEntity())
+                || acceptsDirectHit(target);
+    }
+
+    /// 同一伤害身份选择最近部位，独立生命部位按自己的身份保留。
+    private static List<Entity> deduplicateTargets(List<Entity> candidates, Vec3 center) {
+        Map<UUID, Entity> targets = new LinkedHashMap<>();
+        for (Entity candidate : candidates) {
+            UUID identity = dedupeIdentity(candidate).getUUID();
+            Entity previous = targets.get(identity);
+            if (previous == null || candidate.getBoundingBox().getCenter().distanceToSqr(center) < previous.getBoundingBox().getCenter().distanceToSqr(center)) {
+                targets.put(identity, candidate);
+            }
+        }
+        return new ArrayList<>(targets.values());
+    }
+
+    /// 本体不参与拾取时，追踪其最近的有效部位；普通实体保持原目标。
+    public static @Nullable Entity aimTarget(Entity target, Vec3 origin) {
+        if (acceptsDirectHit(target)) return target;
+        if (!target.isMultipartEntity() || target.getParts() == null) return null;
+        Entity nearest = null;
+        double distance = Double.POSITIVE_INFINITY;
+        for (Entity part : target.getParts()) {
+            if (!acceptsDirectHit(part)) continue;
+            double candidateDistance = part.getBoundingBox().getCenter().distanceToSqr(origin);
+            if (candidateDistance < distance) {
+                nearest = part;
+                distance = candidateDistance;
+            }
+        }
+        return nearest;
+    }
+
+    /// 返回一次穿透或连续碰撞中的去重身份。
+    public static Entity dedupeIdentity(Entity rawTarget) {
+        if (rawTarget instanceof PartHitTarget part) {
+            return part.dedupeIdentity();
+        }
+        return encounterOwner(rawTarget);
+    }
+
+    /// 将原始碰撞实体解析为可用于召唤物锁定的生命实体。
+    public static @Nullable LivingEntity logicalLivingTarget(Entity rawTarget) {
+        Entity owner = encounterOwner(rawTarget);
+        return owner instanceof LivingEntity living ? living : null;
+    }
+
 }

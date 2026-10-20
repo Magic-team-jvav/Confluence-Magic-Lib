@@ -2,16 +2,14 @@ package org.confluence.lib.common.entity;
 
 import net.minecraft.world.entity.Entity;
 
-// 定义多部件实体参与武器命中时的三个独立身份。
-//
-// <p>伤害接收者负责执行部件自身的护甲、倍率和受击反馈；遭遇主体用于阵营、
-// 索敌和命中特效；去重身份决定一次穿透或连续碰撞能否同时命中多个部件。</p>
+/// 部位自身接收伤害；另行声明阵营归属和穿透去重身份。
 public interface PartHitTarget {
-    Entity damageRecipient();
-
+    /// 用于阵营和索敌归属，独立血量部位仍可归属同一本体。
     Entity encounterOwner();
 
+    /// 共享血量的部位返回本体，独立血量的部位返回自身。
     Entity dedupeIdentity();
 
+    /// 部位失效或破坏后不再参与直接命中。
     boolean acceptsDirectHit();
 }
