@@ -1,6 +1,7 @@
 package org.confluence.lib.mixed;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -11,7 +12,6 @@ import org.confluence.lib.common.item.GroupItem;
 import org.confluence.lib.network.c2s.SwitchEffectEnabledPackedC2S;
 import org.confluence.lib.util.LibUtils;
 import org.jetbrains.annotations.ApiStatus;
-import org.mesdag.portlib.client.gui.components.PortSprite;
 import org.mesdag.portlib.wrapper.common.util.PortTriState;
 
 public interface ILibAbstractContainerScreen {
@@ -28,7 +28,9 @@ public interface ILibAbstractContainerScreen {
         return (ILibAbstractContainerScreen) screen;
     }
 
-    PortSprite TAB_ITEMS = new PortSprite(ConfluenceMagicLib.asResource("creative_inventory_tab_items"), 38, 19);
+    int TAB_ITEMS_TEXTURE_WIDTH = 38;
+    int TAB_ITEMS_TEXTURE_HEIGHT = 19;
+    ResourceLocation TAB_ITEMS = ConfluenceMagicLib.asResource("creative_inventory_tab_items");
 
     static void renderGroupBackground(GuiGraphics instance, ItemStack stack, int x, int y, Slot slot) {
         int id = getGroupId(stack);
@@ -54,20 +56,20 @@ public interface ILibAbstractContainerScreen {
                 X = x - 1;
                 w = 19;
             }
-            instance.blitSprite(TAB_ITEMS, 38, 19, u, v, X, Y, w, h);
+            instance.blitSprite(TAB_ITEMS, TAB_ITEMS_TEXTURE_WIDTH, TAB_ITEMS_TEXTURE_HEIGHT, u, v, X, Y, w, h);
         } else {
             if (index % 9 != 8 && hasNeighbour(index + 1, slot, id)) { // 右
                 if (hasNeighbour(index - 9, slot, id)) { // 上
-                    instance.blitSprite(TAB_ITEMS, 38, 19, 36, 1, x + 16, y, 2, 17);
+                    instance.blitSprite(TAB_ITEMS, TAB_ITEMS_TEXTURE_WIDTH, TAB_ITEMS_TEXTURE_HEIGHT, 36, 1, x + 16, y, 2, 17);
                 } else {
-                    instance.blitSprite(TAB_ITEMS, 38, 19, 36, 0, x + 16, y - 1, 2, 18);
+                    instance.blitSprite(TAB_ITEMS, TAB_ITEMS_TEXTURE_WIDTH, TAB_ITEMS_TEXTURE_HEIGHT, 36, 0, x + 16, y - 1, 2, 18);
                 }
             }
             if (hasNeighbour(index + 9, slot, id)) { // 下
                 if (index % 9 != 0 && hasNeighbour(index - 1, slot, id)) { // 左
-                    instance.blitSprite(TAB_ITEMS, 38, 19, 20, 17, x, y + 16, 17, 2);
+                    instance.blitSprite(TAB_ITEMS, TAB_ITEMS_TEXTURE_WIDTH, TAB_ITEMS_TEXTURE_HEIGHT, 20, 17, x, y + 16, 17, 2);
                 } else {
-                    instance.blitSprite(TAB_ITEMS, 38, 19, 19, 17, x - 1, y + 16, 18, 2);
+                    instance.blitSprite(TAB_ITEMS, TAB_ITEMS_TEXTURE_WIDTH, TAB_ITEMS_TEXTURE_HEIGHT, 19, 17, x - 1, y + 16, 18, 2);
                 }
             }
         }
