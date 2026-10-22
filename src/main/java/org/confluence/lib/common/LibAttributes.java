@@ -152,6 +152,17 @@ public final class LibAttributes {
         return amount;
     }
 
+    /// 灵魂伤害只在统一伤害流程乘一次属性倍率，不混入武器或技能的基础伤害。
+    @ApiStatus.Internal
+    public static float applySoulDamage(@Nullable Entity attacker, DamageSource damageSource, float amount) {
+        if (attacker instanceof LivingEntity living && damageSource.is(LibDamageTypes.SOUL)
+                && !hasCustomAttribute(ConfluenceMagicLib.SOUL_DAMAGE)) {
+            AttributeInstance instance = living.getAttribute(ConfluenceMagicLib.SOUL_DAMAGE.get());
+            if (instance != null) return amount * (float) instance.getValue();
+        }
+        return amount;
+    }
+
     @ApiStatus.Internal
     public static float applyArmorPenetration(LivingEntity victim, DamageSource damageSource, float armorValue) {
         if (damageSource.getEntity() instanceof LivingEntity attacker) {
