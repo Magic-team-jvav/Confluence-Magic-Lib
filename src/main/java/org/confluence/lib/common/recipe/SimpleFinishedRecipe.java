@@ -45,11 +45,10 @@ public final class SimpleFinishedRecipe<R extends PortRecipe<?>> implements Fini
         } else {
             ops = provider.createSerializationContext(JsonOps.INSTANCE);
         }
-        PortDataResultExtension.ifSuccess(codec.encodeStart(ops, recipe), r -> {
-            for (Map.Entry<String, JsonElement> entry : r.getAsJsonObject().entrySet()) {
-                json.add(entry.getKey(), entry.getValue());
-            }
-        });
+        JsonElement r = PortDataResultExtension.getOrThrow(codec.encodeStart(ops, recipe));
+        for (Map.Entry<String, JsonElement> entry : r.getAsJsonObject().entrySet()) {
+            json.add(entry.getKey(), entry.getValue());
+        }
     }
 
     @Override

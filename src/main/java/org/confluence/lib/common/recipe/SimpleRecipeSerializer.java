@@ -1,6 +1,5 @@
 package org.confluence.lib.common.recipe;
 
-import PortLib.extensions.com.mojang.serialization.DataResult.PortDataResultExtension;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
@@ -8,6 +7,7 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import org.confluence.lib.ConfluenceMagicLib;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.mesdag.portlib.network.PortRegistryFriendlyByteBuf;
@@ -24,7 +24,7 @@ public abstract class SimpleRecipeSerializer<R extends PortRecipe<?>> implements
         if (codec == null) {
             codec = getCodec().codec();
         }
-        R r = PortDataResultExtension.getOrThrow(codec.parse(JsonOps.INSTANCE, serializedRecipe));
+        R r = codec.parse(JsonOps.INSTANCE, serializedRecipe).getOrThrow(false, message -> ConfluenceMagicLib.LOGGER.warn("failed to load {}, because {}", recipeId, message));
         r.setId(recipeId);
         return r;
     }
