@@ -42,7 +42,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class EnvironmentLevelAccess implements ContainerLevelAccess {
-    private static Predicate3<Player, Level, BlockPos> graveyard;
+    private static Predicate3<Player, Level, BlockPos> graveyard = (player, level, pos) -> false;
 
     protected @Nullable Player player;
     protected @Nullable Level level;
@@ -59,7 +59,7 @@ public class EnvironmentLevelAccess implements ContainerLevelAccess {
     }
 
     public static boolean isGraveyard(Player player, Level level, BlockPos pos) {
-        return graveyard != null && graveyard.test(player, level, pos);
+        return graveyard.test(player, level, pos);
     }
 
     public void initializeIfNeeded(Player player) {
