@@ -20,21 +20,21 @@ import javax.annotation.Nullable;
 @Mixin(GuiGraphics.class)
 public abstract class GuiGraphicsMixin {
     @Unique
-    private static final ResourceLocation confluence$wip = ConfluenceMagicLib.asResource("textures/gui/wip.png");
-
-    @Shadow
-    public abstract void blit(ResourceLocation atlasLocation, int x, int y, float uOffset, float vOffset, int width, int height, int textureWidth, int textureHeight);
+    private static final ResourceLocation confluence$wip = ConfluenceMagicLib.asResource("wip");
 
     @Shadow
     @Final
     private PoseStack pose;
+
+    @Shadow
+    public abstract void blitSprite(ResourceLocation sprite, int x, int y, int width, int height);
 
     @Inject(method = "renderItemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V"))
     private void renderItemDecorations(Font font, ItemStack stack, int x, int y, @Nullable String text, CallbackInfo ci) {
         if (stack.is(LibTags.Items.WIP)) {
             pose.pushPose();
             pose.translate(0.0F, 0.0F, 200.0F);
-            blit(confluence$wip, x, y, 0.0F, 0.0F, 16, 16, 16, 16);
+            blitSprite(confluence$wip, x, y, 16, 16);
             pose.popPose();
         }
     }

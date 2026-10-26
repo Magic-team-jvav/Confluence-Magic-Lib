@@ -1,11 +1,14 @@
 package org.confluence.lib.client.event;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModLoader;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
@@ -58,5 +61,24 @@ public final class LibClientModEvents {
     @SubscribeEvent
     public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
         event.register(LibKeyBindings.FLIP_GRAVITATION.get());
+    }
+
+    @SubscribeEvent
+    public static void registerItemDecorations(RegisterItemDecorationsEvent event) {
+        if (LibStartupConfig.itemGroups()) {
+            ResourceLocation plus = ConfluenceMagicLib.asResource("plus");
+            ResourceLocation minus = ConfluenceMagicLib.asResource("minus");
+            event.register(GroupItem.getInstance(), (guiGraphics, font, stack, xOffset, yOffset) -> {
+                GroupItem.Stacks stacks = stack.get(ConfluenceMagicLib.GROUP_STACKS);
+                if (stacks != null) {
+                    PoseStack pose = guiGraphics.pose();
+                    pose.pushPose();
+                    pose.translate(xOffset + 9, yOffset + 9, 200);
+                    guiGraphics.blitSprite(stacks.isVisible() ? minus : plus, 0, 0, 7, 7);
+                    pose.popPose();
+                }
+                return false;
+            });
+        }
     }
 }
