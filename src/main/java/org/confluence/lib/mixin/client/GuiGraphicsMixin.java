@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.common.LibTags;
+import org.mesdag.portlib.wrapper.common.extensions.IPortGuiGraphicsExtension;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -18,12 +19,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import javax.annotation.Nullable;
 
 @Mixin(GuiGraphics.class)
-public abstract class GuiGraphicsMixin {
+public abstract class GuiGraphicsMixin implements IPortGuiGraphicsExtension {
     @Unique
-    private static final ResourceLocation confluence$wip = ConfluenceMagicLib.asResource("textures/gui/wip.png");
-
-    @Shadow
-    public abstract void blit(ResourceLocation atlasLocation, int x, int y, float uOffset, float vOffset, int width, int height, int textureWidth, int textureHeight);
+    private static final ResourceLocation confluence$wip = ConfluenceMagicLib.asResource("wip");
 
     @Shadow
     @Final
@@ -34,7 +32,7 @@ public abstract class GuiGraphicsMixin {
         if (stack.is(LibTags.Items.WIP)) {
             pose.pushPose();
             pose.translate(0.0F, 0.0F, 200.0F);
-            blit(confluence$wip, x, y, 0.0F, 0.0F, 16, 16, 16, 16);
+            blitSprite(confluence$wip, x, y, 16, 16);
             pose.popPose();
         }
     }

@@ -1,6 +1,9 @@
 package org.confluence.lib.client.event;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.client.event.RegisterItemDecorationsEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import org.confluence.lib.ConfluenceMagicLib;
@@ -22,6 +25,7 @@ public final class LibClientModEvents {
         PortEventHandler.addListener(LibClientModEvents::registerClientExtensions);
         PortEventHandler.addListener(LibClientModEvents::fmlClientSetup);
         PortEventHandler.addListener(LibClientModEvents::registerClientReloadListeners);
+        PortEventHandler.addListener(LibClientModEvents::registerItemDecorations);
     }
 
     private static void registerParticleProviders(RegisterParticleProvidersEvent event) {
@@ -47,6 +51,24 @@ public final class LibClientModEvents {
                     callback.run();
                 }
             }, ge).thenCompose(pb::wait));
+        }
+    }
+
+    public static void registerItemDecorations(RegisterItemDecorationsEvent event) {
+        if (LibStartupConfig.itemGroups()) {
+            ResourceLocation plus = ConfluenceMagicLib.asResource("plus");
+            final ResourceLocation minus = ConfluenceMagicLib.asResource("minus");
+            event.register(GroupItem.getInstance(), (guiGraphics, font, stack, xOffset, yOffset) -> {
+                GroupItem.Stacks stacks = stack.get(ConfluenceMagicLib.GROUP_STACKS);
+                if (stacks != null) {
+                    PoseStack pose = guiGraphics.pose();
+                    pose.pushPose();
+                    pose.translate(xOffset + 9, yOffset + 9, 200);
+                    guiGraphics.blitSprite(stacks.isVisible() ? minus : plus, 0, 0, 7, 7);
+                    pose.popPose();
+                }
+                return false;
+            });
         }
     }
 }
