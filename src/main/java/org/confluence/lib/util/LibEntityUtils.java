@@ -101,7 +101,7 @@ public final class LibEntityUtils {
         Vec3 direction = end.subtract(ori);
         List<EntityHitResult> direct = new ArrayList<>();
         List<EntityHitResult> angled = new ArrayList<>();
-        for (Entity candidate : level.getEntities(owner, bounds,
+        for (Entity candidate : queryHitCandidates(level, owner, bounds,
                 entity -> entity.isPickable() && entity.isAlive() && effectTarget(entity) != null && filter.test(entity))) {
             AABB box = candidate.getBoundingBox();
             Vec3 hit = box.contains(ori) ? ori : box.clip(ori, end).orElse(null);
@@ -407,7 +407,7 @@ public final class LibEntityUtils {
 
         public List<Entity> hitTargets(Level level, @Nullable Entity searchEntity, @Nullable Entity attacker,
                 AABB bounds, Predicate<Entity> extra) {
-            return level.getEntities(searchEntity, bounds,
+            return queryHitCandidates(level, searchEntity, bounds,
                     candidate -> encounterOwner(candidate) instanceof LivingEntity && canAcquire(attacker, candidate) && extra.test(candidate));
         }
 
@@ -565,6 +565,19 @@ public final class LibEntityUtils {
         AABB box = player.getBoundingBox().expandTowards(view.scale(reach)).inflate(1.0, 1.0, 1.0);
         EntityHitResult hit = ProjectileUtil.getEntityHitResult(player, from, to, box,
                 targeting.filter(player, entity -> !entity.isSpectator() && entity.isPickable()), squared);
+        /// 补充主体不在视线范围内的部件，仍保留原有方块遮挡和最近命中规则。
+        double nearest = hit == null ? squared : hit.getLocation().distanceToSqr(from);
+        for (Entity candidate : queryHitCandidates(player.level(), player, box,
+                targeting.filter(player, entity -> entity instanceof PartEntity<?> && !entity.isSpectator() && entity.isPickable()))) {
+            AABB partBox = candidate.getBoundingBox().inflate(candidate.getPickRadius());
+            Vec3 point = partBox.contains(from) ? from : partBox.clip(from, to).orElse(null);
+            if (point == null) continue;
+            double distance = point.distanceToSqr(from);
+            if (distance < nearest) {
+                nearest = distance;
+                hit = new EntityHitResult(candidate, point);
+            }
+        }
         return hit != null && hit.getLocation().distanceToSqr(from) < blockDistance ? hit : null;
     }
 
@@ -635,9 +648,26 @@ public final class LibEntityUtils {
         return owner instanceof Mob mob && target != null && mob.canAttack(target) && canHit(owner, rawTarget);
     }
 
+    /// 合并普通实体查询与已注册的部件集合；范围按部件自身判断，不要求主体也在范围内。
+    /// 只读取已存在的部件，不加载区块；同一对象只返回一次，伤害身份去重留给调用方。
+    public static List<Entity> queryHitCandidates(Level level, @Nullable Entity exclude, AABB bounds, Predicate<Entity> filter) {
+        Predicate<Entity> eligible = candidate -> candidate != exclude && !candidate.isRemoved()
+                && (!(candidate instanceof PartEntity<?> part) || part.getParent() != exclude && !part.getParent().isRemoved())
+                && filter.test(candidate);
+        List<Entity> result = new ArrayList<>(level.getEntities(exclude, bounds, eligible));
+        Set<Entity> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+        seen.addAll(result);
+        for (PartEntity<?> part : level.getPartEntities()) {
+            if (part == exclude || part.getParent() == exclude || part.isRemoved() || part.getParent().isRemoved()
+                    || !part.getBoundingBox().intersects(bounds) || !seen.add(part)) continue;
+            if (eligible.test(part)) result.add(part);
+        }
+        return result;
+    }
+
     /// 范围攻击包含普通实体及 PartEntity；同一去重身份只取距范围中心最近的有效部位。
     public static List<Entity> areaTargets(Level level, @Nullable Entity exclude, AABB bounds, Predicate<Entity> filter) {
-        return deduplicateTargets(level.getEntities(exclude, bounds, entity -> acceptsAreaDamage(entity) && filter.test(entity)), bounds.getCenter());
+        return deduplicateTargets(queryHitCandidates(level, exclude, bounds, entity -> acceptsAreaDamage(entity) && filter.test(entity)), bounds.getCenter());
     }
 
     /// 范围伤害保留物品等非射线目标；多部件实体只结算仍有效的受击部位。
@@ -660,14 +690,29 @@ public final class LibEntityUtils {
         return new ArrayList<>(targets.values());
     }
 
-    /// 本体不参与拾取时，追踪其最近的有效部位；普通实体保持原目标。
+    /// 从实际部件所在范围发现生命主体；同一主体仅返回一次，供需要 LivingEntity 的旧接口使用。
+    public static List<LivingEntity> nearbyLivingTargets(Level level, @Nullable Entity exclude, AABB bounds) {
+        Map<UUID, LivingEntity> unique = new LinkedHashMap<>();
+        for (Entity candidate : queryHitCandidates(level, exclude, bounds, LibEntityUtils::acceptsDirectHit)) {
+            LivingEntity living = logicalLivingTarget(candidate);
+            if (living != null && living.isAlive()) unique.putIfAbsent(living.getUUID(), living);
+        }
+        return new ArrayList<>(unique.values());
+    }
+
+    /// 对仅保存生命主体的武器，按当前位置解析最近可受击部位的中心。
+    public static Vec3 aimPoint(Entity target, Vec3 origin) {
+        Entity actual = aimTarget(target, origin);
+        return (actual == null ? target : actual).getBoundingBox().getCenter();
+    }
+
+    /// 多部件主体即使自身可受击，也比较所有有效部位；已锁定具体部件时保持该部件。
     public static @Nullable Entity aimTarget(Entity target, Vec3 origin) {
-        if (acceptsDirectHit(target)) return target;
-        if (!target.isMultipartEntity() || target.getParts() == null) return null;
-        Entity nearest = null;
-        double distance = Double.POSITIVE_INFINITY;
+        Entity nearest = acceptsDirectHit(target) ? target : null;
+        if (!target.isMultipartEntity() || target.getParts() == null) return nearest;
+        double distance = nearest == null ? Double.POSITIVE_INFINITY : nearest.getBoundingBox().getCenter().distanceToSqr(origin);
         for (Entity part : target.getParts()) {
-            if (!acceptsDirectHit(part)) continue;
+            if (part == null || !acceptsDirectHit(part)) continue;
             double candidateDistance = part.getBoundingBox().getCenter().distanceToSqr(origin);
             if (candidateDistance < distance) {
                 nearest = part;
