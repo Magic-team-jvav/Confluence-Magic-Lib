@@ -85,6 +85,8 @@ public final class ConfluenceMagicLib {
     /// 拾取范围
     public static final DeferredHolder<Attribute, RangedAttribute> PICKUP_RANGE = registerAttribute("player.pickup_range", 0.0, 0.0, 64.0, RangedAttribute::new, a -> a.setSyncable(true)); // ADD_VALUE
     /// 仇恨值
+    /// 渔力，数值单位为点；不参与原版幸运属性计算。
+    public static final DeferredHolder<Attribute, RangedAttribute> FISHING_POWER = registerAttribute("player.fishing_power", 0.0, 0.0, 10000.0, RangedAttribute::new, a -> a.setSyncable(true));
     public static final DeferredHolder<Attribute, RangedAttribute> AGGRO = registerAttribute("player.aggro", 0.0, -10000.0, 10000.0, RangedAttribute::new, a -> a.setSentiment(Attribute.Sentiment.NEGATIVE)); // ADD_VALUE
     /// 仆从容量
     public static final DeferredHolder<Attribute, RangedAttribute> MINION_CAPACITY = registerAttribute("player.minion_capacity", 1.0, 0.0, 128.0, RangedAttribute::new, a -> a.setSyncable(true)); // ADD_VALUE

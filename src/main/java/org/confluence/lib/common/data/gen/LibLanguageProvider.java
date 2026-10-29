@@ -23,6 +23,7 @@ public final class LibLanguageProvider extends LanguageProvider {
         add("attribute.name.generic.ranged_damage", "Ranged Damage", "远程伤害");
         add("attribute.name.generic.ranged_velocity", "Ranged Velocity", "远程速度");
         add("attribute.name.player.aggro", "Aggro", "仇恨");
+        add("attribute.name.player.fishing_power", "Fishing Power", "渔力");
         add("attribute.name.player.pickup_range", "Pickup Range", "拾取范围");
         add("attribute.name.player.mark_damage", "Mark Damage", "标记伤害");
         add("attribute.name.player.minion_capacity", "Minion Capacity", "仆从容量");
