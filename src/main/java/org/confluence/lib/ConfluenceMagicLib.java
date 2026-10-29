@@ -62,6 +62,8 @@ public final class ConfluenceMagicLib {
     public static final PortRegistryEntry<Attribute, RangedAttribute> MOB_SPAWN_SPEED_MULTIPLIER = registerAttribute("player.mob_spawn_speed_multiplier", 1, 0, 1024, RangedAttribute::new, maker -> maker.setSentiment(Attribute.Sentiment.NEUTRAL));
     public static final PortRegistryEntry<Attribute, RangedAttribute> MOB_SPAWN_COUNT_MULTIPLIER = registerAttribute("player.mob_spawn_count_multiplier", 1, 0, 1024, RangedAttribute::new, maker -> maker.setSentiment(Attribute.Sentiment.NEUTRAL));
     public static final PortRegistryEntry<Attribute, RangedAttribute> PICKUP_RANGE = registerAttribute("player.pickup_range", 0.0, 0.0, 64.0, RangedAttribute::new, maker -> maker.setSyncable(true));
+    /// 独立渔力，数值单位为点；不参与原版幸运属性计算。
+    public static final PortRegistryEntry<Attribute, RangedAttribute> FISHING_POWER = registerAttribute("player.fishing_power", 0.0, 0.0, 10000.0, RangedAttribute::new, a -> a.setSyncable(true));
     public static final PortRegistryEntry<Attribute, RangedAttribute> AGGRO = registerAttribute("player.aggro", 0.0, -10000.0, 10000.0, RangedAttribute::new, maker -> maker.setSentiment(Attribute.Sentiment.NEGATIVE));
     public static final PortRegistryEntry<Attribute, RangedAttribute> MINION_CAPACITY = registerAttribute("player.minion_capacity", 1.0, 0.0, 128.0, RangedAttribute::new, maker -> maker.setSyncable(true));
     public static final PortRegistryEntry<Attribute, RangedAttribute> SENTRY_CAPACITY = registerAttribute("player.sentry_capacity", 1.0, 0.0, 128.0, RangedAttribute::new, maker -> maker.setSyncable(true));
