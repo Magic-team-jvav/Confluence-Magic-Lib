@@ -7,10 +7,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.event.entity.EntityAttributeModificationEvent;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -30,16 +27,14 @@ import org.confluence.lib.network.c2s.SwitchEffectEnabledPackedC2S;
 import org.confluence.lib.network.s2c.AttackDamagePacketS2C;
 import org.confluence.lib.network.s2c.BroadcastGravitationRotPacketS2C;
 import org.confluence.lib.network.s2c.SetEntityDataPacketS2C;
+import org.confluence.lib.util.WipNotDisplayOutput;
 import org.mesdag.portlib.event.PortEventHandler;
 import org.mesdag.portlib.event.PortEventPriority;
 import org.mesdag.portlib.event.network.PortRegisterPayloadHandlersEvent;
 import org.mesdag.portlib.event.other.PortBuildCreativeModeTabContentsEvent;
 import org.mesdag.portlib.network.PortPayloadHandler;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class LibModEvents {
     public static void init() {
@@ -118,8 +113,16 @@ public final class LibModEvents {
                             GroupItem.Stacks stacks = stack.get(ConfluenceMagicLib.GROUP_STACKS);
                             if (stacks == null) continue;
                             groupItems.put(stacks.getName(), stack);
+                            Set<ItemStack> invalid = ItemStackLinkedSet.createTypeAndTagSet();
                             for (ItemStack inside : stacks.getValues()) {
-                                event.accept(inside, CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY);
+                                if (WipNotDisplayOutput.displayable(inside)) {
+                                    event.accept(inside, CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY);
+                                } else {
+                                    invalid.add(inside);
+                                }
+                            }
+                            if (!invalid.isEmpty()) {
+                                stack.set(ConfluenceMagicLib.GROUP_STACKS, stacks.removeValues(tabKey, invalid));
                             }
                         }
                     } else {
