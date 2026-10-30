@@ -205,6 +205,19 @@ public class GroupItem extends Item {
             return data;
         }
 
+        @ApiStatus.Internal
+        public Stacks removeValues(ResourceKey<CreativeModeTab> tabKey, Set<ItemStack> invalid) {
+            List<ItemStack> valid = new ArrayList<>();
+            for (ItemStack stack : values) {
+                if (!invalid.contains(stack)) {
+                    valid.add(stack);
+                }
+            }
+            Stacks data = new Stacks(name, visible, valid.toArray(ItemStack[]::new), id == -1 ? cachedId.getAndIncrement() : id);
+            data.iconStack = iconStack == null ? CustomGroupItemIconEvent.getIcon(tabKey, name) : iconStack.copy();
+            return data;
+        }
+
         public static Stacks of(ResourceLocation name, boolean visible, ItemStack... stacks) {
             return of(name, visible, Arrays.asList(stacks));
         }

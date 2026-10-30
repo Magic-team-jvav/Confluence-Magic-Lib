@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackLinkedSet;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModLoader;
@@ -34,11 +35,9 @@ import org.confluence.lib.network.SetEntityDataPacketS2C;
 import org.confluence.lib.network.c2s.GravitationPacketC2S;
 import org.confluence.lib.network.c2s.SwitchEffectEnabledPackedC2S;
 import org.confluence.lib.network.s2c.BroadcastGravitationRotPacketS2C;
+import org.confluence.lib.util.WipNotDisplayOutput;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID)
 public final class LibModEvents {
@@ -133,8 +132,16 @@ public final class LibModEvents {
                             GroupItem.Stacks stacks = stack.get(ConfluenceMagicLib.GROUP_STACKS);
                             if (stacks == null) continue;
                             groupItems.put(stacks.getName(), stack);
+                            Set<ItemStack> invalid = ItemStackLinkedSet.createTypeAndComponentsSet();
                             for (ItemStack inside : stacks.getValues()) {
-                                event.accept(inside, CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY);
+                                if (WipNotDisplayOutput.displayable(inside)) {
+                                    event.accept(inside, CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY);
+                                } else {
+                                    invalid.add(inside);
+                                }
+                            }
+                            if (!invalid.isEmpty()) {
+                                stack.set(ConfluenceMagicLib.GROUP_STACKS, stacks.removeValues(tabKey, invalid));
                             }
                         }
                     } else {
