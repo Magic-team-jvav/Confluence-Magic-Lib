@@ -25,7 +25,7 @@ public class SupStemBlock extends StemBlock {
     public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (!level.isAreaLoaded(pos, 1)) return;
         if (level.getRawBrightness(pos, 0) >= 9) {
-            float f = CropBlock.getGrowthSpeed(this, level, pos);
+            float f = getStemGrowthSpeed(state, level, pos);
             if (net.minecraftforge.common.ForgeHooks.onCropsGrowPre(level, pos, state, random.nextInt((int) (25.0F / f) + 1) == 0)) {
                 int i = state.getValue(AGE);
                 if (i < 7) {
@@ -48,5 +48,10 @@ public class SupStemBlock extends StemBlock {
     @Override
     public StemGrownBlock getFruit() {
         return fruitSup.get();
+    }
+
+    /// 生长速度；子类可覆写以追加加速（例如空岛作物在雨中云上更快）。默认沿用原版。
+    protected float getStemGrowthSpeed(BlockState state, ServerLevel level, BlockPos pos) {
+        return CropBlock.getGrowthSpeed(this, level, pos);
     }
 }
