@@ -6,6 +6,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.confluence.lib.mixed.ILibExtraSyncedData;
 
@@ -15,6 +16,7 @@ public record SetEntityDataPacketS2C(
         Entry... entries
 ) implements CustomPacketPayload {
     public static final byte DATA_BOOLEAN = 0;
+    public static final byte DATA_VEC3 = 1;
     public static final Type<SetEntityDataPacketS2C> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath("cml", "sed"));
     public static final StreamCodec<RegistryFriendlyByteBuf, SetEntityDataPacketS2C> STREAM_CODEC = new StreamCodec<>() {
         @Override
@@ -65,12 +67,19 @@ public record SetEntityDataPacketS2C(
         if (dataId == DATA_BOOLEAN) {
             return buffer.readBoolean();
         }
+        if (dataId == DATA_VEC3)
+            return new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
         throw new IllegalArgumentException("Unregistered data serializer id " + dataId + "!");
     }
 
     private static void encode(RegistryFriendlyByteBuf buffer, byte dataId, Object o) {
         if (dataId == DATA_BOOLEAN) {
             buffer.writeBoolean((boolean) o);
+        } else if (dataId == DATA_VEC3) {
+            Vec3 vec = (Vec3) o;
+            buffer.writeDouble(vec.x);
+            buffer.writeDouble(vec.y);
+            buffer.writeDouble(vec.z);
         } else {
             throw new IllegalArgumentException("Unregistered data serializer id " + dataId + "!");
         }
