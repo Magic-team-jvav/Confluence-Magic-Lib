@@ -3,6 +3,7 @@ package org.confluence.lib.network.s2c;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.mixed.ILibExtraSyncedData;
 import org.mesdag.portlib.network.IPortPacket;
@@ -11,6 +12,7 @@ import org.mesdag.portlib.network.codec.PortStreamCodec;
 
 public record SetEntityDataPacketS2C(int entityId, Entry... entries) implements IPortPacket.S2C {
     public static final byte DATA_BOOLEAN = 0;
+    public static final byte DATA_VEC3 = 1;
     public static final ResourceLocation ID = ConfluenceMagicLib.asResource("set_entity_data");
     public static final PortStreamCodec<PortRegistryFriendlyByteBuf, SetEntityDataPacketS2C> STREAM_CODEC = new PortStreamCodec<>() {
         @Override
@@ -53,12 +55,20 @@ public record SetEntityDataPacketS2C(int entityId, Entry... entries) implements 
 
     private static Object decodeData(PortRegistryFriendlyByteBuf buffer, byte dataId) {
         if (dataId == DATA_BOOLEAN) return buffer.readBoolean();
+        if (dataId == DATA_VEC3)
+            return new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
         throw new IllegalArgumentException("Unregistered data serializer id " + dataId + "!");
     }
 
     private static void encodeData(PortRegistryFriendlyByteBuf buffer, byte dataId, Object o) {
         if (dataId == DATA_BOOLEAN) buffer.writeBoolean((boolean) o);
-        else throw new IllegalArgumentException("Unregistered data serializer id " + dataId + "!");
+        else if (dataId == DATA_VEC3) {
+            Vec3 vec = (Vec3) o;
+            buffer.writeDouble(vec.x);
+            buffer.writeDouble(vec.y);
+            buffer.writeDouble(vec.z);
+        } else
+            throw new IllegalArgumentException("Unregistered data serializer id " + dataId + "!");
     }
 
     public record Entry(byte dataId, Object data) {}
