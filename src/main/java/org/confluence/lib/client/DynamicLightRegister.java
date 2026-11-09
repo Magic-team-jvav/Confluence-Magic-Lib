@@ -40,6 +40,8 @@ public class DynamicLightRegister {
 
     private static final List<ToIntFunction<ItemStack>> fallbacks = new ArrayList<>();
 
+    private static final List<ToIntFunction<ItemStack>> itemColors = new ArrayList<>();
+
     private static final List<FloatConsumer> collectors = new ArrayList<>();
     private static final List<BiPredicate<ItemStack, LivingEntity>> itemSuppressors = new ArrayList<>();
     private static final List<Predicate<Entity>> entitySuppressors = new ArrayList<>();
@@ -72,6 +74,9 @@ public class DynamicLightRegister {
 
     public static void registerItemFallback(ToIntFunction<ItemStack> provider) {fallbacks.add(provider);}
 
+    // 手持、掉落物品的光色，返回 0xRRGGBB；返回负数表示不处理，交给下一个，全都不处理时为白光。
+    public static void registerItemColor(ToIntFunction<ItemStack> provider) {itemColors.add(provider);}
+
     public static void registerEquipment(EquipmentSlot... slots) {
         EquipmentSlot[] equipment = slots.clone();
         registerEntity(LivingEntity.class, DynamicLightProvider.entity(entity -> {
@@ -80,8 +85,22 @@ public class DynamicLightRegister {
                 light = Math.max(light,
                         itemLuminance(entity.getItemBySlot(slot), entity, false));
             return light;
+        }, entity -> {
+            // 颜色取最亮的那件物品
+            int light = 0;
+            ItemStack brightest = ItemStack.EMPTY;
+            for (EquipmentSlot slot : equipment) {
+                ItemStack stack = entity.getItemBySlot(slot);
+                int value = itemLuminance(stack, entity, false);
+                if (value > light) {
+                    light = value;
+                    brightest = stack;
+                }
+            }
+            return itemColor(brightest);
         }));
-        registerEntity(ItemEntity.class, DynamicLightProvider.entity(entity -> itemLuminance(entity.getItem(), null, false)));
+        registerEntity(ItemEntity.class, DynamicLightProvider.entity(entity -> itemLuminance(entity.getItem(), null, false),
+                entity -> itemColor(entity.getItem())));
     }
 
     public static <T extends Entity> void registerProjectileItem(Class<T> type, Function<T, ItemStack> item) {
@@ -137,13 +156,20 @@ public class DynamicLightRegister {
                 break;
             }
         }
-        int brightness = collectProvider(entityProviders.get(entity.getType()), entity, partialTick, suppressed);
+        DynamicLightProvider<Entity> typed = entityProviders.get(entity.getType());
+        int brightness = collectProvider(typed, entity, partialTick, suppressed);
+        DynamicLightProvider<Entity> brightest = brightness > 0 ? typed : null;
         for (DynamicLightProvider<Entity> provider : providersFor(entity.getClass())) {
-            brightness = Math.max(brightness, collectProvider(provider, entity, partialTick, suppressed));
+            int value = collectProvider(provider, entity, partialTick, suppressed);
+            if (value > brightness) {
+                brightness = value;
+                brightest = provider;
+            }
         }
-        // 所有中心光源先取最大亮度，仅插值并创建一次光源；自定义位置的 provider 直接采集。
+        // 所有中心光源先取最大亮度，仅插值并创建一次光源；颜色取给出最大亮度的 provider。自定义位置的 provider 直接采集。
         if (brightness > 0) DynamicLightDispatcher.INSTANCE.addLightSource(
-                DynamicLightProvider.EntityLight.source(entity, partialTick, brightness));
+                DynamicLightProvider.EntityLight.source(entity, partialTick, brightness,
+                        ((DynamicLightProvider.EntityLight<Entity>) brightest).color(entity)));
     }
 
     private static int collectProvider(DynamicLightProvider<Entity> provider, Entity entity, float partialTick, boolean suppressed) {
@@ -179,6 +205,15 @@ public class DynamicLightRegister {
         for (ToIntFunction<ItemStack> provider : fallbacks)
             light = Math.max(light, provider.applyAsInt(stack));
         return light;
+    }
+
+    private static int itemColor(ItemStack stack) {
+        if (stack.isEmpty()) return DynamicLightDispatcher.LightSource.WHITE;
+        for (ToIntFunction<ItemStack> provider : itemColors) {
+            int color = provider.applyAsInt(stack);
+            if (color >= 0) return color & 0xFFFFFF;
+        }
+        return DynamicLightDispatcher.LightSource.WHITE;
     }
 
     private static int blockLight(ItemStack stack, BlockItem block) {

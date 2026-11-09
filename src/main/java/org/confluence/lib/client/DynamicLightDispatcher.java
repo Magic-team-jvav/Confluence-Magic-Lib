@@ -31,7 +31,11 @@ public final class DynamicLightDispatcher {
 
     public static final int MAX_STRENGTH = 0xFF;
 
-    public static final DynamicLightDispatcher INSTANCE = new DynamicLightDispatcher(7.75);
+    /// 最大亮度能照到的距离（格）。15 格时 0～15 光级与原版方块光一致：光级 N 照亮 N 格，
+    /// 手里的火把和放下的火把照得一样远（原先 7.75 只有一半）。必须小于 16，相邻 section 查找依赖这一点。
+    public static final double RADIUS = 15.0;
+
+    public static final DynamicLightDispatcher INSTANCE = new DynamicLightDispatcher(RADIUS);
 
     private final double maxRadius;
     private final double maxRadiusSquared;
@@ -427,16 +431,29 @@ public final class DynamicLightDispatcher {
     }
 
     public static final class LightSource {
+        /// 默认白光：只提高原版光照贴图的亮度，不改变颜色。
+        public static final int WHITE = 0xFFFFFF;
 
         private final Vec3 position;
         private final int strength;
+        private final int color;
         private final int hash;
 
         public LightSource(Vec3 position, int strength) {
+            this(position, strength, WHITE);
+        }
+
+        /// 带颜色的光源，颜色为 0xRRGGBB。只有 GPU 地形光照使用颜色，CPU 兼容路径和实体仍按白光处理。
+        public LightSource(Vec3 position, int strength, int color) {
             this.position = position;
             this.strength = Mth.clamp(strength, 0, MAX_STRENGTH);
+            this.color = color & 0xFFFFFF;
             // 哈希使用裁剪后的亮度，并将 -0.0 归一为 +0.0，与 equals 保持一致。
-            this.hash = Long.hashCode(Double.doubleToLongBits(position.x + 0.0) * 0x9E3779B97F4A7C15L ^ Double.doubleToLongBits(position.y + 0.0) * 0xC2B2AE3D27D4EB4FL ^ Double.doubleToLongBits(position.z + 0.0) * 0x165667B19E3779F9L ^ this.strength * 0x27D4EB2F165667C5L);
+            this.hash = Long.hashCode(Double.doubleToLongBits(position.x + 0.0) * 0x9E3779B97F4A7C15L ^ Double.doubleToLongBits(position.y + 0.0) * 0xC2B2AE3D27D4EB4FL ^ Double.doubleToLongBits(position.z + 0.0) * 0x165667B19E3779F9L ^ this.strength * 0x27D4EB2F165667C5L ^ this.color * 0x9E3779B1L);
+        }
+
+        public int color() {
+            return color;
         }
 
         public Vec3 position() {
@@ -458,7 +475,7 @@ public final class DynamicLightDispatcher {
                 return true;
             }
             if (object instanceof LightSource other) {
-                return strength == other.strength && position.x == other.position.x && position.y == other.position.y && position.z == other.position.z;
+                return strength == other.strength && color == other.color && position.x == other.position.x && position.y == other.position.y && position.z == other.position.z;
             }
             return false;
         }
