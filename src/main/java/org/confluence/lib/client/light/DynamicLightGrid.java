@@ -118,7 +118,7 @@ public final class DynamicLightGrid {
                 data.put(colorTexel, ((color >> 16) & 255) / 255.0F);
                 data.put(colorTexel + 1, ((color >> 8) & 255) / 255.0F);
                 data.put(colorTexel + 2, (color & 255) / 255.0F);
-                data.put(colorTexel + 3, 1.0F);
+                data.put(colorTexel + 3, source.tinted() ? 1.0F : 0.0F);
                 offset++;
             }
             data.put(slot * 8, x).put(slot * 8 + 1, y).put(slot * 8 + 2, z).put(slot * 8 + 3, start);

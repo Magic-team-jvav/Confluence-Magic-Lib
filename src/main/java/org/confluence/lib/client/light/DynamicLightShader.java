@@ -60,11 +60,14 @@ public final class DynamicLightShader {
         String setup = """
                     vec4 cmlVertexColor = vertexColor;
                     if (CmlLightMask >= 0 && cmlLightmap.x < 240.0) {
-                        vec3 cmlColor = vec3(1.0);
+                        vec4 cmlColor = vec4(1.0, 1.0, 1.0, 0.0);
                         vec2 uv = cmlLightUVAt(cmlLightmap, cmlPosition, cmlColor);
                         if (uv.x > cmlLightmap.x) {
                             vec3 light = texture(Sampler2, clamp(uv / 256.0, vec2(0.03125), vec2(0.96875))).rgb;
-                            cmlVertexColor.rgb += cmlBaseColor.rgb * max(light - cmlStaticLight.rgb, vec3(0.0)) * cmlColor;
+                            vec3 added = max(light - cmlStaticLight.rgb, vec3(0.0));
+                            // tinted lights: neutral brightness times the light colour (no warm block-light tone)
+                            if (cmlColor.a > 0.5) added = vec3(dot(added, vec3(0.2126, 0.7152, 0.0722))) * cmlColor.rgb;
+                            cmlVertexColor.rgb += cmlBaseColor.rgb * added;
                         }
                     }
                 """;

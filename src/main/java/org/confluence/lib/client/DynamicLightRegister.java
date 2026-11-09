@@ -40,7 +40,7 @@ public class DynamicLightRegister {
 
     private static final List<ToIntFunction<ItemStack>> fallbacks = new ArrayList<>();
 
-    private static final List<ToIntFunction<ItemStack>> itemColors = new ArrayList<>();
+    private static final List<ItemColorProvider> itemColors = new ArrayList<>();
 
     private static final List<FloatConsumer> collectors = new ArrayList<>();
     private static final List<BiPredicate<ItemStack, LivingEntity>> itemSuppressors = new ArrayList<>();
@@ -67,15 +67,15 @@ public class DynamicLightRegister {
 
     public static void registerProjectile(Item item, int brightness) {projectiles.merge(item, brightness, Math::max);}
 
-    // 特殊物品的开关规则优先于固定亮度和兜底规则，返回零即可关闭该物品的光源。
+    // 特殊物品的开关规则优先于固定亮度和兜底规则，返回零即可关闭该物品的光源，返回负数表示不处理（继续往下找）。
     public static void registerItemOverride(Class<? extends Item> type, ItemLightProvider provider) {
         overrides.add(new ItemRule(type, provider));
     }
 
     public static void registerItemFallback(ToIntFunction<ItemStack> provider) {fallbacks.add(provider);}
 
-    // 手持、掉落物品的光色，返回 0xRRGGBB；返回负数表示不处理，交给下一个，全都不处理时为白光。
-    public static void registerItemColor(ToIntFunction<ItemStack> provider) {itemColors.add(provider);}
+    // 手持、掉落物品的光色，返回 0xRRGGBB（按有色光处理，见 LightSource.TINTED）；返回负数表示不处理，交给下一个，全都不处理时为白光。
+    public static void registerItemColor(ItemColorProvider provider) {itemColors.add(provider);}
 
     public static void registerEquipment(EquipmentSlot... slots) {
         EquipmentSlot[] equipment = slots.clone();
@@ -97,10 +97,10 @@ public class DynamicLightRegister {
                     brightest = stack;
                 }
             }
-            return itemColor(brightest);
+            return itemColor(brightest, entity);
         }));
         registerEntity(ItemEntity.class, DynamicLightProvider.entity(entity -> itemLuminance(entity.getItem(), null, false),
-                entity -> itemColor(entity.getItem())));
+                entity -> itemColor(entity.getItem(), entity)));
     }
 
     public static <T extends Entity> void registerProjectileItem(Class<T> type, Function<T, ItemStack> item) {
@@ -196,8 +196,11 @@ public class DynamicLightRegister {
         if (stack.isEmpty()) return 0;
         for (var predicate : itemSuppressors) if (predicate.test(stack, holder)) return 0;
         for (ItemRule rule : overrides) {
-            if (rule.type().isInstance(stack.getItem()))
-                return rule.provider().luminance(stack, holder, projectile);
+            if (rule.type().isInstance(stack.getItem())) {
+                // 负数表示这条规则不处理这个物品，交给后面的规则和固定亮度
+                int light = rule.provider().luminance(stack, holder, projectile);
+                if (light >= 0) return light;
+            }
         }
         int light = (projectile ? projectiles : items).getOrDefault(stack.getItem(), 0);
         if (stack.getItem() instanceof BlockItem block)
@@ -207,11 +210,11 @@ public class DynamicLightRegister {
         return light;
     }
 
-    private static int itemColor(ItemStack stack) {
+    private static int itemColor(ItemStack stack, Entity holder) {
         if (stack.isEmpty()) return DynamicLightDispatcher.LightSource.WHITE;
-        for (ToIntFunction<ItemStack> provider : itemColors) {
-            int color = provider.applyAsInt(stack);
-            if (color >= 0) return color & 0xFFFFFF;
+        for (ItemColorProvider provider : itemColors) {
+            int color = provider.color(stack, holder);
+            if (color >= 0) return (color & 0xFFFFFF) | DynamicLightDispatcher.LightSource.TINTED;
         }
         return DynamicLightDispatcher.LightSource.WHITE;
     }
@@ -226,6 +229,12 @@ public class DynamicLightRegister {
     @FunctionalInterface
     public interface SourceCollection<T> {
         void forEach(float partialTick, Consumer<T> consumer);
+    }
+
+    /// 物品光色：holder 是拿着它的生物或掉落物实体（条件判断可能要用到），返回 0xRRGGBB，负数表示不处理
+    @FunctionalInterface
+    public interface ItemColorProvider {
+        int color(ItemStack stack, @Nullable Entity holder);
     }
 
     @FunctionalInterface

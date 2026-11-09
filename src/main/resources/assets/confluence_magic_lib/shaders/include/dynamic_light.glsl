@@ -6,7 +6,7 @@ uint cmlHash(ivec3 cell) {
     return uint(cell.x) * 73856093u ^ uint(cell.y) * 19349663u ^ uint(cell.z) * 83492791u;
 }
 
-float cmlCellLight(ivec3 cell, vec3 position, float result, inout vec3 color) {
+float cmlCellLight(ivec3 cell, vec3 position, float result, inout vec4 color) {
     int slot = int(cmlHash(cell) & uint(CmlLightMask));
     for (int probe = 0; probe <= CmlLightMask; ++probe) {
         vec4 header = texelFetch(CmlLightData, slot * 2);
@@ -28,7 +28,7 @@ float cmlCellLight(ivec3 cell, vec3 position, float result, inout vec3 color) {
                     float candidate = light.w - sqrt(distanceSquared) * (255.0 / 15.0);
                     if (candidate > result) {
                         result = candidate;
-                        color = texelFetch(CmlLightData, start + i + colors).rgb;
+                        color = texelFetch(CmlLightData, start + i + colors); // rgb + tinted flag
                     }
                     if (result >= 255.0) return 255.0;
                 }
@@ -40,7 +40,7 @@ float cmlCellLight(ivec3 cell, vec3 position, float result, inout vec3 color) {
     return result;
 }
 
-vec2 cmlLightUVAt(vec2 original, vec3 position, inout vec3 color) {
+vec2 cmlLightUVAt(vec2 original, vec3 position, inout vec4 color) {
     if (CmlLightMask < 0 || original.x >= 240) return original;
     ivec3 cell = ivec3(floor(position / 16.0));
     // 已有方块光照是下界，只查找能够让最终结果更亮的光源。
@@ -50,7 +50,7 @@ vec2 cmlLightUVAt(vec2 original, vec3 position, inout vec3 color) {
 }
 // White-light variant for the vertex path (entities, items).
 vec2 cmlLightUVAt(vec2 original, vec3 position) {
-    vec3 color = vec3(1.0);
+    vec4 color = vec4(1.0, 1.0, 1.0, 0.0);
     return cmlLightUVAt(original, position, color);
 }
 // 保留实体等顶点光照路径；地形直接传入统一的相机相对坐标。

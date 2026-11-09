@@ -431,8 +431,11 @@ public final class DynamicLightDispatcher {
     }
 
     public static final class LightSource {
-        /// 默认白光：只提高原版光照贴图的亮度，不改变颜色。
+        /// 默认白光：只提高原版光照贴图的亮度，不改变颜色（原版方块光偏暖的色调保留）。
         public static final int WHITE = 0xFFFFFF;
+        /// 颜色标记位：带这个位的光源是“有色光”，地形上按亮度乘这个颜色（纯色，和 OpalLight 的彩色光一致），
+        /// 不再带原版方块光的暖色调。
+        public static final int TINTED = 0x1000000;
 
         private final Vec3 position;
         private final int strength;
@@ -443,17 +446,21 @@ public final class DynamicLightDispatcher {
             this(position, strength, WHITE);
         }
 
-        /// 带颜色的光源，颜色为 0xRRGGBB。只有 GPU 地形光照使用颜色，CPU 兼容路径和实体仍按白光处理。
+        /// 带颜色的光源，颜色为 0xRRGGBB，可以或上 TINTED。只有 GPU 地形光照使用颜色，CPU 兼容路径和实体仍按白光处理。
         public LightSource(Vec3 position, int strength, int color) {
             this.position = position;
             this.strength = Mth.clamp(strength, 0, MAX_STRENGTH);
-            this.color = color & 0xFFFFFF;
+            this.color = color & (TINTED | 0xFFFFFF);
             // 哈希使用裁剪后的亮度，并将 -0.0 归一为 +0.0，与 equals 保持一致。
             this.hash = Long.hashCode(Double.doubleToLongBits(position.x + 0.0) * 0x9E3779B97F4A7C15L ^ Double.doubleToLongBits(position.y + 0.0) * 0xC2B2AE3D27D4EB4FL ^ Double.doubleToLongBits(position.z + 0.0) * 0x165667B19E3779F9L ^ this.strength * 0x27D4EB2F165667C5L ^ this.color * 0x9E3779B1L);
         }
 
         public int color() {
-            return color;
+            return color & 0xFFFFFF;
+        }
+
+        public boolean tinted() {
+            return (color & TINTED) != 0;
         }
 
         public Vec3 position() {
