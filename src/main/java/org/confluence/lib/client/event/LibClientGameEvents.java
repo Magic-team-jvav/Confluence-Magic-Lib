@@ -83,7 +83,7 @@ public final class LibClientGameEvents {
         if (optional.isPresent()) {
             ResourceLocation id = optional.get().location();
             String key = Util.makeDescriptionId("tooltip.effect", id) + ".0";
-            if (!I18n.exists(key) && !NeoForge.EVENT_BUS.post(new OnGatherEffectScreenTooltipsEvent(effect, id, key, tooltip::add)).isCanceled()) {
+            if (I18n.exists(key) && !NeoForge.EVENT_BUS.post(new OnGatherEffectScreenTooltipsEvent(effect, id, key, tooltip::add)).isCanceled()) {
                 if (effect.equals(LibEffects.GRAVITATION)) {
                     tooltip.add(Component.translatable(key, LibClientUtils.keyMappingComponent(LibKeyBindings.FLIP_GRAVITATION.get())));
                 } else {
