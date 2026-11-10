@@ -58,6 +58,8 @@ public final class ConfluenceMagicLib {
     public static final PortRegistryEntry<Attribute, RangedAttribute> MAGIC_DAMAGE = registerAttribute("generic.magic_damage", 1.0, 0.0, 10.0, RangedAttribute::new, maker -> maker.setSyncable(true));
     public static final PortRegistryEntry<Attribute, RangedAttribute> SOUL_DAMAGE = registerAttribute("generic.soul_damage", 1.0, 0.0, 10.0, RangedAttribute::new, maker -> maker.setSyncable(true));
     public static final PortRegistryEntry<Attribute, RangedAttribute> ADDITIONAL_SOUL = registerAttribute("generic.additional_soul", 0.0, 0.0, Integer.MAX_VALUE, RangedAttribute::new, maker -> maker.setSyncable(true));
+    /// 法器冷却减免：0.10 表示法器冷却时间 -10%（加法叠加，最终冷却 = 原冷却 × (1 - 减免)）
+    public static final PortRegistryEntry<Attribute, PortPercentageAttribute> ARTIFACT_COOLDOWN_REDUCTION = registerAttribute("generic.artifact_cooldown_reduction", 0.0, 0.0, 1.0, PortPercentageAttribute::new, maker -> maker.setSyncable(true));
     public static final PortRegistryEntry<Attribute, RangedAttribute> ARMOR_PENETRATION = registerAttribute("generic.armor_penetration", 0.0, 0.0, 10000, RangedAttribute::new, maker -> maker.setSyncable(true));
     public static final PortRegistryEntry<Attribute, RangedAttribute> MOB_SPAWN_SPEED_MULTIPLIER = registerAttribute("player.mob_spawn_speed_multiplier", 1, 0, 1024, RangedAttribute::new, maker -> maker.setSentiment(Attribute.Sentiment.NEUTRAL));
     public static final PortRegistryEntry<Attribute, RangedAttribute> MOB_SPAWN_COUNT_MULTIPLIER = registerAttribute("player.mob_spawn_count_multiplier", 1, 0, 1024, RangedAttribute::new, maker -> maker.setSentiment(Attribute.Sentiment.NEUTRAL));

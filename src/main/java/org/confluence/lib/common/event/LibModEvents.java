@@ -74,6 +74,7 @@ public final class LibModEvents {
         LibAttributes.registerAttribute(ConfluenceMagicLib.AGGRO, event::add);
         LibAttributes.registerAttribute(ConfluenceMagicLib.MAGIC_DAMAGE, event::add);
         LibAttributes.registerAttribute(ConfluenceMagicLib.SOUL_DAMAGE, event::add);
+        LibAttributes.registerAttribute(ConfluenceMagicLib.ARTIFACT_COOLDOWN_REDUCTION, event::add);
         LibAttributes.registerAttribute(ConfluenceMagicLib.ADDITIONAL_SOUL, event::add);
         LibAttributes.registerAttribute(ConfluenceMagicLib.ARMOR_PENETRATION, event::add);
         LibAttributes.registerAttribute(ConfluenceMagicLib.PICKUP_RANGE, event::add);
