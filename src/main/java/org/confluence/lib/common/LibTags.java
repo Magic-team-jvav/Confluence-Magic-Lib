@@ -7,6 +7,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.enchantment.Enchantment;
 import org.confluence.lib.ConfluenceMagicLib;
 
 public final class LibTags {
@@ -30,6 +31,15 @@ public final class LibTags {
         }
     }
 
+    public static class Enchantments {
+        /// 未定稿附魔：物品只要带其中任意一个附魔，就不进创造栏（与 {@link Items#WIP} 同等的门槛，
+        /// 因为附魔书共用 minecraft:enchanted_book 这一个物品，没法用物品标签区分具体是哪一本）。
+        public static final TagKey<Enchantment> WIP = register("wip");
+
+        private static TagKey<Enchantment> register(String id) {
+            return TagKey.create(Registries.ENCHANTMENT, ConfluenceMagicLib.asResource(id));
+        }
+    }
     public static class DamageTypes {
         public static final TagKey<DamageType> AS_MELEE_ATTACK = register("as_melee_attack"); // 用于判断是否是近战伤害
         public static final TagKey<DamageType> SOUL_OVERDRAFT = register("soul_overdraft");
