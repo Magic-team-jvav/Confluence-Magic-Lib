@@ -226,6 +226,11 @@ public final class LibAttributes {
         return getCustomAttribute(ConfluenceMagicLib.ARMOR_PENETRATION);
     }
 
+    /// 法器冷却减免（0.10 = 冷却时间 -10%）
+    public static Holder<Attribute> getArtifactCooldownReduction() {
+        return getCustomAttribute(ConfluenceMagicLib.ARTIFACT_COOLDOWN_REDUCTION);
+    }
+
     /// 近战伤害
     public static Holder<Attribute> getAttackDamage() {
         return Attributes.ATTACK_DAMAGE;
