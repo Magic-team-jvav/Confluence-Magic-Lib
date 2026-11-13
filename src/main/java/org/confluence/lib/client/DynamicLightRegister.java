@@ -40,6 +40,8 @@ public class DynamicLightRegister {
 
     private static final List<ToIntFunction<ItemStack>> fallbacks = new ArrayList<>();
 
+    private static final List<ItemColorProvider> itemColors = new ArrayList<>();
+
     private static final List<FloatConsumer> collectors = new ArrayList<>();
     private static final List<BiPredicate<ItemStack, LivingEntity>> itemSuppressors = new ArrayList<>();
     private static final List<Predicate<Entity>> entitySuppressors = new ArrayList<>();
@@ -65,12 +67,15 @@ public class DynamicLightRegister {
 
     public static void registerProjectile(Item item, int brightness) {projectiles.merge(item, brightness, Math::max);}
 
-    // 特殊物品的开关规则优先于固定亮度和兜底规则，返回零即可关闭该物品的光源。
+    // 特殊物品的开关规则优先于固定亮度和兜底规则，返回零即可关闭该物品的光源，返回负数表示不处理（继续往下找）。
     public static void registerItemOverride(Class<? extends Item> type, ItemLightProvider provider) {
         overrides.add(new ItemRule(type, provider));
     }
 
     public static void registerItemFallback(ToIntFunction<ItemStack> provider) {fallbacks.add(provider);}
+
+    // 手持、掉落物品的光色，返回 0xRRGGBB（按有色光处理，见 LightSource.TINTED）；返回负数表示不处理，交给下一个，全都不处理时为白光。
+    public static void registerItemColor(ItemColorProvider provider) {itemColors.add(provider);}
 
     public static void registerEquipment(EquipmentSlot... slots) {
         EquipmentSlot[] equipment = slots.clone();
@@ -80,8 +85,22 @@ public class DynamicLightRegister {
                 light = Math.max(light,
                         itemLuminance(entity.getItemBySlot(slot), entity, false));
             return light;
+        }, entity -> {
+            // 颜色取最亮的那件物品
+            int light = 0;
+            ItemStack brightest = ItemStack.EMPTY;
+            for (EquipmentSlot slot : equipment) {
+                ItemStack stack = entity.getItemBySlot(slot);
+                int value = itemLuminance(stack, entity, false);
+                if (value > light) {
+                    light = value;
+                    brightest = stack;
+                }
+            }
+            return itemColor(brightest, entity);
         }));
-        registerEntity(ItemEntity.class, DynamicLightProvider.entity(entity -> itemLuminance(entity.getItem(), null, false)));
+        registerEntity(ItemEntity.class, DynamicLightProvider.entity(entity -> itemLuminance(entity.getItem(), null, false),
+                entity -> itemColor(entity.getItem(), entity)));
     }
 
     public static <T extends Entity> void registerProjectileItem(Class<T> type, Function<T, ItemStack> item) {
@@ -137,13 +156,20 @@ public class DynamicLightRegister {
                 break;
             }
         }
-        int brightness = collectProvider(entityProviders.get(entity.getType()), entity, partialTick, suppressed);
+        DynamicLightProvider<Entity> typed = entityProviders.get(entity.getType());
+        int brightness = collectProvider(typed, entity, partialTick, suppressed);
+        DynamicLightProvider<Entity> brightest = brightness > 0 ? typed : null;
         for (DynamicLightProvider<Entity> provider : providersFor(entity.getClass())) {
-            brightness = Math.max(brightness, collectProvider(provider, entity, partialTick, suppressed));
+            int value = collectProvider(provider, entity, partialTick, suppressed);
+            if (value > brightness) {
+                brightness = value;
+                brightest = provider;
+            }
         }
-        // 所有中心光源先取最大亮度，仅插值并创建一次光源；自定义位置的 provider 直接采集。
+        // 所有中心光源先取最大亮度，仅插值并创建一次光源；颜色取给出最大亮度的 provider。自定义位置的 provider 直接采集。
         if (brightness > 0) DynamicLightDispatcher.INSTANCE.addLightSource(
-                DynamicLightProvider.EntityLight.source(entity, partialTick, brightness));
+                DynamicLightProvider.EntityLight.source(entity, partialTick, brightness,
+                        ((DynamicLightProvider.EntityLight<Entity>) brightest).color(entity)));
     }
 
     private static int collectProvider(DynamicLightProvider<Entity> provider, Entity entity, float partialTick, boolean suppressed) {
@@ -170,8 +196,11 @@ public class DynamicLightRegister {
         if (stack.isEmpty()) return 0;
         for (var predicate : itemSuppressors) if (predicate.test(stack, holder)) return 0;
         for (ItemRule rule : overrides) {
-            if (rule.type().isInstance(stack.getItem()))
-                return rule.provider().luminance(stack, holder, projectile);
+            if (rule.type().isInstance(stack.getItem())) {
+                // 负数表示这条规则不处理这个物品，交给后面的规则和固定亮度
+                int light = rule.provider().luminance(stack, holder, projectile);
+                if (light >= 0) return light;
+            }
         }
         int light = (projectile ? projectiles : items).getOrDefault(stack.getItem(), 0);
         if (stack.getItem() instanceof BlockItem block)
@@ -179,6 +208,15 @@ public class DynamicLightRegister {
         for (ToIntFunction<ItemStack> provider : fallbacks)
             light = Math.max(light, provider.applyAsInt(stack));
         return light;
+    }
+
+    private static int itemColor(ItemStack stack, Entity holder) {
+        if (stack.isEmpty()) return DynamicLightDispatcher.LightSource.WHITE;
+        for (ItemColorProvider provider : itemColors) {
+            int color = provider.color(stack, holder);
+            if (color >= 0) return (color & 0xFFFFFF) | DynamicLightDispatcher.LightSource.TINTED;
+        }
+        return DynamicLightDispatcher.LightSource.WHITE;
     }
 
     private static int blockLight(ItemStack stack, BlockItem block) {
@@ -191,6 +229,12 @@ public class DynamicLightRegister {
     @FunctionalInterface
     public interface SourceCollection<T> {
         void forEach(float partialTick, Consumer<T> consumer);
+    }
+
+    /// 物品光色：holder 是拿着它的生物或掉落物实体（条件判断可能要用到），返回 0xRRGGBB，负数表示不处理
+    @FunctionalInterface
+    public interface ItemColorProvider {
+        int color(ItemStack stack, @Nullable Entity holder);
     }
 
     @FunctionalInterface
