@@ -42,42 +42,42 @@ import java.util.Optional;
 
 public final class LibClientGameEvents {
     public static void init() {
-        PortEventHandler.addListener(LibClientGameEvents::clientTick);
-        PortEventHandler.addListener(PortEventPriority.HIGHEST, LibClientGameEvents::renderTooltip);
+        PortEventHandler.addListener(LibClientGameEvents::clientTick$Pre);
+        PortEventHandler.addListener(PortEventPriority.HIGHEST, LibClientGameEvents::renderTooltip$GatherComponents$Highest);
         PortEventHandler.addListener(LibClientGameEvents::gatherEffectScreenTooltips);
         PortEventHandler.addListener(LibClientGameEvents::movementInputUpdate);
         PortEventHandler.addListener(LibClientGameEvents::playerTick$Pre);
         PortEventHandler.addListener(LibClientGameEvents::clientPlayerNetwork$LoggingOut);
-        PortEventHandler.addListener(LibClientGameEvents::clientTick$Post);
         PortEventHandler.addListener(LibClientGameEvents::viewport$ComputeCameraAngles);
         PortEventHandler.addListener(LibClientGameEvents::input$InteractionKeyMappingTriggered);
     }
 
-    private static void clientTick(TickEvent.ClientTickEvent event) {
+    private static void clientTick$Pre(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.START) return;
         ExpertColorAnimation.INSTANCE.updateColor();
         MasterColorAnimation.INSTANCE.updateColor();
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null) {
             DPSMeter.checkDPSTime(player.level().getGameTime());
+            GravitationHandler.tryExpire(player);
         }
     }
 
-    private static void renderTooltip(RenderTooltipEvent.GatherComponents event) {
-        ItemStack itemStack = event.getItemStack();
-        if (itemStack.isEmpty()) return;
+    private static void renderTooltip$GatherComponents$Highest(RenderTooltipEvent.GatherComponents event) {
+        ItemStack stack = event.getItemStack();
+        if (stack.isEmpty()) return;
 
         List<Either<FormattedText, TooltipComponent>> tooltipElements = event.getTooltipElements();
         if (tooltipElements.isEmpty()) return;
         Optional<FormattedText> displayName = tooltipElements.get(0).left();
         if (displayName.isPresent() && displayName.get() instanceof MutableComponent component) {
-            ModRarity rarity = ModRarity.getRarity(itemStack);
-            if (rarity != null) {
-                tooltipElements.set(0, Either.left(component.copy().withColor(rarity.color())));
+            int color = ModRarity.chooseColor(stack);
+            if (color != -1) {
+                tooltipElements.set(0, Either.left(component.copy().withColor(color)));
             }
         }
 
-        if (itemStack.is(LibTags.Items.WIP)) {
+        if (stack.is(LibTags.Items.WIP)) {
             event.getTooltipElements().add(1, Either.left(Component.translatable("tooltip.confluence.work_in_progress").withStyle(ChatFormatting.RED)));
         }
     }
@@ -129,14 +129,6 @@ public final class LibClientGameEvents {
         CameraAnimation.clear();
         if (AnimationConstants.SHOULD_APPLY) {
             PlayerGeoAnimatable.reloadCallbacks.clear();
-        }
-    }
-
-    private static void clientTick$Post(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.START) return;
-        LocalPlayer player = Minecraft.getInstance().player;
-        if (player != null) {
-            GravitationHandler.tryExpire(player);
         }
     }
 

@@ -1,5 +1,6 @@
 package org.confluence.lib.common.component;
 
+import PortLib.extensions.com.mojang.serialization.Codec.PortCodecExtension;
 import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -15,7 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import org.mesdag.portlib.network.codec.PortByteBufCodecs;
 import org.mesdag.portlib.network.codec.PortStreamCodec;
 
-public record ModRarity(String name, int color) {
+public record ModRarity(String name, int color, boolean special) {
     public static final ModRarity COMMON = new ModRarity("common", 16777215);
     public static final ModRarity UNCOMMON = new ModRarity("uncommon", 16777045);
     public static final ModRarity RARE = new ModRarity("rare", 5636095);
@@ -57,22 +58,18 @@ public record ModRarity(String name, int color) {
 
     public static final Codec<ModRarity> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("name").forGetter(ModRarity::name),
-            Codec.INT.fieldOf("color").forGetter(ModRarity::color)
+            Codec.INT.fieldOf("color").forGetter(ModRarity::color),
+            PortCodecExtension.lenientOptionalFieldOf(Codec.BOOL, "special", false).forGetter(ModRarity::special)
     ).apply(instance, ModRarity::new));
     public static final PortStreamCodec<ByteBuf, ModRarity> STREAM_CODEC = PortStreamCodec.composite(
             PortByteBufCodecs.STRING_UTF8, ModRarity::name,
-            PortByteBufCodecs.INT, ModRarity::color,
+            PortByteBufCodecs.VAR_INT, ModRarity::color,
+            PortByteBufCodecs.BOOL, ModRarity::special,
             ModRarity::new
     );
 
-    @Override
-    public boolean equals(Object o) {
-        return o == this || (o instanceof ModRarity r && color == r.color && name.equals(r.name));
-    }
-
-    @Override
-    public int hashCode() {
-        return 31 * name.hashCode() + color;
+    public ModRarity(String name, int color) {
+        this(name, color, false);
     }
 
     public int color() {
@@ -114,10 +111,18 @@ public record ModRarity(String name, int color) {
         return component.withStyle(style -> withColor(stack, style));
     }
 
+    public static int chooseColor(ItemStack stack) {
+        ModRarity rarity = getRarity(stack, false);
+        if (rarity == null) return -1;
+        ModRarity prototypeRarity = ModRarity.getModRarity(stack, true);
+        return (prototypeRarity != null && prototypeRarity.special ? prototypeRarity : rarity).color();
+    }
+
     @Override
     public String toString() {
         return "ModRarity[" +
                 "name=" + name + ", " +
-                "color=" + color + ']';
+                "color=" + color + ", " +
+                "special=" + special + ']';
     }
 }
