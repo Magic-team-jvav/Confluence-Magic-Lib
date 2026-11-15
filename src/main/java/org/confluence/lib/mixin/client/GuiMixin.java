@@ -25,7 +25,7 @@ public abstract class GuiMixin {
         return original;
     }
 
-    @WrapOperation(method = "renderSelectedItemName(Lnet/minecraft/client/gui/GuiGraphics;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getHighlightTip(Lnet/minecraft/network/chat/Component;)Lnet/minecraft/network/chat/Component;", remap = false))
+    @WrapOperation(method = "renderSelectedItemName(Lnet/minecraft/client/gui/GuiGraphics;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getHighlightTip(Lnet/minecraft/network/chat/Component;)Lnet/minecraft/network/chat/Component;", remap = false), remap = false)
     private Component modRarity(ItemStack instance, Component component, Operation<Component> original) {
         Component call = original.call(instance, component);
         int color = ModRarity.chooseColor(instance);
