@@ -46,17 +46,18 @@ import java.util.Optional;
 @EventBusSubscriber(modid = ConfluenceMagicLib.LIB_ID, value = Dist.CLIENT)
 public final class LibClientGameEvents {
     @SubscribeEvent
-    public static void clientTick$Post(ClientTickEvent.Pre event) {
+    public static void clientTick$Pre(ClientTickEvent.Pre event) {
         ExpertColorAnimation.INSTANCE.updateColor();
         MasterColorAnimation.INSTANCE.updateColor();
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null) {
             DPSMeter.checkDPSTime(player.level().getGameTime());
+            GravitationHandler.tryExpire(player);
         }
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void renderTooltip$GatherComponents(RenderTooltipEvent.GatherComponents event) {
+    public static void renderTooltip$GatherComponents$Highest(RenderTooltipEvent.GatherComponents event) {
         ItemStack stack = event.getItemStack();
         if (stack.isEmpty()) return;
 
@@ -64,9 +65,9 @@ public final class LibClientGameEvents {
         if (tooltipElements.isEmpty()) return;
         Optional<FormattedText> displayName = tooltipElements.getFirst().left();
         if (displayName.isPresent() && displayName.get() instanceof Component component) {
-            ModRarity rarity = ModRarity.getRarity(stack);
-            if (rarity != null) {
-                tooltipElements.set(0, Either.left(component.copy().withColor(rarity.color())));
+            int color = ModRarity.chooseColor(stack);
+            if (color != -1) {
+                tooltipElements.set(0, Either.left(component.copy().withColor(color)));
             }
         }
 
@@ -130,14 +131,6 @@ public final class LibClientGameEvents {
     }
 
     @SubscribeEvent
-    public static void clientTick$Gravitation(ClientTickEvent.Pre event) {
-        LocalPlayer player = Minecraft.getInstance().player;
-        if (player != null) {
-            GravitationHandler.tryExpire(player);
-        }
-    }
-
-    @SubscribeEvent
     public static void viewport$ComputeCameraAngles(ViewportEvent.ComputeCameraAngles event) {
         if (GravitationHandler.isShouldRot()) {
             event.setRoll(event.getRoll() + 180);
@@ -152,6 +145,4 @@ public final class LibClientGameEvents {
             PlayerGeoAnimatable.reloadCallbacks.clear();
         }
     }
-
-
 }
