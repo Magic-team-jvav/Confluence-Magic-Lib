@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.phys.Vec3;
+import org.confluence.lib.client.DynamicLightDispatcher;
 import org.confluence.lib.client.DynamicLightDispatcher.LightSource;
 
 import java.nio.FloatBuffer;
@@ -35,7 +36,7 @@ public final class DynamicLightGrid {
         groups.clear();
         visible.clear();
         size = 0;
-        double radius = distance + 7.75;
+        double radius = distance + DynamicLightDispatcher.RADIUS;
         double farthestIncluded = 0.0;
         double nearestExcluded = Double.POSITIVE_INFINITY;
         // 可见区块按水平范围加载；球形距离会漏掉角落及同列高处的光源。
@@ -56,7 +57,7 @@ public final class DynamicLightGrid {
         visible.sort(BY_STRENGTH);
         for (LightSource source : visible) {
             Vec3 p = source.position();
-            double reach = source.strength() * (7.75 / 255.0) + 1.0E-4;
+            double reach = source.strength() * (DynamicLightDispatcher.RADIUS / 255.0) + 1.0E-4;
             int minX = SectionPos.blockToSectionCoord(p.x - reach), maxX = SectionPos.blockToSectionCoord(p.x + reach);
             int minY = SectionPos.blockToSectionCoord(p.y - reach), maxY = SectionPos.blockToSectionCoord(p.y + reach);
             int minZ = SectionPos.blockToSectionCoord(p.z - reach), maxZ = SectionPos.blockToSectionCoord(p.z + reach);
@@ -88,7 +89,8 @@ public final class DynamicLightGrid {
         while (buckets < groups.size() * 2) buckets <<= 1;
     }
 
-    public int texels() {return buckets * 2 + size;}
+    // 哈希桶 + 光源 + 与光源一一对应的颜色。
+    public int texels() {return buckets * 2 + size * 2;}
 
     public int mask() {return size == 0 ? -1 : buckets - 1;}
 
@@ -111,11 +113,18 @@ public final class DynamicLightGrid {
                 data.put(offset * 4 + 1, (float) (p.y - originY));
                 data.put(offset * 4 + 2, (float) (p.z - originZ));
                 data.put(offset * 4 + 3, source.strength());
+                // 颜色紧跟在全部光源之后，下标 = 光源下标 + size。
+                int color = source.color(), colorTexel = (offset + size) * 4;
+                data.put(colorTexel, ((color >> 16) & 255) / 255.0F);
+                data.put(colorTexel + 1, ((color >> 8) & 255) / 255.0F);
+                data.put(colorTexel + 2, (color & 255) / 255.0F);
+                data.put(colorTexel + 3, source.tinted() ? 1.0F : 0.0F);
                 offset++;
             }
             data.put(slot * 8, x).put(slot * 8 + 1, y).put(slot * 8 + 2, z).put(slot * 8 + 3, start);
             data.put(slot * 8 + 4, offset - start);
             data.put(slot * 8 + 5, data.get(start * 4 + 3));
+            data.put(slot * 8 + 6, size);
         }
         data.position(0).limit(texels() * 4);
     }

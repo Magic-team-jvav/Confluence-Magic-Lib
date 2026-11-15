@@ -6,7 +6,7 @@ uint cmlHash(ivec3 cell) {
     return uint(cell.x) * 73856093u ^ uint(cell.y) * 19349663u ^ uint(cell.z) * 83492791u;
 }
 
-float cmlCellLight(ivec3 cell, vec3 position, float result) {
+float cmlCellLight(ivec3 cell, vec3 position, float result, inout vec4 color) {
     int slot = int(cmlHash(cell) & uint(CmlLightMask));
     for (int probe = 0; probe <= CmlLightMask; ++probe) {
         vec4 header = texelFetch(CmlLightData, slot * 2);
@@ -16,14 +16,20 @@ float cmlCellLight(ivec3 cell, vec3 position, float result) {
         if (all(equal(ivec3(header.xyz), cell))) {
             if (range.y <= result) return result;
             int start = int(header.w);
+            int colors = int(range.z); // colour texel = light texel + colors
             for (int i = 0; i < count; ++i) {
                 vec4 light = texelFetch(CmlLightData, start + i);
                 if (light.w <= result) return result;
                 vec3 delta = position - light.xyz;
                 float distanceSquared = dot(delta, delta);
-                float remainingReach = (light.w - result) * (7.75 / 255.0);
-                if (distanceSquared < 60.0625 && distanceSquared <= remainingReach * remainingReach + 0.0001) {
-                    result = max(result, light.w - sqrt(distanceSquared) * (255.0 / 7.75));
+                // reach radius 15 blocks = DynamicLightDispatcher.RADIUS
+                float remainingReach = (light.w - result) * (15.0 / 255.0);
+                if (distanceSquared < 225.0 && distanceSquared <= remainingReach * remainingReach + 0.0001) {
+                    float candidate = light.w - sqrt(distanceSquared) * (255.0 / 15.0);
+                    if (candidate > result) {
+                        result = candidate;
+                        color = texelFetch(CmlLightData, start + i + colors); // rgb + tinted flag
+                    }
                     if (result >= 255.0) return 255.0;
                 }
             }
@@ -34,13 +40,18 @@ float cmlCellLight(ivec3 cell, vec3 position, float result) {
     return result;
 }
 
-vec2 cmlLightUVAt(vec2 original, vec3 position) {
+vec2 cmlLightUVAt(vec2 original, vec3 position, inout vec4 color) {
     if (CmlLightMask < 0 || original.x >= 240) return original;
     ivec3 cell = ivec3(floor(position / 16.0));
     // 已有方块光照是下界，只查找能够让最终结果更亮的光源。
-    float strength = cmlCellLight(cell, position, float(original.x) * (17.0 / 16.0));
+    float strength = cmlCellLight(cell, position, float(original.x) * (17.0 / 16.0), color);
     if (strength <= float(original.x) * (17.0 / 16.0)) return original;
     return vec2(clamp(strength * (16.0 / 17.0) + 8.0, original.x, 248.0), original.y);
+}
+// White-light variant for the vertex path (entities, items).
+vec2 cmlLightUVAt(vec2 original, vec3 position) {
+    vec4 color = vec4(1.0, 1.0, 1.0, 0.0);
+    return cmlLightUVAt(original, position, color);
 }
 // 保留实体等顶点光照路径；地形直接传入统一的相机相对坐标。
 ivec2 cmlLightUV(ivec2 original, vec3 viewPosition) {
