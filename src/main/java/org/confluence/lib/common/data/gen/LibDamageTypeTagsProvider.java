@@ -37,7 +37,13 @@ public final class LibDamageTypeTagsProvider extends DamageTypeTagsProvider {
         tag(DamageTypeTags.BYPASSES_EFFECTS).addTag(LibTags.DamageTypes.SOUL_OVERDRAFT);
         tag(DamageTypeTags.BYPASSES_RESISTANCE).addTag(LibTags.DamageTypes.SOUL_OVERDRAFT);
         tag(DamageTypeTags.BYPASSES_ENCHANTMENTS).addTag(LibTags.DamageTypes.SOUL_OVERDRAFT);
-        tag(DamageTypeTags.NO_KNOCKBACK).addTag(LibTags.DamageTypes.SOUL_OVERDRAFT);
+        /// 持续性伤害（毒液 / 诅咒狱火 / 霜冻 / 狱炎）不应该把实体顶起来。
+        tag(DamageTypeTags.NO_KNOCKBACK).add(
+                LibDamageTypes.ACID_VENOM,
+                LibDamageTypes.CURSED_INFERNO,
+                LibDamageTypes.FROST_BURN,
+                LibDamageTypes.HELLFIRE
+        ).addTag(LibTags.DamageTypes.SOUL_OVERDRAFT);
         tag(DamageTypeTags.IS_PLAYER_ATTACK).add(LibDamageTypes.SUMMON);
     }
 }

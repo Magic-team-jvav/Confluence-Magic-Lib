@@ -6,6 +6,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.damagesource.*;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,6 +54,17 @@ public final class LibDamageTypes {
     /// 灵魂透支由伤害标签与 NeoForge 事件处理，不指定攻击者。
     public static DamageSource soulOverdraft(Level level) {
         return of(level, SOUL_OVERDRAFT);
+    }
+
+    /// 结算后恢复原速度：用于「不该击退」的伤害（DOT / 光环）。
+    ///
+    /// 1.21 的原版击退判定只看 `minecraft:no_knockback` 标签，带实体的伤害源（如 `indirectMagic`）
+    /// 无法逐次打标签，所以和 1.20 一样用「恢复速度」来等效关闭击退。
+    public static boolean hurtWithoutKnockback(Entity target, DamageSource source, float amount) {
+        Vec3 movement = target.getDeltaMovement();
+        boolean hurt = target.hurt(source, amount);
+        target.setDeltaMovement(movement);
+        return hurt;
     }
 
     public static void bootstrap(BootstrapContext<DamageType> context) {
