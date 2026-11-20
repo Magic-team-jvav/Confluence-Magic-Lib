@@ -12,6 +12,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.phys.Vec3;
 import org.confluence.lib.common.LibAttributes;
 import org.confluence.lib.common.LibEffects;
+import org.confluence.lib.common.LibTags;
 import org.confluence.lib.mixed.ILibEntity;
 import org.confluence.lib.mixed.ILibLivingEntity;
 import org.confluence.lib.mixed.ILibMobEffectInstance;
@@ -30,6 +31,16 @@ public abstract class LivingEntityMixin implements ILibLivingEntity {
 
     @Shadow
     public abstract Map<MobEffect, MobEffectInstance> getActiveEffectsMap();
+
+    @WrapWithCondition(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
+    private boolean allowKnockback(LivingEntity entity, double strength, double x, double z, @Local(argsOnly = true) DamageSource source) {
+        return !source.is(LibTags.DamageTypes.NO_KNOCKBACK);
+    }
+
+    @WrapWithCondition(method = "hurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;indicateDamage(DD)V"))
+    private boolean allowIndicateDamage(LivingEntity entity, double x, double z, @Local(argsOnly = true) DamageSource source) {
+        return !source.is(LibTags.DamageTypes.NO_KNOCKBACK);
+    }
 
     @ModifyArg(method = "getDamageAfterArmorAbsorb", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/damagesource/CombatRules;getDamageAfterAbsorb(FFF)F"), index = 1)
     private float armorPenetration(float totalArmor, @Local(argsOnly = true) DamageSource damageSource) {

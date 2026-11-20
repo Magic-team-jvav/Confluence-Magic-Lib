@@ -41,6 +41,7 @@ public final class LibTags {
         }
     }
     public static class DamageTypes {
+        public static final TagKey<DamageType> NO_KNOCKBACK = register("no_knockback");
         public static final TagKey<DamageType> AS_MELEE_ATTACK = register("as_melee_attack"); // 用于判断是否是近战伤害
         public static final TagKey<DamageType> SOUL_OVERDRAFT = register("soul_overdraft");
 
