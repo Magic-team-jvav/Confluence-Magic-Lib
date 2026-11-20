@@ -37,6 +37,7 @@ public class GridPiece extends StructurePiece {
     public static final Codec<List<Tuple<Integer, IntArrayList>>> BLOCK_MAP_CODEC = LibCodecUtils.tuple(Codec.INT, Codec.INT.listOf().xmap(IntArrayList::new, Function.identity())).listOf();
     public static final Codec<List<Tuple<BlockPos, ResourceLocation>>> FEATURES_CODEC = LibCodecUtils.tuple(BlockPos.CODEC, ResourceLocation.CODEC).listOf();
 
+    private int fluidTickPaletteIndex = -1;
     private final ChunkPos startPos;
     private final List<Tuple<Integer, IntArrayList>> blockMap;
     public List<BlockState> blockList;
@@ -67,6 +68,8 @@ public class GridPiece extends StructurePiece {
 
     public GridPiece(CompoundTag tag) {
         super(ConfluenceMagicLib.GRID_PIECE.get(), tag);
+        if (tag.contains("FluidTickPaletteIndex"))
+            fluidTickPaletteIndex = tag.getInt("FluidTickPaletteIndex");
         this.startPos = new ChunkPos(tag.getLong("StartPos"));
         if (tag.contains("BlockMap")) {
             this.blockMap = PortDataResultExtension.getOrThrow(BLOCK_MAP_CODEC.parse(NbtOps.INSTANCE, tag.get("BlockMap")));
@@ -81,6 +84,7 @@ public class GridPiece extends StructurePiece {
 
     @Override
     protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
+        if (fluidTickPaletteIndex >= 0) tag.putInt("FluidTickPaletteIndex", fluidTickPaletteIndex);
         tag.putLong("StartPos", startPos.toLong());
         if (blockMap.stream().anyMatch(tuple -> !tuple.getB().isEmpty())) {
             tag.put("BlockMap", PortDataResultExtension.getOrThrow(BLOCK_MAP_CODEC.encodeStart(NbtOps.INSTANCE, blockMap)));
@@ -95,7 +99,12 @@ public class GridPiece extends StructurePiece {
         for (Tuple<Integer, IntArrayList> pair : blockMap) {
             BlockState blockState = blockList.get(pair.getA());
             for (int blockPos : pair.getB()) {
-                level.setBlock(LibUtils.decompressRelativePos(startPos, blockPos), blockState, 2);
+                BlockPos target = LibUtils.decompressRelativePos(startPos, blockPos);
+                level.setBlock(target, blockState, 2);
+                if (pair.getA() == fluidTickPaletteIndex) {
+                    var fluid = blockState.getFluidState().getType();
+                    level.scheduleTick(target, fluid, fluid.getTickDelay(level));
+                }
             }
             pair.getB().clear();
         }
@@ -111,6 +120,10 @@ public class GridPiece extends StructurePiece {
     }
 
     public static void addPieces(Object2IntMap<BlockPos> blockMap, List<BlockState> blockList, Map<BlockPos, ResourceLocation> featureMap, StructurePiecesBuilder builder) {
+        addPieces(blockMap, blockList, featureMap, builder, -1);
+    }
+
+    public static void addPieces(Object2IntMap<BlockPos> blockMap, List<BlockState> blockList, Map<BlockPos, ResourceLocation> featureMap, StructurePiecesBuilder builder, int fluidTickPaletteIndex) {
         Map<ChunkPos, Map<BlockPos, ResourceLocation>> sliceMap = new HashMap<>();
         for (Map.Entry<BlockPos, ResourceLocation> posEntry : featureMap.entrySet()) {
             BlockPos blockPos = posEntry.getKey();
@@ -130,6 +143,7 @@ public class GridPiece extends StructurePiece {
         for (Map.Entry<ChunkPos, Object2IntMap<BlockPos>> entry : gridMap.entrySet()) {
             GridPiece piece = new GridPiece(entry.getKey(), minY, maxY, entry.getValue(), sliceMap.getOrDefault(entry.getKey(), Map.of()));
             piece.blockList = blockList;
+            piece.fluidTickPaletteIndex = fluidTickPaletteIndex;
             builder.addPiece(piece);
         }
     }
