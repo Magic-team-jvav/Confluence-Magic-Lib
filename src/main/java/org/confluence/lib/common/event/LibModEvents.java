@@ -100,6 +100,7 @@ public final class LibModEvents {
         LibAttributes.registerAttribute(ConfluenceMagicLib.FISHING_POWER, event::add);
         LibAttributes.registerAttribute(ConfluenceMagicLib.MINION_CAPACITY, event::add);
         LibAttributes.registerAttribute(ConfluenceMagicLib.SENTRY_CAPACITY, event::add);
+        LibAttributes.registerAttribute(ConfluenceMagicLib.MAX_MANA, event::add);
         LibAttributes.registerAttribute(ConfluenceMagicLib.SUMMON_DAMAGE, event::add);
         LibAttributes.registerAttribute(ConfluenceMagicLib.SUMMON_KNOCKBACK, event::add);
         LibAttributes.registerAttribute(ConfluenceMagicLib.WHIP_RANGE, event::add);

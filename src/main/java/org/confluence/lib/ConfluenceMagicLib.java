@@ -94,6 +94,7 @@ public final class ConfluenceMagicLib {
     public static final DeferredHolder<Attribute, RangedAttribute> MINION_CAPACITY = registerAttribute("player.minion_capacity", 1.0, 0.0, 128.0, RangedAttribute::new, a -> a.setSyncable(true)); // ADD_VALUE
     /// 哨兵容量
     public static final DeferredHolder<Attribute, RangedAttribute> SENTRY_CAPACITY = registerAttribute("player.sentry_capacity", 1.0, 0.0, 128.0, RangedAttribute::new, a -> a.setSyncable(true)); // ADD_VALUE
+    public static final DeferredHolder<Attribute, RangedAttribute> MAX_MANA = registerAttribute("player.max_mana", 20.0, 1.0, 1024.0, RangedAttribute::new, a -> a.setSyncable(true));
     /// 召唤伤害，请优先使用[org.confluence.lib.common.LibAttributes#getSummonDamage]
     public static final DeferredHolder<Attribute, RangedAttribute> SUMMON_DAMAGE = registerAttribute("player.summon_damage", 1.0, 0.0, 2048.0, RangedAttribute::new, a -> a.setSyncable(true)); // MULTIPLY_TOTAL
     /// 仆从击退

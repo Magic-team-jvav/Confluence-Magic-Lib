@@ -14,6 +14,7 @@ public final class LibLanguageProvider extends LanguageProvider {
 
     @Override
     protected void addTranslations() {
+        add("attribute.name.player.max_mana", "Maximum Mana", "最大魔力");
         add("attribute.name.generic.armor_penetration", "Armor Penetration", "护甲穿透");
         add("attribute.name.generic.artifact_cooldown_reduction", "Artifact Cooldown Reduction", "法器冷却减免");
         add("attribute.name.generic.critical_chance", "Critical Chance", "暴击率");
