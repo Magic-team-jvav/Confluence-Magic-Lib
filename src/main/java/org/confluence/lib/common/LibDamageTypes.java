@@ -6,7 +6,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.damagesource.*;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,6 +21,7 @@ public final class LibDamageTypes {
     public static final ResourceKey<DamageType> GUN_BULLET = register("gun_bullet");
     public static final ResourceKey<DamageType> HELLFIRE = register("hellfire");
     public static final ResourceKey<DamageType> MAGICAL_PROJECTILE = register("magical_projectile");
+    public static final ResourceKey<DamageType> POLAR_MARK = register("polar_mark");
     public static final ResourceKey<DamageType> SPEAR_PROJECTILE = register("spear_projectile");
     public static final ResourceKey<DamageType> STAR_CLOAK = register("star_cloak");
     public static final ResourceKey<DamageType> SUMMON = register("summon");
@@ -56,17 +56,6 @@ public final class LibDamageTypes {
         return of(level, SOUL_OVERDRAFT);
     }
 
-    /// 结算后恢复原速度：用于「不该击退」的伤害（DOT / 光环）。
-    ///
-    /// 1.21 的原版击退判定只看 `minecraft:no_knockback` 标签，带实体的伤害源（如 `indirectMagic`）
-    /// 无法逐次打标签，所以和 1.20 一样用「恢复速度」来等效关闭击退。
-    public static boolean hurtWithoutKnockback(Entity target, DamageSource source, float amount) {
-        Vec3 movement = target.getDeltaMovement();
-        boolean hurt = target.hurt(source, amount);
-        target.setDeltaMovement(movement);
-        return hurt;
-    }
-
     public static void bootstrap(BootstrapContext<DamageType> context) {
         damageType(context, ACID_VENOM, "acid_venom", DamageScaling.ALWAYS, 10);
         damageType(context, BOULDER, "boulder", DamageScaling.ALWAYS, 5);
@@ -78,6 +67,7 @@ public final class LibDamageTypes {
         damageType(context, GUN_BULLET, "gun_bullet", DamageScaling.NEVER, 0.1F);
         damageType(context, HELLFIRE, "hellfire_damage_type", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1F);
         damageType(context, MAGICAL_PROJECTILE, "magical_projectile", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1F);
+        damageType(context, POLAR_MARK, "indirectMagic", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.0F);
         damageType(context, SPEAR_PROJECTILE, "spear_projectile", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1F);
         damageType(context, STAR_CLOAK, "star_cloak", DamageScaling.ALWAYS, 5);
         damageType(context, SUMMON, "summon_damage_type", DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER, 0.1F);

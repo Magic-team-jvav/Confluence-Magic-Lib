@@ -28,9 +28,12 @@ public final class LibDamageTypeTagsProvider extends DamageTypeTagsProvider {
                 DamageTypes.STING,
                 LibDamageTypes.SWORD_PROJECTILE);
         tag(LibTags.DamageTypes.SOUL_OVERDRAFT).add(LibDamageTypes.SOUL_OVERDRAFT);
-        tag(Tags.DamageTypes.IS_MAGIC).add(LibDamageTypes.MAGICAL_PROJECTILE);
+        tag(Tags.DamageTypes.IS_MAGIC).add(LibDamageTypes.MAGICAL_PROJECTILE, LibDamageTypes.POLAR_MARK);
+        tag(DamageTypeTags.WITCH_RESISTANT_TO).add(LibDamageTypes.POLAR_MARK);
+        tag(DamageTypeTags.BYPASSES_WOLF_ARMOR).add(LibDamageTypes.POLAR_MARK);
+        tag(DamageTypeTags.PANIC_CAUSES).add(LibDamageTypes.POLAR_MARK);
         tag(DamageTypeTags.IS_PROJECTILE).add(LibDamageTypes.GUN_BULLET, LibDamageTypes.MAGICAL_PROJECTILE);
-        tag(DamageTypeTags.BYPASSES_ARMOR).add(LibDamageTypes.DUNGEON_GUARDIAN).addTag(LibTags.DamageTypes.SOUL_OVERDRAFT);
+        tag(DamageTypeTags.BYPASSES_ARMOR).add(LibDamageTypes.DUNGEON_GUARDIAN, LibDamageTypes.POLAR_MARK).addTag(LibTags.DamageTypes.SOUL_OVERDRAFT);
         tag(DamageTypeTags.BYPASSES_SHIELD).addTag(LibTags.DamageTypes.SOUL_OVERDRAFT);
         tag(DamageTypeTags.BYPASSES_INVULNERABILITY).addTag(LibTags.DamageTypes.SOUL_OVERDRAFT);
         tag(DamageTypeTags.BYPASSES_COOLDOWN).addTag(LibTags.DamageTypes.SOUL_OVERDRAFT);
@@ -42,7 +45,8 @@ public final class LibDamageTypeTagsProvider extends DamageTypeTagsProvider {
                 LibDamageTypes.ACID_VENOM,
                 LibDamageTypes.CURSED_INFERNO,
                 LibDamageTypes.FROST_BURN,
-                LibDamageTypes.HELLFIRE
+                LibDamageTypes.HELLFIRE,
+                LibDamageTypes.POLAR_MARK
         ).addTag(LibTags.DamageTypes.SOUL_OVERDRAFT);
         tag(DamageTypeTags.IS_PLAYER_ATTACK).add(LibDamageTypes.SUMMON);
     }
