@@ -32,6 +32,7 @@ public final class LibLanguageProvider extends LanguageProvider {
         add("attribute.name.player.mark_damage", "Mark Damage", "标记伤害");
         add("attribute.name.player.minion_capacity", "Minion Capacity", "仆从容量");
         add("attribute.name.player.sentry_capacity", "Sentry Capacity", "哨兵容量");
+        add("attribute.name.player.max_mana", "Maximum Mana", "最大魔力");
         add("attribute.name.player.summon_damage", "Summon Damage", "召唤伤害");
         add("attribute.name.player.summon_knockback", "Summon Knockback", "召唤物击退");
         add("attribute.name.player.whip_range", "Whip Range", "鞭范围");

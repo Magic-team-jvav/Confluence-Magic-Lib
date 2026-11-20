@@ -69,6 +69,7 @@ public final class ConfluenceMagicLib {
     public static final PortRegistryEntry<Attribute, RangedAttribute> AGGRO = registerAttribute("player.aggro", 0.0, -10000.0, 10000.0, RangedAttribute::new, maker -> maker.setSentiment(Attribute.Sentiment.NEGATIVE));
     public static final PortRegistryEntry<Attribute, RangedAttribute> MINION_CAPACITY = registerAttribute("player.minion_capacity", 1.0, 0.0, 128.0, RangedAttribute::new, maker -> maker.setSyncable(true));
     public static final PortRegistryEntry<Attribute, RangedAttribute> SENTRY_CAPACITY = registerAttribute("player.sentry_capacity", 1.0, 0.0, 128.0, RangedAttribute::new, maker -> maker.setSyncable(true));
+    public static final PortRegistryEntry<Attribute, RangedAttribute> MAX_MANA = registerAttribute("player.max_mana", 20.0, 1.0, 1024.0, RangedAttribute::new, attribute -> attribute.setSyncable(true));
     public static final PortRegistryEntry<Attribute, RangedAttribute> SUMMON_DAMAGE = registerAttribute("player.summon_damage", 1.0, 0.0, 2048.0, RangedAttribute::new, maker -> maker.setSyncable(true));
     public static final PortRegistryEntry<Attribute, RangedAttribute> SUMMON_KNOCKBACK = registerAttribute("player.summon_knockback", 0.0, 0.0, 5.0, RangedAttribute::new, maker -> maker.setSyncable(true));
     public static final PortRegistryEntry<Attribute, RangedAttribute> WHIP_RANGE = registerAttribute("player.whip_range", 3.0, 0.0, 64.0, RangedAttribute::new, maker -> maker.setSyncable(true));
