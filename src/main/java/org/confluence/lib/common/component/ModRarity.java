@@ -102,9 +102,8 @@ public record ModRarity(String name, int color, boolean special) {
     }
 
     public static Style withColor(ItemStack stack, Style style) {
-        ModRarity rarity = getRarity(stack);
-        if (rarity == null) return stack.getRarity().getStyleModifier().apply(style);
-        return style.withColor(rarity.color);
+        int color = chooseColor(stack);
+        return color == -1 ? stack.getRarity().getStyleModifier().apply(style) : style.withColor(color);
     }
 
     public static MutableComponent withColor(ItemStack stack, MutableComponent component) {
@@ -112,10 +111,11 @@ public record ModRarity(String name, int color, boolean special) {
     }
 
     public static int chooseColor(ItemStack stack) {
-        ModRarity rarity = getRarity(stack, false);
-        if (rarity == null) return -1;
-        ModRarity prototypeRarity = ModRarity.getModRarity(stack, true);
-        return (prototypeRarity != null && prototypeRarity.special ? prototypeRarity : rarity).color();
+        ModRarity base = getModRarity(stack, true);
+        ModRarity current = getModRarity(stack, false);
+        if (base != null && (base.special || current == null)) return base.color();
+        if (current == null) current = getRarity(stack, false);
+        return current == null ? -1 : current.color();
     }
 
     @Override
