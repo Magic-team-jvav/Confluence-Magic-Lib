@@ -33,8 +33,8 @@ public final class BlockCounters {
     private static final Map<BlockState, int[]> MATCHED = new ConcurrentHashMap<>();
     private static final int[] NONE = new int[0];
 
-    private static volatile boolean frozen;
-    private static volatile boolean enabled;
+    private static boolean frozen;
+    private static boolean enabled;
 
     private BlockCounters() {}
 

@@ -1,6 +1,6 @@
 package org.confluence.lib.mixin.integration.animation;
 
-import org.confluence.lib.ConfluenceMagicLib;
+import net.minecraftforge.fml.loading.LoadingModList;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -9,8 +9,12 @@ import java.util.List;
 import java.util.Set;
 
 public class AnimationMixinPlugin implements IMixinConfigPlugin {
+    private boolean shouldApply;
+
     @Override
-    public void onLoad(String mixinPackage) {}
+    public void onLoad(String mixinPackage) {
+        this.shouldApply = LoadingModList.get().getModFileById("geckolib") != null;
+    }
 
     @Override
     public String getRefMapperConfig() {
@@ -19,7 +23,7 @@ public class AnimationMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        return ConfluenceMagicLib.GECKOLIB_LOADED;
+        return shouldApply;
     }
 
     @Override
