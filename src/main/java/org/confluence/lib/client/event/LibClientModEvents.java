@@ -15,7 +15,6 @@ import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsE
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.LibStartupConfig;
 import org.confluence.lib.api.animation.third_person.AddPlayerGeoModelEvent;
-import org.confluence.lib.api.animation.third_person.AnimationConstants;
 import org.confluence.lib.api.animation.third_person.PlayerGeoAnimatable;
 import org.confluence.lib.client.LibKeyBindings;
 import org.confluence.lib.client.particle.CrossDustParticle;
@@ -41,7 +40,7 @@ public final class LibClientModEvents {
     @SubscribeEvent
     public static void fmlClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
-            if (AnimationConstants.SHOULD_APPLY) {
+            if (ConfluenceMagicLib.GECKOLIB_LOADED) {
                 ModLoader.postEvent(new AddPlayerGeoModelEvent());
             }
         });
@@ -49,7 +48,7 @@ public final class LibClientModEvents {
 
     @SubscribeEvent
     public static void registerClientReloadListeners(RegisterClientReloadListenersEvent event) {
-        if (AnimationConstants.SHOULD_APPLY) {
+        if (ConfluenceMagicLib.GECKOLIB_LOADED) {
             event.registerReloadListener((pb, rm, pp, rp, be, ge) -> CompletableFuture.runAsync(() -> {
                 for (Runnable callback : PlayerGeoAnimatable.reloadCallbacks) {
                     callback.run();

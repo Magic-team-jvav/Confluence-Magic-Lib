@@ -23,7 +23,6 @@ import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import org.confluence.lib.ConfluenceMagicLib;
-import org.confluence.lib.api.animation.third_person.AnimationConstants;
 import org.confluence.lib.api.animation.third_person.PlayerAttackingStatePacket;
 import org.confluence.lib.api.animation.third_person.PlayerGeoAnimatable;
 import org.confluence.lib.api.event.OnGatherEffectScreenTooltipsEvent;
@@ -99,7 +98,7 @@ public final class LibClientGameEvents {
 
     @SubscribeEvent
     public static void input$InteractionKeyMappingTriggered(InputEvent.InteractionKeyMappingTriggered event) {
-        if (AnimationConstants.SHOULD_APPLY && event.isAttack()) {
+        if (ConfluenceMagicLib.GECKOLIB_LOADED && event.isAttack()) {
             Minecraft minecraft = Minecraft.getInstance();
             LocalPlayer player = Objects.requireNonNull(minecraft.player);
             PlayerAttackingStatePacket.sendToServer(player, minecraft.options.getCameraType().isFirstPerson());
@@ -141,7 +140,7 @@ public final class LibClientGameEvents {
     public static void clientPlayerNetwork$LoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         DynamicLightDispatcher.clearWorld();
         GravitationHandler.reset();
-        if (AnimationConstants.SHOULD_APPLY) {
+        if (ConfluenceMagicLib.GECKOLIB_LOADED) {
             PlayerGeoAnimatable.reloadCallbacks.clear();
         }
     }

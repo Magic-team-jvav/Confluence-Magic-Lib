@@ -335,7 +335,7 @@ public final class LibGameEvents {
             return;
         }
 
-        if (ConfluenceMagicLib.IS_CONFLUENCE_LOAD) return;
+        if (ConfluenceMagicLib.CONFLUENCE_LOADED) return;
         if (event.getSource().is(LibDamageTypes.GUN_BULLET)) {
             event.setInvulnerabilityTicks(0);
         }

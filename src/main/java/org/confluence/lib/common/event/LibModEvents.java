@@ -23,7 +23,6 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.LibStartupConfig;
-import org.confluence.lib.api.animation.third_person.AnimationConstants;
 import org.confluence.lib.api.animation.third_person.PlayerAttackingStatePacket;
 import org.confluence.lib.api.event.CustomGroupItemIconEvent;
 import org.confluence.lib.api.event.NameFixRegisterEvent;
@@ -60,7 +59,7 @@ public final class LibModEvents {
                 .playToServer(SwitchEffectEnabledPackedC2S.TYPE, SwitchEffectEnabledPackedC2S.STREAM_CODEC, SwitchEffectEnabledPackedC2S::handle)
         ;
 
-        if (AnimationConstants.SHOULD_APPLY) {
+        if (ConfluenceMagicLib.GECKOLIB_LOADED) {
             registrar.playBidirectional(PlayerAttackingStatePacket.TYPE, PlayerAttackingStatePacket.STREAM_CODEC, PlayerAttackingStatePacket::handle);
         }
     }
