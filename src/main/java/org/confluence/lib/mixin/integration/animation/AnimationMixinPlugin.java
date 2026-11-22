@@ -1,6 +1,6 @@
 package org.confluence.lib.mixin.integration.animation;
 
-import org.confluence.lib.api.animation.third_person.AnimationConstants;
+import org.confluence.lib.ConfluenceMagicLib;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -19,7 +19,7 @@ public class AnimationMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        return AnimationConstants.SHOULD_APPLY;
+        return ConfluenceMagicLib.GECKOLIB_LOADED;
     }
 
     @Override

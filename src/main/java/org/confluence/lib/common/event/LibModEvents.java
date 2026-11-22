@@ -15,7 +15,6 @@ import net.minecraftforge.registries.ForgeRegistry;
 import net.minecraftforge.registries.RegisterEvent;
 import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.LibStartupConfig;
-import org.confluence.lib.api.animation.third_person.AnimationConstants;
 import org.confluence.lib.api.animation.third_person.PlayerAttackingStatePacket;
 import org.confluence.lib.api.event.CustomGroupItemIconEvent;
 import org.confluence.lib.api.event.NameFixRegisterEvent;
@@ -157,7 +156,7 @@ public final class LibModEvents {
                 .registerInGameS2C(SetEntityDataPacketS2C.class, SetEntityDataPacketS2C.ID, SetEntityDataPacketS2C.STREAM_CODEC)
                 .registerInGameS2C(BroadcastGravitationRotPacketS2C.class, BroadcastGravitationRotPacketS2C.ID, BroadcastGravitationRotPacketS2C.STREAM_CODEC);
 
-        if (AnimationConstants.SHOULD_APPLY) {
+        if (ConfluenceMagicLib.GECKOLIB_LOADED) {
             handler.registerInGameBidirectional(PlayerAttackingStatePacket.class, PlayerAttackingStatePacket.ID, PlayerAttackingStatePacket.STREAM_CODEC);
         }
     }

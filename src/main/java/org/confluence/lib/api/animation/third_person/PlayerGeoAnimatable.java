@@ -5,6 +5,7 @@ import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.world.entity.Entity;
+import org.confluence.lib.ConfluenceMagicLib;
 import org.jetbrains.annotations.Nullable;
 import org.mesdag.particlestorm.api.geckolib.WithCurrentEntity;
 import software.bernie.geckolib.core.animatable.GeoAnimatable;
@@ -108,7 +109,7 @@ public class PlayerGeoAnimatable implements GeoAnimatable {
     }
 
     public static PlayerGeoAnimatable choose(AbstractClientPlayer player) {
-        if (AnimationConstants.WITH_PARTICLE) {
+        if (ConfluenceMagicLib.PARTICLESTORM_LOADED) {
             return Holder.withParticle(player);
         }
         return new PlayerGeoAnimatable(player);

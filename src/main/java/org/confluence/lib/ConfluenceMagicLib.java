@@ -42,7 +42,9 @@ public final class ConfluenceMagicLib {
     public static final String LIB_ID = "confluence_magic_lib";
     public static final String CONFLUENCE_ID = "confluence";
     public static final Logger LOGGER = LoggerFactory.getLogger("Confluence Magic Lib");
-    public static final boolean IS_CONFLUENCE_LOAD = LibUtils.isModLoaded(CONFLUENCE_ID);
+    public static final boolean CONFLUENCE_LOADED = LibUtils.isModLoaded(CONFLUENCE_ID);
+    public static final boolean GECKOLIB_LOADED = LibUtils.isModLoaded("geckolib");
+    public static final boolean PARTICLESTORM_LOADED = LibUtils.isModLoaded("particlestorm");
 
     private static final PortItemRegistration ITEMS = PortRegisterHandler.item(LIB_ID);
 

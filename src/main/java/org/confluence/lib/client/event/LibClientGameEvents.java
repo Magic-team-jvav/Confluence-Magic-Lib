@@ -17,8 +17,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.confluence.lib.ConfluenceMagicLib;
 import org.confluence.lib.api.animation.first_person.CameraAnimation;
-import org.confluence.lib.api.animation.third_person.AnimationConstants;
 import org.confluence.lib.api.animation.third_person.PlayerAttackingStatePacket;
 import org.confluence.lib.api.animation.third_person.PlayerGeoAnimatable;
 import org.confluence.lib.api.event.OnGatherEffectScreenTooltipsEvent;
@@ -127,7 +127,7 @@ public final class LibClientGameEvents {
     private static void clientPlayerNetwork$LoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         GravitationHandler.reset();
         CameraAnimation.clear();
-        if (AnimationConstants.SHOULD_APPLY) {
+        if (ConfluenceMagicLib.GECKOLIB_LOADED) {
             PlayerGeoAnimatable.reloadCallbacks.clear();
         }
     }
@@ -140,7 +140,7 @@ public final class LibClientGameEvents {
     }
 
     private static void input$InteractionKeyMappingTriggered(InputEvent.InteractionKeyMappingTriggered event) {
-        if (AnimationConstants.SHOULD_APPLY && event.isAttack()) {
+        if (ConfluenceMagicLib.GECKOLIB_LOADED && event.isAttack()) {
             Minecraft minecraft = Minecraft.getInstance();
             LocalPlayer player = Objects.requireNonNull(minecraft.player);
             PlayerAttackingStatePacket.sendToServer(player, minecraft.options.getCameraType().isFirstPerson());
